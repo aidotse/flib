@@ -1,6 +1,6 @@
 # FLIB: Federated Learning in Banking
 
-** OBS: under construction **
+** OBS: under construction, most code dont run right away... **
 
 This is the repsitory for all the code in the project.
 
@@ -13,4 +13,3 @@ Currently containing:
   Federated Learning
 
   TabDDPM
-  inital commit
