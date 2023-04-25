@@ -4,12 +4,12 @@
 
 This is the repsitory for all the code in the project.
 
-Currently containing:
+## Currently containing
 
-  AMLSim (not)
+AMLSim (not)
 
-  Transaction Network Explorer
+Transaction Network Explorer
 
-  Federated Learning
+Federated Learning
 
-  TabDDPM
+TabDDPM
