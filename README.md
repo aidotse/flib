@@ -6,7 +6,7 @@ This is the repsitory for all the code in the project.
 
 Currently containing:
 
-  AMLSim
+  AMLSim (not)
 
   Transaction Network Explorer
 
