@@ -1,16 +1,15 @@
 # FLIB: Federated Learning in Banking
 
-** OBS: under construction **
+** OBS: under construction, most code dont run right away... **
 
 This is the repsitory for all the code in the project.
 
-Currently containing:
+## Currently containing
 
-  AMLSim
+AMLSim (not)
 
-  Transaction Network Explorer
+Transaction Network Explorer
 
-  Federated Learning
+Federated Learning
 
-  TabDDPM
-  inital commit
+TabDDPM
