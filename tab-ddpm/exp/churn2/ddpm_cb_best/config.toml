@@ -3,7 +3,7 @@ parent_dir = "exp/churn2/ddpm_cb_best"
 real_data_path = "data/churn2/"
 model_type = "mlp"
 num_numerical_features = 7
-device = "cuda:1"
+device = "cuda:0"
 
 [model_params]
 num_classes = 2

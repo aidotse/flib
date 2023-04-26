@@ -1,7 +1,7 @@
 parent_dir = "exp/churn2/ctabgan-plus"
 real_data_path = "data/churn2/"
 seed = 0
-device = "cuda:1"
+device = "cuda:0"
 
 [train_params]
 lr = 0.00045004551479319233
