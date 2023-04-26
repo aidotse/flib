@@ -13,6 +13,13 @@ import zero
 import lib
 import torch
 
+DATASET = 'churn2'
+CONFIG = '/home/edvin/Desktop/flib/tab-ddpm/exp/%s/tab/config.toml' % (DATASET)
+TRAIN = True
+SAMPLE = False
+EVAL = False
+CHANGE_VAL = False
+
 def load_config(path) :
     with open(path, 'rb') as f:
         return tomli.load(f)
@@ -27,11 +34,11 @@ def save_file(parent_dir, config_path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', metavar='FILE')
-    parser.add_argument('--train', action='store_true', default=False)
-    parser.add_argument('--sample', action='store_true',  default=False)
-    parser.add_argument('--eval', action='store_true',  default=False)
-    parser.add_argument('--change_val', action='store_true',  default=False)
+    parser.add_argument('--config', metavar='FILE', default=CONFIG)
+    parser.add_argument('--train', action='store_true', default=TRAIN)
+    parser.add_argument('--sample', action='store_true',  default=SAMPLE)
+    parser.add_argument('--eval', action='store_true',  default=EVAL)
+    parser.add_argument('--change_val', action='store_true',  default=CHANGE_VAL)
 
     args = parser.parse_args()
     raw_config = lib.load_config(args.config)
