@@ -16,7 +16,7 @@ import torch
 DATASET = 'credit'
 CONFIG = '/home/edvin/Desktop/flib/tab-ddpm/exp/%s/ddpm_cb_best/config.toml' % (DATASET)
 TRAIN = False
-SAMPLE = True
+SAMPLE = False
 EVAL = True
 CHANGE_VAL = False
 
