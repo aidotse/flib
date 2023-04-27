@@ -13,11 +13,11 @@ import zero
 import lib
 import torch
 
-DATASET = 'churn2'
-CONFIG = '/home/edvin/Desktop/flib/tab-ddpm/exp/%s/tab/config.toml' % (DATASET)
-TRAIN = True
-SAMPLE = False
-EVAL = False
+DATASET = 'credit'
+CONFIG = '/home/edvin/Desktop/flib/tab-ddpm/exp/%s/ddpm_cb_best/config.toml' % (DATASET)
+TRAIN = False
+SAMPLE = True
+EVAL = True
 CHANGE_VAL = False
 
 def load_config(path) :

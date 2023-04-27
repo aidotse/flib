@@ -1,8 +1,8 @@
 seed = 1
-parent_dir = "exp/churn2/many-exps/5"
-real_data_path = "data/churn2/"
+parent_dir = "exp/credit/many-exps/0"
+real_data_path = "data/credit/"
 model_type = "mlp"
-num_numerical_features = 7
+num_numerical_features = 30
 device = "cuda:0"
 
 [model_params]
@@ -11,8 +11,12 @@ is_y_cond = true
 
 [model_params.rtdl_params]
 d_layers = [
+    512,
+    512,
+    512,
+    512,
+    512,
     256,
-    1024,
 ]
 dropout = 0.0
 
@@ -23,9 +27,9 @@ scheduler = "cosine"
 
 [train.main]
 steps = 20000
-lr = 2.1993579925293352e-05
+lr = 0.0002288113668475521
 weight_decay = 0.0
-batch_size = 4096
+batch_size = 256
 
 [train.T]
 seed = 0
