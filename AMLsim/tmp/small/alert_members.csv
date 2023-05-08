@@ -1,0 +1,9 @@
+alertID,reason,accountID,isMain,isSAR,modelID,minAmount,maxAmount,startStep,endStep,scheduleID,bankID
+0,fan_in,8,true,true,2,14.00,14.00,38,48,2,bank_a
+0,fan_in,12,false,true,2,14.00,14.00,38,48,2,bank_a
+0,fan_in,1,false,true,2,14.00,14.00,38,48,2,bank_a
+0,fan_in,9,false,true,2,14.00,14.00,38,48,2,bank_a
+1,fan_in,13,true,true,2,16.00,16.00,11,27,2,bank_a
+1,fan_in,6,false,true,2,16.00,16.00,11,27,2,bank_a
+1,fan_in,14,false,true,2,16.00,16.00,11,27,2,bank_a
+1,fan_in,4,false,true,2,16.00,16.00,11,27,2,bank_a
