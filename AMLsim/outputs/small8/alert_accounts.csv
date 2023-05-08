@@ -1,0 +1,5 @@
+alert_id,alert_type,acct_id,acct_name,is_sar,model_id,start,end,schedule_id,bank_id
+0,fan_in,3,3,True,2,0,1000000,2,bank_a
+0,fan_in,7,7,True,2,0,1000000,2,bank_a
+0,fan_in,5,5,True,2,0,1000000,2,bank_a
+0,fan_in,0,0,True,2,0,1000000,2,bank_a

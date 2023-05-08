@@ -1,0 +1,4 @@
+alert_id,alert_type,is_sar,tran_id,orig_acct,bene_acct,tx_type,base_amt,tran_timestamp
+0,fan_in,True,3,7,3,TRANSFER,407.36,2023-01-04T00:00:00Z
+0,fan_in,True,19,5,3,TRANSFER,779.79,2023-01-30T00:00:00Z
+0,fan_in,True,37,0,3,TRANSFER,131.14,2023-02-25T00:00:00Z

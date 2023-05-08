@@ -1,0 +1,6 @@
+birthPlaceCountry,countryofResidency,deathTime,firstName,isActive,lastName,legalName,listedCompany,maritalStatus,middleName,name,nameAlias,nationality,occupation,organizationSymbol,partyId,partyType,sourceOfIncome,title,website,gender,homePhone,alternatePhone,cellPhone,primaryPhone,workPhone,alternateEmail,companyEmail,personalEmail,workEmail,isIndividual
+US,US,,,1,,,,,,,,US,,,0,Individual,,,,,,,,,,,,,,
+US,US,,,1,,,,,,,,US,,,1,Individual,,,,,,,,,,,,,,
+US,US,,,1,,,,,,,,US,,,2,Individual,,,,,,,,,,,,,,
+US,US,,,1,,,,,,,,US,,,3,Individual,,,,,,,,,,,,,,
+US,US,,,1,,,,,,,,US,,,5,Individual,,,,,,,,,,,,,,

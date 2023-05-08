@@ -1,0 +1,9 @@
+ACCOUNT_ID,CUSTOMER_ID,INIT_BALANCE,COUNTRY,ACCOUNT_TYPE,IS_SAR,BANK_ID
+0,C_0,86491.59,US,I,true,bank_a
+1,C_1,94941.91,US,I,false,bank_a
+2,C_2,84199.20,US,I,false,bank_a
+3,C_3,73607.14,US,I,true,bank_a
+4,C_4,55035.06,US,I,false,bank_a
+5,C_5,71708.59,US,I,true,bank_a
+6,C_6,80544.35,US,I,false,bank_a
+7,C_7,95650.55,US,I,true,bank_a

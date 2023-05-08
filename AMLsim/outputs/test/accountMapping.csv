@@ -1,0 +1,7 @@
+cust_acct_mapping_id,acct_id,cust_id,cust_acct_role,src_sys,data_dump_dt
+1,0,0,Primary,1,2017-01-02T00:00:00Z
+2,1,1,Primary,1,2017-01-02T00:00:00Z
+3,2,2,Primary,1,2017-01-02T00:00:00Z
+4,3,3,Primary,1,2017-01-02T00:00:00Z
+5,4,4,Primary,1,2017-01-02T00:00:00Z
+6,5,5,Primary,1,2017-01-02T00:00:00Z

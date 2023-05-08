@@ -1,0 +1,5 @@
+alertID,reason,accountID,isMain,isSAR,modelID,minAmount,maxAmount,startStep,endStep,scheduleID,bankID
+0,fan_in,3,true,true,2,10.00,10.00,66,82,2,bank_a
+0,fan_in,7,false,true,2,10.00,10.00,66,82,2,bank_a
+0,fan_in,5,false,true,2,10.00,10.00,66,82,2,bank_a
+0,fan_in,0,false,true,2,10.00,10.00,66,82,2,bank_a
