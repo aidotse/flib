@@ -1,9 +1,0 @@
-acct_id,dsply_nm,type,acct_stat,acct_rptng_crncy,branch_id,open_dt,close_dt,prior_sar_count,initial_deposit,tx_behavior_id,bank_id,first_name,last_name,street_addr,city,state,country,zip,gender,birth_date,ssn,lon,lat
-0,C_0,I,A,USD,1,0,1000000,true,86491.59,,bank_a,Stephanie,Collins,48764 Howard Forge Apt. 421,Vanessaside,PA,US,79393,Female,2006-09-02,076-88-5410,73.479690,60.2738415
-1,C_1,I,A,USD,1,0,1000000,false,94941.91,,bank_a,Samantha,Cook,9387 Grimes Green Apt. 801,Pagetown,DC,US,65195,Female,2006-09-24,334-91-1032,-77.421639,62.3400045
-2,C_2,I,A,USD,1,0,1000000,false,84199.20,,bank_a,Robert,Fernandez,711 Golden Overpass,West Andreaville,MA,US,44115,Male,2016-02-21,618-71-9628,-25.565183,29.450832
-3,C_3,I,A,USD,1,0,1000000,true,73607.14,,bank_a,Steven,Leblanc,9342 Lori Bypass Suite 711,East Sandra,NV,US,11019,Male,1980-11-30,700-51-8595,-32.020057,50.066962
-4,C_4,I,A,USD,1,0,1000000,false,55035.06,,bank_a,Mark,Bruce,969 Hayes Shore,Christopherville,MD,US,77450,Male,1940-06-01,017-94-4441,-117.114006,-30.820575
-5,C_5,I,A,USD,1,0,1000000,true,71708.59,,bank_a,Barbara,Davis,6012 Brandon Ports,North Davidborough,FL,US,75992,Female,2020-10-28,119-05-9921,-168.383986,-37.764890
-6,C_6,I,A,USD,1,0,1000000,false,80544.35,,bank_a,Christopher,Gordon,086 Mary Cliff,North Deborah,CT,US,57657,Male,1912-09-12,611-13-6411,-72.971675,-20.171012
-7,C_7,I,A,USD,1,0,1000000,true,95650.55,,bank_a,Shelly,Lowery,230 Megan Junctions Suite 197,North Thomas,SC,US,75095,Female,1995-08-29,366-50-4112,-97.637148,60.484975

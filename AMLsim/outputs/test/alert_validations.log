@@ -1,2 +1,0 @@
-INFO:root:Alert 0: period 58 is not within [5, 20]
-WARNING:root:The alert subgraph (ID:0, Type:fan_in) does not match any parameter sets
