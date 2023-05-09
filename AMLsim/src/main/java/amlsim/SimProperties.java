@@ -2,7 +2,10 @@ package amlsim;
 
 import java.io.*;
 import java.nio.file.*;
+
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.json.*;
+import org.mockito.internal.hamcrest.MatcherGenericTypeExtractor;
 
 
 /**
@@ -25,6 +28,8 @@ public class SimProperties {
     private int normalTxInterval;
     private double minTxAmount;  // Minimum base (normal) transaction amount
     private double maxTxAmount;  // Maximum base (suspicious) transaction amount
+    private double meanTxAmount;  // Mean of base transaction amount
+    private double stdTxAmount;  // Standard deviation of base transaction amount
 
     SimProperties(String jsonName) throws IOException{
         String jsonStr = loadTextFile(jsonName);
@@ -39,6 +44,8 @@ public class SimProperties {
         normalTxInterval = simProp.getInt("transaction_interval");
         minTxAmount = defaultProp.getDouble("min_amount");
         maxTxAmount = defaultProp.getDouble("max_amount");
+        meanTxAmount = defaultProp.getDouble("mean_amount");
+        stdTxAmount = defaultProp.getDouble("std_amount");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
@@ -98,6 +105,14 @@ public class SimProperties {
 
     public double getMaxTransactionAmount() {
         return maxTxAmount;
+    }
+
+    public double getMeanTransactionAmount() {
+        return meanTxAmount;
+    }
+
+    public double getStdTransactionAmount() {
+        return stdTxAmount;
     }
 
     public double getMarginRatio(){
