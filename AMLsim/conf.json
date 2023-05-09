@@ -8,6 +8,8 @@
   "default": {
     "min_amount": 100,
     "max_amount": 1000,
+    "mean_amount": 500,
+    "std_amount": 100,
     "min_balance": 50000,
     "max_balance": 100000,
     "start_step": -1,
