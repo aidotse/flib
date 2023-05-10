@@ -64,23 +64,41 @@ public class TargetedTransactionAmount {
         //  result = 0;
         // }
 
+        // double mean, std, result;
+        // if (this.isSAR) {
+        //     mean = simProperties.getMeanTransactionAmountSAR();
+        //     std = simProperties.getStdTransactionAmountSAR();
+        // }
+        // else {
+        //     mean = simProperties.getMeanTransactionAmount();
+        //     std = simProperties.getStdTransactionAmount();
+        // }
+        // result = mean + std * random.nextGaussian();
+        // if (result >= this.target * 0.9) {
+        //     result = this.target * 0.9;
+        // }
+        // if (result <= 0.0) {
+        //     result = this.target * 0.1;
+        // }
+
         double mean, std, result;
         if (this.isSAR) {
             mean = simProperties.getMeanTransactionAmountSAR();
             std = simProperties.getStdTransactionAmountSAR();
+            do {
+                result = mean + std * random.nextGaussian();
+            } while (result < this.target * 0.1 || result > this.target * 0.9);
         }
         else {
             mean = simProperties.getMeanTransactionAmount();
             std = simProperties.getStdTransactionAmount();
+            do {
+                result = mean + std * random.nextGaussian();
+            } while (result < this.target * 0.1 || result > this.target * 0.9);
         }
-        result = mean + std * random.nextGaussian();
-        if (result >= this.target * 0.9) {
-            result = this.target * 0.9;
+        if (this.target == 0.0) {
+            result = 0.0;
         }
-        if (result <= 0.0) {
-            result = this.target * 0.1;
-        }
-        
         return result;
     }
 }
