@@ -30,6 +30,8 @@ public class SimProperties {
     private double maxTxAmount;  // Maximum base (suspicious) transaction amount
     private double meanTxAmount;  // Mean of base transaction amount
     private double stdTxAmount;  // Standard deviation of base transaction amount
+    private double meanTxAmountSAR;  // Mean of SAR transaction amount
+    private double stdTxAmountSAR;  // Standard deviation of SAR transaction amount
 
     SimProperties(String jsonName) throws IOException{
         String jsonStr = loadTextFile(jsonName);
@@ -46,6 +48,8 @@ public class SimProperties {
         maxTxAmount = defaultProp.getDouble("max_amount");
         meanTxAmount = defaultProp.getDouble("mean_amount");
         stdTxAmount = defaultProp.getDouble("std_amount");
+        meanTxAmountSAR = defaultProp.getDouble("mean_amount_sar");
+        stdTxAmountSAR = defaultProp.getDouble("std_amount_sar");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
@@ -113,6 +117,14 @@ public class SimProperties {
 
     public double getStdTransactionAmount() {
         return stdTxAmount;
+    }
+
+    public double getMeanTransactionAmountSAR() {
+        return meanTxAmountSAR;
+    }
+
+    public double getStdTransactionAmountSAR() {
+        return stdTxAmountSAR;
     }
 
     public double getMarginRatio(){
