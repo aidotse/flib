@@ -99,11 +99,11 @@ public class SimProperties {
         return normalTxInterval;
     }
 
-    public double getMinTransactionAmount() {
+    public double getMinTransactionAmount() { // TODO: remove
         return minTxAmount;
     }
 
-    public double getMaxTransactionAmount() {
+    public double getMaxTransactionAmount() { // TODO: remove
         return maxTxAmount;
     }
 
