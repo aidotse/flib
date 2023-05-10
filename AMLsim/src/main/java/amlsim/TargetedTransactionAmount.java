@@ -6,11 +6,19 @@ public class TargetedTransactionAmount {
     private SimProperties simProperties;
     private Random random;
     private double target;
+    private Boolean isSAR = false;
 
-    public TargetedTransactionAmount(Number target, Random random) {
+    // public TargetedTransactionAmount(Number target, Random random) {
+    //     this.simProperties = AMLSim.getSimProp();
+    //     this.random = random;
+    //     this.target = target.doubleValue();
+    // }
+
+    public TargetedTransactionAmount(Number target, Random random, Boolean isSAR) {
         this.simProperties = AMLSim.getSimProp();
         this.random = random;
         this.target = target.doubleValue();
+        this.isSAR = isSAR;
     }
 
     public double doubleValue() {
@@ -56,9 +64,16 @@ public class TargetedTransactionAmount {
         //  result = 0;
         // }
 
-        double mean = simProperties.getMeanTransactionAmount();
-        double std = simProperties.getStdTransactionAmount();
-        double result = mean + std * random.nextGaussian();
+        double mean, std, result;
+        if (this.isSAR) {
+            mean = simProperties.getMeanTransactionAmountSAR();
+            std = simProperties.getStdTransactionAmountSAR();
+        }
+        else {
+            mean = simProperties.getMeanTransactionAmount();
+            std = simProperties.getStdTransactionAmount();
+        }
+        result = mean + std * random.nextGaussian();
         if (result >= this.target * 0.9) {
             result = this.target * 0.9;
         }

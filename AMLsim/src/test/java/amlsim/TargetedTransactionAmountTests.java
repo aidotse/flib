@@ -30,7 +30,7 @@ public class TargetedTransactionAmountTests {
 
         try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
             mocked.when(AMLSim::getSimProp).thenReturn(mockedSimProperties);
-            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(100.0, this.random);
+            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(100.0, this.random, false);
             assertEquals(100.0, transactionAmount.doubleValue());
         }
     }
@@ -45,7 +45,7 @@ public class TargetedTransactionAmountTests {
 
         try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
             mocked.when(AMLSim::getSimProp).thenReturn(mockedSimProperties);
-            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(150.0, this.random);
+            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(150.0, this.random, false);
             assertEquals(150.0, transactionAmount.doubleValue());
         }
     }
@@ -60,7 +60,7 @@ public class TargetedTransactionAmountTests {
 
         try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
             mocked.when(AMLSim::getSimProp).thenReturn(mockedSimProperties);
-            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(300.0, this.random);
+            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(300.0, this.random, false);
             assertTrue(transactionAmount.doubleValue() <= 300.0);
             assertTrue(transactionAmount.doubleValue() >= 100.0);
         }
@@ -76,7 +76,7 @@ public class TargetedTransactionAmountTests {
 
         try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
             mocked.when(AMLSim::getSimProp).thenReturn(mockedSimProperties);
-            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(40.0, this.random);
+            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(40.0, this.random, false);
             assertEquals(40.0, transactionAmount.doubleValue());
         }
     }

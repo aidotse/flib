@@ -83,8 +83,8 @@ public class StackTypology extends AMLTypology {
 
     private TargetedTransactionAmount getTransactionAmount(int numBene, double origBalance) {
         if (numBene == 0) {
-            return new TargetedTransactionAmount(0, random);
+            return new TargetedTransactionAmount(0, random, this.isSAR);
         }
-        return new TargetedTransactionAmount(origBalance / numBene, random);
+        return new TargetedTransactionAmount(origBalance / numBene, random, this.isSAR);
     }
 }

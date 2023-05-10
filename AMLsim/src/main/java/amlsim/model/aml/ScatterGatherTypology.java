@@ -75,13 +75,13 @@ public class ScatterGatherTypology extends AMLTypology {
                 Account _bene = intermediate.get(i);
 
                 double target = Math.min(orig.getBalance(), scatterAmount);
-                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(target, random);
+                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(target, random, this.isSAR);
                 makeTransaction(step, transactionAmount.doubleValue(), orig, _bene, isSAR, alertID);
             }else if(gatherSteps[i] == step) {
                 Account _orig = intermediate.get(i);
 
                 double target = Math.min(_orig.getBalance(), scatterAmount);
-                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(target, random);
+                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(target, random, this.isSAR);
                 makeTransaction(step, transactionAmount.doubleValue(), _orig, bene, isSAR, alertID);
             }
         }
