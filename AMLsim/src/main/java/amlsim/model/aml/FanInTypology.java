@@ -90,7 +90,7 @@ public class FanInTypology extends AMLTypology {
             if (steps[i] == step) {
                 Account orig = origList.get(i);
 
-                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, this.isSAR);
+                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, isSAR);
                 makeTransaction(step, this.transactionAmount.doubleValue(), orig, bene, isSAR, alertID);
             }
         }

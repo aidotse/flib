@@ -52,8 +52,9 @@ public class FanInTransactionModel extends AbstractTransactionModel {
         if (index >= numOrigs) {
             index = 0;
         }
-
-        this.transactionAmount = new TargetedTransactionAmount(account.getBalance(), this.random, this.isSAR);
+        
+        boolean isSAR = account.isSAR();
+        this.transactionAmount = new TargetedTransactionAmount(account.getBalance(), this.random, isSAR);
         double amount = this.transactionAmount.doubleValue();
         
         Account bene = beneList.get(index);
