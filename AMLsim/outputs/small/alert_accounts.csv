@@ -1,9 +1,0 @@
-alert_id,alert_type,acct_id,acct_name,is_sar,model_id,start,end,schedule_id,bank_id
-0,fan_in,8,8,True,2,0,1000000,2,bank_a
-0,fan_in,12,12,True,2,0,1000000,2,bank_a
-0,fan_in,1,1,True,2,0,1000000,2,bank_a
-0,fan_in,9,9,True,2,0,1000000,2,bank_a
-1,fan_in,13,13,True,2,0,1000000,2,bank_a
-1,fan_in,6,6,True,2,0,1000000,2,bank_a
-1,fan_in,14,14,True,2,0,1000000,2,bank_a
-1,fan_in,4,4,True,2,0,1000000,2,bank_a
