@@ -1,9 +1,4 @@
 target
 outputs
 tmp
-<<<<<<< HEAD
 scripts/amlsim/__pycache__
-=======
-target
-scripts/amlsim/__pycache__
->>>>>>> main
