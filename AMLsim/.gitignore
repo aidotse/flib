@@ -3,6 +3,7 @@ outputs
 tmp
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 scripts/amlsim/__pycache__
 =======
 conf.json
@@ -14,3 +15,6 @@ target
 =======
 scripts/amlsim/__pycache__
 >>>>>>> 890bfd4 (updated gitignore)
+=======
+scripts/amlsim/__pycache__
+>>>>>>> e61dbb4 (updated gitignore)
