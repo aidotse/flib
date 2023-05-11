@@ -7,9 +7,9 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.json.*;
 import org.mockito.internal.hamcrest.MatcherGenericTypeExtractor;
 
-
 /**
- * Simulation properties and global parameters loaded from the configuration JSON file
+ * Simulation properties and global parameters loaded from the configuration
+ * JSON file
  */
 public class SimProperties {
 
@@ -21,26 +21,32 @@ public class SimProperties {
     private JSONObject cashInProp;
     private JSONObject cashOutProp;
     private String workDir;
-    private double marginRatio;  // Ratio of margin for AML typology transactions
-    private int seed;  // Seed of randomness
-    private String simName;  // Simulation name
+    private double marginRatio; // Ratio of margin for AML typology transactions
+    private int seed; // Seed of randomness
+    private String simName; // Simulation name
 
     private int normalTxInterval;
-    private double minTxAmount;  // Minimum base (normal) transaction amount
-    private double maxTxAmount;  // Maximum base (suspicious) transaction amount
-    private double meanTxAmount;  // Mean of base transaction amount
-    private double stdTxAmount;  // Standard deviation of base transaction amount
-    private double meanTxAmountSAR;  // Mean of SAR transaction amount
-    private double stdTxAmountSAR;  // Standard deviation of SAR transaction amount
+    private double minTxAmount; // Minimum base (normal) transaction amount
+    private double maxTxAmount; // Maximum base (suspicious) transaction amount
+    private double meanTxAmount; // Mean of base transaction amount
+    private double stdTxAmount; // Standard deviation of base transaction amount
+    private double meanTxAmountSAR; // Mean of SAR transaction amount
+    private double stdTxAmountSAR; // Standard deviation of SAR transaction amount
 
-    SimProperties(String jsonName) throws IOException{
+    // Swish-related parameters
+    private double meanPhoneChangeFrequency;
+    private double stdPhoneChangeFrequency;
+    private double meanPhoneChangeFrequencySAR;
+    private double stdPhoneChangeFrequencySAR;
+
+    SimProperties(String jsonName) throws IOException {
         String jsonStr = loadTextFile(jsonName);
         JSONObject jsonObject = new JSONObject(jsonStr);
         JSONObject defaultProp = jsonObject.getJSONObject("default");
 
         generalProp = jsonObject.getJSONObject("general");
         simProp = jsonObject.getJSONObject("simulator");
-        inputProp = jsonObject.getJSONObject("temporal");  // Input directory of this simulator is temporal directory
+        inputProp = jsonObject.getJSONObject("temporal"); // Input directory of this simulator is temporal directory
         outputProp = jsonObject.getJSONObject("output");
 
         normalTxInterval = simProp.getInt("transaction_interval");
@@ -51,9 +57,14 @@ public class SimProperties {
         meanTxAmountSAR = defaultProp.getDouble("mean_amount_sar");
         stdTxAmountSAR = defaultProp.getDouble("std_amount_sar");
 
+        meanPhoneChangeFrequency = defaultProp.getDouble("mean_phone_change_frequency");
+        stdPhoneChangeFrequency = defaultProp.getDouble("std_phone_change_frequency");
+        meanPhoneChangeFrequencySAR = defaultProp.getDouble("mean_phone_change_frequency_sar");
+        stdPhoneChangeFrequencySAR = defaultProp.getDouble("std_phone_change_frequency_sar");
+
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
-        
+
         cashInProp = defaultProp.getJSONObject("cash_in");
         cashOutProp = defaultProp.getJSONObject("cash_out");
         marginRatio = defaultProp.getDouble("margin_ratio");
@@ -63,7 +74,7 @@ public class SimProperties {
         System.out.println("Random seed: " + seed);
 
         simName = System.getProperty("simulation_name");
-        if(simName == null){
+        if (simName == null) {
             simName = generalProp.getString("simulation_name");
         }
         System.out.println("Simulation name: " + simName);
@@ -73,33 +84,33 @@ public class SimProperties {
         System.out.println("Working directory: " + workDir);
     }
 
-    private static String loadTextFile(String jsonName) throws IOException{
+    private static String loadTextFile(String jsonName) throws IOException {
         Path file = Paths.get(jsonName);
         byte[] bytes = Files.readAllBytes(file);
         return new String(bytes);
     }
 
-    String getSimName(){
+    String getSimName() {
         return simName;
     }
 
-    public int getSeed(){
+    public int getSeed() {
         return seed;
     }
 
-    public int getSteps(){
+    public int getSteps() {
         return generalProp.getInt("total_steps");
     }
 
-    boolean isComputeDiameter(){
+    boolean isComputeDiameter() {
         return simProp.getBoolean("compute_diameter");
     }
 
-    int getTransactionLimit(){
+    int getTransactionLimit() {
         return simProp.getInt("transaction_limit");
     }
 
-    int getNormalTransactionInterval(){
+    int getNormalTransactionInterval() {
         return normalTxInterval;
     }
 
@@ -127,19 +138,35 @@ public class SimProperties {
         return stdTxAmountSAR;
     }
 
-    public double getMarginRatio(){
+    public double getMeanPhoneChangeFrequency() {
+        return meanPhoneChangeFrequency;
+    }
+
+    public double getStdPhoneChangeFrequency() {
+        return stdPhoneChangeFrequency;
+    }
+
+    public double getMeanPhoneChangeFrequencySAR() {
+        return meanPhoneChangeFrequencySAR;
+    }
+
+    public double getStdPhoneChangeFrequencySAR() {
+        return stdPhoneChangeFrequencySAR;
+    }
+
+    public double getMarginRatio() {
         return marginRatio;
     }
 
-    int getNumBranches(){
+    int getNumBranches() {
         return simProp.getInt("numBranches");
     }
 
-    String getInputAcctFile(){
+    String getInputAcctFile() {
         return workDir + inputProp.getString("accounts");
     }
 
-    String getInputTxFile(){
+    String getInputTxFile() {
         return workDir + inputProp.getString("transactions");
     }
 
@@ -151,36 +178,34 @@ public class SimProperties {
         return workDir + inputProp.getString("normal_models");
     }
 
-    String getOutputTxLogFile(){
+    String getOutputTxLogFile() {
         return getOutputDir() + outputProp.getString("transaction_log");
     }
 
-    String getOutputDir(){
+    String getOutputDir() {
         return outputProp.getString("directory") + separator + simName + separator;
     }
 
-    String getCounterLogFile(){
+    String getCounterLogFile() {
         return getOutputDir() + outputProp.getString("counter_log");
     }
 
-    String getDiameterLogFile(){
+    String getDiameterLogFile() {
         return workDir + outputProp.getString("diameter_log");
     }
 
-    int getCashTxInterval(boolean isCashIn, boolean isSAR){
+    int getCashTxInterval(boolean isCashIn, boolean isSAR) {
         String key = isSAR ? "fraud_interval" : "normal_interval";
         return isCashIn ? cashInProp.getInt(key) : cashOutProp.getInt(key);
     }
 
-    float getCashTxMinAmount(boolean isCashIn, boolean isSAR){
+    float getCashTxMinAmount(boolean isCashIn, boolean isSAR) {
         String key = isSAR ? "fraud_min_amount" : "normal_min_amount";
         return isCashIn ? cashInProp.getFloat(key) : cashOutProp.getFloat(key);
     }
 
-    float getCashTxMaxAmount(boolean isCashIn, boolean isSAR){
+    float getCashTxMaxAmount(boolean isCashIn, boolean isSAR) {
         String key = isSAR ? "fraud_max_amount" : "normal_max_amount";
         return isCashIn ? cashInProp.getFloat(key) : cashOutProp.getFloat(key);
     }
 }
-
-
