@@ -2,9 +2,12 @@ target
 outputs
 tmp
 <<<<<<< HEAD
+<<<<<<< HEAD
 scripts/amlsim/__pycache__
 =======
 conf.json
+=======
+>>>>>>> 45630f8 (added conf.json)
 target
 <<<<<<< HEAD
 >>>>>>> a3b7fe1 (added gitignore)

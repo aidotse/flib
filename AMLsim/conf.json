@@ -1,19 +1,32 @@
 {
   "general": {
     "random_seed": 0,
+<<<<<<< HEAD
     "simulation_name": "small16",
+=======
+    "simulation_name": "small",
+>>>>>>> 45630f8 (added conf.json)
     "total_steps": 100,
     "base_date": "2023-01-01"
   },
   "default": {
     "min_amount": 100,
     "max_amount": 1000,
+<<<<<<< HEAD
     "mean_amount": 100,
     "std_amount": 50,
     "mean_amount_sar": 500,
     "std_amount_sar": 50,
     "min_balance": 5000,
     "max_balance": 10000,
+=======
+    "mean_amount": 500,
+    "std_amount": 100,
+    "mean_amount_sar": 600,
+    "std_amount_sar": 200,
+    "min_balance": 50000,
+    "max_balance": 100000,
+>>>>>>> 45630f8 (added conf.json)
     "start_step": -1,
     "end_step": -1,
     "start_range": -1,
