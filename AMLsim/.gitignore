@@ -1,3 +1,4 @@
+target
 outputs
 tmp
-conf.json
+scripts/amlsim/__pycache__
