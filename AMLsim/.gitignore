@@ -1,4 +1,9 @@
 target
 outputs
 tmp
+<<<<<<< HEAD
 scripts/amlsim/__pycache__
+=======
+conf.json
+target
+>>>>>>> a3b7fe1 (added gitignore)
