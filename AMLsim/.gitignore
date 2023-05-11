@@ -6,4 +6,8 @@ scripts/amlsim/__pycache__
 =======
 conf.json
 target
+<<<<<<< HEAD
 >>>>>>> a3b7fe1 (added gitignore)
+=======
+scripts/amlsim/__pycache__
+>>>>>>> 890bfd4 (updated gitignore)
