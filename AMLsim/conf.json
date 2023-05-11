@@ -1,42 +1,23 @@
 {
   "general": {
     "random_seed": 0,
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "simulation_name": "small16",
-=======
     "simulation_name": "small",
->>>>>>> 45630f8 (added conf.json)
-=======
-    "simulation_name": "small16",
->>>>>>> fe8e775 (fixed effective truncated sampaling)
     "total_steps": 100,
     "base_date": "2023-01-01"
   },
   "default": {
     "min_amount": 100,
     "max_amount": 1000,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> fe8e775 (fixed effective truncated sampaling)
-    "mean_amount": 100,
-    "std_amount": 50,
-    "mean_amount_sar": 500,
-    "std_amount_sar": 50,
-    "min_balance": 5000,
-    "max_balance": 10000,
-<<<<<<< HEAD
-=======
     "mean_amount": 500,
     "std_amount": 100,
     "mean_amount_sar": 600,
     "std_amount_sar": 200,
+    "mean_phone_change": 20,
+    "std_phone_change": 5,
+    "mean_phone_change_sar": 5,
+    "std_phone_change_sar": 1,
     "min_balance": 50000,
     "max_balance": 100000,
->>>>>>> 45630f8 (added conf.json)
-=======
->>>>>>> fe8e775 (fixed effective truncated sampaling)
     "start_step": -1,
     "end_step": -1,
     "start_range": -1,
