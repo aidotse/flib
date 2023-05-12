@@ -18,33 +18,31 @@ public class FanInTransactionModel extends AbstractTransactionModel {
     private TargetedTransactionAmount transactionAmount;
 
     public FanInTransactionModel(
-        AccountGroup accountGroup,
-        Random random
-    ) {
+            AccountGroup accountGroup,
+            Random random) {
         this.accountGroup = accountGroup;
         this.random = random;
     }
 
-    public void setParameters(int interval, long start, long end){
+    public void setParameters(int interval, long start, long end) {
         super.setParameters(interval, start, end);
-        if(this.startStep < 0){  // decentralize the first transaction step
+        if (this.startStep < 0) { // decentralize the first transaction step
             this.startStep = generateStartStep(interval);
         }
     }
-
 
     @Override
     public String getModelName() {
         return "FanIn";
     }
 
-    private boolean isValidStep(long step){
+    private boolean isValidStep(long step) {
         return (step - startStep) % interval == 0;
     }
 
     @Override
     public void sendTransactions(long step, Account account) {
-        List<Account> beneList = account.getBeneList();  // Destination accounts
+        List<Account> beneList = account.getBeneList(); // Destination accounts
         int numOrigs = beneList.size();
         if (!isValidStep(step) || numOrigs == 0) {
             return;
@@ -52,14 +50,14 @@ public class FanInTransactionModel extends AbstractTransactionModel {
         if (index >= numOrigs) {
             index = 0;
         }
-        
+
         boolean isSAR = account.isSAR();
         this.transactionAmount = new TargetedTransactionAmount(account.getBalance(), this.random, isSAR);
         double amount = this.transactionAmount.doubleValue();
-        
+
         Account bene = beneList.get(index);
 
-        makeTransaction(step, amount, account, bene);
+        makeTransaction(step, amount, account, bene, AbstractTransactionModel.NORMAL_FAN_IN);
         index++;
     }
 }

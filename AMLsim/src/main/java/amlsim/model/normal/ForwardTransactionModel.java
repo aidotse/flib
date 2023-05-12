@@ -16,16 +16,15 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
     private Random random;
 
     public ForwardTransactionModel(
-        AccountGroup accountGroup,
-        Random random
-    ) {
+            AccountGroup accountGroup,
+            Random random) {
         this.accountGroup = accountGroup;
         this.random = random;
     }
 
-    public void setParameters(int interval, long start, long end){
+    public void setParameters(int interval, long start, long end) {
         super.setParameters(interval, start, end);
-        if(this.startStep < 0){  // decentralize the first transaction step
+        if (this.startStep < 0) { // decentralize the first transaction step
             this.startStep = generateStartStep(interval);
         }
     }
@@ -39,22 +38,24 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
     public void sendTransactions(long step, Account account) {
 
         boolean isSAR = account.isSAR();
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, isSAR);
-        
+        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
+                isSAR);
+
         List<Account> dests = account.getBeneList();
         int numDests = dests.size();
-        if(numDests == 0){
+        if (numDests == 0) {
             return;
         }
-        if((step - startStep) % interval != 0){
+        if ((step - startStep) % interval != 0) {
             return;
         }
 
-        if(index >= numDests){
+        if (index >= numDests) {
             index = 0;
         }
         Account dest = dests.get(index);
-        this.makeTransaction(step, transactionAmount.doubleValue(), account, dest);
+        this.makeTransaction(step, transactionAmount.doubleValue(), account, dest,
+                AbstractTransactionModel.NORMAL_FORWARD);
         index++;
     }
 }

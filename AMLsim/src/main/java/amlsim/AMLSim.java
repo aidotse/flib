@@ -440,7 +440,7 @@ public class AMLSim extends SimState {
 			FileWriter writer = new FileWriter(new File(logFileName));
 			this.bufWriter = new BufferedWriter(writer);
 			this.bufWriter.write(
-					"step,type,amount,nameOrig,oldbalanceOrig,newbalanceOrig,nameDest,oldbalanceDest,newbalanceDest,isSAR,alertID\n");
+					"step,type,amount,nameOrig,oldbalanceOrig,newbalanceOrig,nameDest,oldbalanceDest,newbalanceDest,isSAR,alertID,modelType\n");
 			this.bufWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -513,7 +513,7 @@ public class AMLSim extends SimState {
 	 * @param alertID Alert ID
 	 */
 	public static void handleTransaction(long step, String desc, double amt, Account orig, Account bene,
-			boolean isSAR, long alertID) {
+			boolean isSAR, long alertID, long modelType) {
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
 		float origBefore = (float) orig.getBalance();
@@ -527,7 +527,7 @@ public class AMLSim extends SimState {
 		float beneAfter = (float) bene.getBalance();
 
 		txs.addTransaction(step, desc, amt, origID, beneID, origBefore, origAfter, beneBefore, beneAfter, isSAR,
-				alertID);
+				alertID, modelType);
 		diameter.addEdge(origID, beneID);
 	}
 

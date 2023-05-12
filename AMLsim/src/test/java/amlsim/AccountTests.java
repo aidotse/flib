@@ -18,11 +18,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
-
 // How to mock static
 // try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
-    // mocked.when(AMLSim::getRandom).thenReturn(new Random(1));
-
+// mocked.when(AMLSim::getRandom).thenReturn(new Random(1));
 
 class AccountTests {
     public Schedule schedule;
@@ -31,8 +29,7 @@ class AccountTests {
     public Random random;
 
     @BeforeEach
-    void beforeEach()
-    {
+    void beforeEach() {
         this.schedule = mock(Schedule.class);
         this.amlSim = mock(AMLSim.class);
         this.amlSim.schedule = this.schedule;
@@ -41,8 +38,7 @@ class AccountTests {
     }
 
     @Test
-    void zeroSteps()
-    {
+    void zeroSteps() {
         long step = 0;
         when(this.schedule.getSteps()).thenReturn(step);
 
@@ -52,54 +48,48 @@ class AccountTests {
             Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
             anAccount.handleAction(amlSim);
 
-            mocked.verify(() -> AMLSim.handleTransaction(1, "TRANSFER", 1000.0f, anAccount, anAccount, false, 1), never());
+            mocked.verify(() -> AMLSim.handleTransaction(1, "TRANSFER", 1000.0f, anAccount, anAccount, false, 1, 1),
+                    never());
         }
     }
 
     @Test
-    void SingleTransactionModelBenefitListZero()
-    {
+    void SingleTransactionModelBenefitListZero() {
         long step = 1;
         when(this.schedule.getSteps()).thenReturn(step);
 
         Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
         Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random);
 
-        try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) 
-        {
+        try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
             mocked.when(AMLSim::getRandom).thenReturn(new Random(1));
             anAccount.handleAction(amlSim);
 
-            mocked.verify(() -> AMLSim.handleTransaction(1L, "TRANSFER", 3.0, anAccount, beneAccount, false, -1L), never());
+            mocked.verify(() -> AMLSim.handleTransaction(1L, "TRANSFER", 3.0, anAccount, beneAccount, false, -1L, 1),
+                    never());
         }
     }
 
-
     @Test
-    public void SingleTransactionModelBenefitListExists()
-    {
+    public void SingleTransactionModelBenefitListExists() {
         long step = 1;
         when(this.schedule.getSteps()).thenReturn(step);
 
         try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class);
-            MockedStatic<ModelParameters> mockey = mockStatic(ModelParameters.class)
-        ) 
-        {
+                MockedStatic<ModelParameters> mockey = mockStatic(ModelParameters.class)) {
             SimProperties mockedProperties = mock(SimProperties.class);
             when(mockedProperties.getMaxTransactionAmount()).thenReturn(100.0);
 
             mocked.when(AMLSim::getRandom).thenReturn(new Random(1));
             mocked.when(AMLSim::getSimProp).thenReturn(
-                mockedProperties
-            );
+                    mockedProperties);
             mocked.when(AMLSim::getLogger).thenReturn(
-                Logger.getLogger("AMLSim")
-            );
+                    Logger.getLogger("AMLSim"));
             mockey.when(() -> ModelParameters.shouldAddEdge(any(), any())).thenReturn(true);
 
             Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
             Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random);
-            
+
             anAccount.addBeneAcct(beneAccount);
             anAccount.addTxType(beneAccount, "TRANSFER");
 
@@ -110,45 +100,38 @@ class AccountTests {
 
             SingleTransactionModel model = new SingleTransactionModel(accountGroup, this.random);
             model.setParameters(30, 1, 1);
-            
+
             accountGroup.setModel(
-               model
-            );
+                    model);
 
             anAccount.accountGroups.add(accountGroup);
-            
+
             anAccount.handleAction(amlSim);
-            mocked.verify(() -> AMLSim.handleTransaction(1L, "TRANSFER", 41.00808114922017d, anAccount, beneAccount, false, -1L), times(1));
+            mocked.verify(() -> AMLSim.handleTransaction(1L, "TRANSFER", 41.00808114922017d, anAccount, beneAccount,
+                    false, -1L, 1), times(1));
         }
     }
 
-
-
     @Test
-    public void SingleTransactionModelHasBenesNotMain()
-    {
+    public void SingleTransactionModelHasBenesNotMain() {
         long step = 1;
         when(this.schedule.getSteps()).thenReturn(step);
 
         try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class);
-            MockedStatic<ModelParameters> mockey = mockStatic(ModelParameters.class)
-        ) 
-        {
+                MockedStatic<ModelParameters> mockey = mockStatic(ModelParameters.class)) {
             SimProperties mockedProperties = mock(SimProperties.class);
             when(mockedProperties.getMaxTransactionAmount()).thenReturn(100.0);
 
             mocked.when(AMLSim::getRandom).thenReturn(new Random(1));
             mocked.when(AMLSim::getSimProp).thenReturn(
-                mockedProperties
-            );
+                    mockedProperties);
             mocked.when(AMLSim::getLogger).thenReturn(
-                Logger.getLogger("AMLSim")
-            );
+                    Logger.getLogger("AMLSim"));
             mockey.when(() -> ModelParameters.shouldAddEdge(any(), any())).thenReturn(true);
 
             Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
             Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random);
-            
+
             anAccount.addBeneAcct(beneAccount);
             anAccount.addTxType(beneAccount, "TRANSFER");
 
@@ -159,15 +142,15 @@ class AccountTests {
 
             SingleTransactionModel model = new SingleTransactionModel(accountGroup, this.random);
             model.setParameters(30, 1, 1);
-            
+
             accountGroup.setModel(
-               model
-            );
+                    model);
 
             anAccount.accountGroups.add(accountGroup);
-            
+
             anAccount.handleAction(amlSim);
-            mocked.verify(() -> AMLSim.handleTransaction(1L, "TRANSFER", 41.00808114922017d, anAccount, beneAccount, false, -1L), never());
+            mocked.verify(() -> AMLSim.handleTransaction(1L, "TRANSFER", 41.00808114922017d, anAccount, beneAccount,
+                    false, -1L, 1), never());
         }
     }
-}  
+}

@@ -7,7 +7,6 @@ import amlsim.AccountGroup;
 import amlsim.TargetedTransactionAmount;
 import amlsim.model.AbstractTransactionModel;
 
-
 /**
  * Send money to neighbors periodically
  */
@@ -18,16 +17,15 @@ public class PeriodicalTransactionModel extends AbstractTransactionModel {
     private Random random;
 
     public PeriodicalTransactionModel(
-        AccountGroup accountGroup,
-        Random random
-    ) {
+            AccountGroup accountGroup,
+            Random random) {
         this.accountGroup = accountGroup;
         this.random = random;
     }
 
-    public void setParameters(int interval, long start, long end){
+    public void setParameters(int interval, long start, long end) {
         super.setParameters(interval, start, end);
-        if(this.startStep < 0){  // decentralize the first transaction step
+        if (this.startStep < 0) { // decentralize the first transaction step
             this.startStep = generateStartStep(interval);
         }
     }
@@ -37,29 +35,31 @@ public class PeriodicalTransactionModel extends AbstractTransactionModel {
         return "Periodical";
     }
 
-    private boolean isValidStep(long step){
+    private boolean isValidStep(long step) {
         return (step - startStep) % interval == 0;
     }
 
     @Override
     public void sendTransactions(long step, Account account) {
-        if(!isValidStep(step) || account.getBeneList().isEmpty()){
+        if (!isValidStep(step) || account.getBeneList().isEmpty()) {
             return;
         }
         int numDests = account.getBeneList().size();
-        if(index >= numDests){
+        if (index >= numDests) {
             index = 0;
         }
 
-        int totalCount = getNumberOfTransactions();  // Total number of transactions
+        int totalCount = getNumberOfTransactions(); // Total number of transactions
         int eachCount = (numDests < totalCount) ? 1 : numDests / totalCount;
 
         boolean isSAR = account.isSAR();
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance() / eachCount, random, isSAR);
+        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance() / eachCount,
+                random, isSAR);
 
         for (int i = 0; i < eachCount; i++) {
             Account dest = account.getBeneList().get(index);
-            this.makeTransaction(step, transactionAmount.doubleValue(), account, dest);
+            this.makeTransaction(step, transactionAmount.doubleValue(), account, dest,
+                    AbstractTransactionModel.NORMAL_PERIODICAL);
             index++;
             if (index >= numDests)
                 break;

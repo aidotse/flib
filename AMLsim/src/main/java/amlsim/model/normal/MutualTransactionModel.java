@@ -14,16 +14,15 @@ public class MutualTransactionModel extends AbstractTransactionModel {
     private Random random;
 
     public MutualTransactionModel(
-        AccountGroup accountGroup,
-        Random random
-    ) {
+            AccountGroup accountGroup,
+            Random random) {
         this.accountGroup = accountGroup;
         this.random = random;
     }
 
-    public void setParameters(int interval, long start, long end){
+    public void setParameters(int interval, long start, long end) {
         super.setParameters(interval, start, end);
-        if(this.startStep < 0){  // decentralize the first transaction step
+        if (this.startStep < 0) { // decentralize the first transaction step
             this.startStep = generateStartStep(interval);
         }
     }
@@ -35,25 +34,28 @@ public class MutualTransactionModel extends AbstractTransactionModel {
 
     @Override
     public void sendTransactions(long step, Account account) {
-        if((step - this.startStep) % interval != 0)return;
+        if ((step - this.startStep) % interval != 0)
+            return;
 
         Account counterpart = account.getPrevOrig();
-        if(counterpart == null){
+        if (counterpart == null) {
             List<Account> origs = account.getOrigList();
-            if(origs.isEmpty()) {
+            if (origs.isEmpty()) {
                 return;
-            }else{
+            } else {
                 counterpart = origs.get(0);
             }
         }
 
         boolean isSAR = account.isSAR();
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, isSAR);
+        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
+                isSAR);
 
-        if(!account.getBeneList().contains(counterpart)) {
-            account.addBeneAcct(counterpart);    // Add a new destination
+        if (!account.getBeneList().contains(counterpart)) {
+            account.addBeneAcct(counterpart); // Add a new destination
         }
 
-        makeTransaction(step, transactionAmount.doubleValue(), account, counterpart);
+        makeTransaction(step, transactionAmount.doubleValue(), account, counterpart,
+                AbstractTransactionModel.NORMAL_MUTUAL);
     }
 }
