@@ -440,7 +440,7 @@ public class AMLSim extends SimState {
 			FileWriter writer = new FileWriter(new File(logFileName));
 			this.bufWriter = new BufferedWriter(writer);
 			this.bufWriter.write(
-					"step,type,amount,nameOrig,oldbalanceOrig,newbalanceOrig,nameDest,oldbalanceDest,newbalanceDest,isSAR,alertID,modelType\n");
+					"step,type,amount,nameOrig,bankOrig,phoneChangesOrig,oldbalanceOrig,newbalanceOrig,nameDest,bankDest,phoneChangesDest,oldbalanceDest,newbalanceDest,isSAR,alertID,modelType\n");
 			this.bufWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -516,18 +516,22 @@ public class AMLSim extends SimState {
 			boolean isSAR, long alertID, long modelType) {
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
+		String origBankID = orig.getBankID();
 		float origBefore = (float) orig.getBalance();
 		orig.withdraw(amt);
 		float origAfter = (float) orig.getBalance();
+		long origPhoneChanges = (long) orig.getNumberOfPhoneChanges();
 
 		// Increase the balance of the beneficiary account
 		String beneID = bene.getID();
+		String beneBankID = bene.getBankID();
 		float beneBefore = (float) bene.getBalance();
 		bene.deposit(amt);
 		float beneAfter = (float) bene.getBalance();
+		long benePhoneChanges = (long) bene.getNumberOfPhoneChanges();
 
-		txs.addTransaction(step, desc, amt, origID, beneID, origBefore, origAfter, beneBefore, beneAfter, isSAR,
-				alertID, modelType);
+		txs.addTransaction(step, desc, amt, origID, origBankID, beneID, beneBankID, origBefore, origAfter, beneBefore,
+				beneAfter, isSAR, alertID, modelType, origPhoneChanges, benePhoneChanges);
 		diameter.addEdge(origID, beneID);
 	}
 

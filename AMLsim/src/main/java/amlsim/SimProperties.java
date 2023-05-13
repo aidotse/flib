@@ -38,6 +38,10 @@ public class SimProperties {
     private double stdPhoneChangeFrequency;
     private double meanPhoneChangeFrequencySAR;
     private double stdPhoneChangeFrequencySAR;
+    private double meanBankChangeFrequency;
+    private double stdBankChangeFrequency;
+    private double meanBankChangeFrequencySAR;
+    private double stdBankChangeFrequencySAR;
 
     SimProperties(String jsonName) throws IOException {
         String jsonStr = loadTextFile(jsonName);
@@ -61,6 +65,11 @@ public class SimProperties {
         stdPhoneChangeFrequency = defaultProp.getDouble("std_phone_change_frequency");
         meanPhoneChangeFrequencySAR = defaultProp.getDouble("mean_phone_change_frequency_sar");
         stdPhoneChangeFrequencySAR = defaultProp.getDouble("std_phone_change_frequency_sar");
+
+        meanBankChangeFrequency = defaultProp.getDouble("mean_bank_change_frequency");
+        stdBankChangeFrequency = defaultProp.getDouble("std_bank_change_frequency");
+        meanBankChangeFrequencySAR = defaultProp.getDouble("mean_bank_change_frequency_sar");
+        stdBankChangeFrequencySAR = defaultProp.getDouble("std_bank_change_frequency_sar");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
@@ -151,6 +160,22 @@ public class SimProperties {
     }
 
     public double getStdPhoneChangeFrequencySAR() {
+        return stdPhoneChangeFrequencySAR;
+    }
+
+    public double getMeanBankChangeFrequency() {
+        return meanPhoneChangeFrequency;
+    }
+
+    public double getStdBankChangeFrequency() {
+        return stdPhoneChangeFrequency;
+    }
+
+    public double getMeanBankChangeFrequencySAR() {
+        return meanPhoneChangeFrequencySAR;
+    }
+
+    public double getStdBankChangeFrequencySAR() {
         return stdPhoneChangeFrequencySAR;
     }
 

@@ -24,6 +24,10 @@ public class TransactionRepository {
     private double[] amounts;
     private String[] origIDs;
     private String[] destIDs;
+    private String[] origBankIDs;
+    private String[] destBankIDs;
+    private long[] origPhoneChanges;
+    private long[] destPhoneChanges;
 
     private float[] origBefore;
     private float[] origAfter;
@@ -46,6 +50,8 @@ public class TransactionRepository {
         this.amounts = new double[size];
         this.origIDs = new String[size];
         this.destIDs = new String[size];
+        this.origBankIDs = new String[size];
+        this.destBankIDs = new String[size];
 
         this.origBefore = new float[size];
         this.origAfter = new float[size];
@@ -54,14 +60,17 @@ public class TransactionRepository {
         this.isSAR = new boolean[size];
         this.alertIDs = new long[size];
         this.modelType = new long[size];
+        this.origPhoneChanges = new long[size];
+        this.destPhoneChanges = new long[size];
     }
 
     void setLimit(int limit) {
         this.limit = limit;
     }
 
-    void addTransaction(long step, String desc, double amt, String origID, String destID, float origBefore,
-            float origAfter, float destBefore, float destAfter, boolean isSAR, long aid, long modelType) {
+    void addTransaction(long step, String desc, double amt, String origID, String origBankID, String destID,
+            String destBankID, float origBefore, float origAfter, float destBefore, float destAfter, boolean isSAR,
+            long aid, long modelType, long origPhoneChange, long destPhoneChange) {
         if (count >= limit) {
             if (count == limit) {
                 System.err.println("Warning: the number of output transactions has reached the limit: " + limit);
@@ -76,6 +85,8 @@ public class TransactionRepository {
         this.amounts[index] = amt;
         this.origIDs[index] = origID;
         this.destIDs[index] = destID;
+        this.origBankIDs[index] = origBankID;
+        this.destBankIDs[index] = destBankID;
         this.origBefore[index] = origBefore;
         this.origAfter[index] = origAfter;
         this.destBefore[index] = destBefore;
@@ -83,6 +94,8 @@ public class TransactionRepository {
         this.isSAR[index] = isSAR;
         this.alertIDs[index] = aid;
         this.modelType[index] = modelType;
+        this.origPhoneChanges[index] = origPhoneChange;
+        this.destPhoneChanges[index] = destPhoneChange;
 
         if (isSAR) {
             sarTxCounter.put(step, sarTxCounter.getOrDefault(step, 0) + 1);
@@ -126,12 +139,13 @@ public class TransactionRepository {
             BufferedWriter writer = new BufferedWriter(writer1);
 
             for (int i = 0; i < this.index; i++) {
-                writer.write(steps[i] + "," + descriptions[i] + "," + getDoublePrecision(amounts[i]) + "," +
-                        origIDs[i] + "," + getDoublePrecision(origBefore[i]) + "," + getDoublePrecision(origAfter[i])
-                        + "," +
-                        destIDs[i] + "," + getDoublePrecision(destBefore[i]) + "," + getDoublePrecision(destAfter[i])
-                        + "," +
-                        (isSAR[i] ? "1" : "0") + "," + alertIDs[i] + "," + modelType[i] + "\n");
+                writer.write(steps[i] + "," + descriptions[i] + "," + getDoublePrecision(amounts[i]) + "," + origIDs[i]
+                        + "," + origBankIDs[i] + "," + origPhoneChanges[i] + ","
+                        + getDoublePrecision(origBefore[i]) + "," + getDoublePrecision(origAfter[i]) + "," + destIDs[i]
+                        + "," + destBankIDs[i] + "," + destPhoneChanges[i] + "," + getDoublePrecision(destBefore[i])
+                        + ","
+                        + getDoublePrecision(destAfter[i])
+                        + "," + (isSAR[i] ? "1" : "0") + "," + alertIDs[i] + "," + modelType[i] + "\n");
             }
             writer.flush();
             writer.close();
