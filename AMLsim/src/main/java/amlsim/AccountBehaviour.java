@@ -110,6 +110,7 @@ public class AccountBehaviour {
             return newBank;
         } else {
             // If the bank is not changed, return the current bank
+            // test
             return currentBank;
         }
     }
