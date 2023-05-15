@@ -1,0 +1,7 @@
+name: test-for-banks2
+chanel:
+  - conda-forge
+dependencies:
+  - python==3.8
+  - numpy==1.24.3
+  - pytorch==1.13.1 
