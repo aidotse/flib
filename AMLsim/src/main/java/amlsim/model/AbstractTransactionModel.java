@@ -18,12 +18,12 @@ public abstract class AbstractTransactionModel {
     public static final String PERIODICAL = "periodical";
 
     // Transaction model ID of AML typologies
-    protected static final int NORMAL_SINGLE = 0;
-    protected static final int NORMAL_FAN_OUT = 1;
-    protected static final int NORMAL_FAN_IN = 2;
-    protected static final int NORMAL_FORWARD = 9;
-    protected static final int NORMAL_MUTUAL = 10;
-    protected static final int NORMAL_PERIODICAL = 11;
+    protected static final long NORMAL_SINGLE = 0;
+    protected static final long NORMAL_FAN_OUT = 1;
+    protected static final long NORMAL_FAN_IN = 2;
+    protected static final long NORMAL_FORWARD = 9;
+    protected static final long NORMAL_MUTUAL = 10;
+    protected static final long NORMAL_PERIODICAL = 11;
 
     // protected static Random rand = new Random(AMLSim.getSeed());
 

@@ -42,12 +42,8 @@ public class AccountBehaviour {
             this.meanBankChange = simProperties.getMeanBankChangeFrequency();
             this.stdBankChange = simProperties.getStdBankChangeFrequency();
         }
-        this.daysUntilPhoneChange = this.sampleDaysUntilNextPhoneChange();
 
-        // variables to
         this.random = new Random();
-        this.availableBanks = new ArrayList<>(AMLSim.getAvailableBanks());
-
     }
 
     public void updateParameters(Boolean isSAR) {
@@ -64,6 +60,8 @@ public class AccountBehaviour {
             this.meanBankChange = simProperties.getMeanBankChangeFrequency();
             this.stdBankChange = simProperties.getStdBankChangeFrequency();
         }
+        this.daysUntilPhoneChange = this.sampleDaysUntilNextPhoneChange();
+        this.daysUntilBankChange = sampleDaysUntilBankChange();
     }
 
     public void update() {
@@ -102,7 +100,13 @@ public class AccountBehaviour {
     public String getNewBank(String currentBank) {
         if (this.daysUntilBankChange == 0) {
             // If the bank is changed, return a new bank
-            String newBank = this.availableBanks.get(random.nextInt(this.availableBanks.size()));
+            List<String> bankList = new ArrayList<>();
+            for (String s : AMLSim.getAvailableBanks()) {
+                if (!s.equals(currentBank)) {
+                    bankList.add(s);
+                }
+            }
+            String newBank = bankList.get(random.nextInt(bankList.size()));
             return newBank;
         } else {
             // If the bank is not changed, return the current bank

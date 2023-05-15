@@ -164,19 +164,19 @@ public class SimProperties {
     }
 
     public double getMeanBankChangeFrequency() {
-        return meanPhoneChangeFrequency;
+        return meanBankChangeFrequency;
     }
 
     public double getStdBankChangeFrequency() {
-        return stdPhoneChangeFrequency;
+        return stdBankChangeFrequency;
     }
 
     public double getMeanBankChangeFrequencySAR() {
-        return meanPhoneChangeFrequencySAR;
+        return meanBankChangeFrequencySAR;
     }
 
     public double getStdBankChangeFrequencySAR() {
-        return stdPhoneChangeFrequencySAR;
+        return stdBankChangeFrequencySAR;
     }
 
     public double getMarginRatio() {

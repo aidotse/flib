@@ -88,7 +88,7 @@ public class Account implements Steppable {
 
 	void setSAR(boolean flag) {
 		this.isSAR = flag;
-		this.accountBehaviour.updateParameters(this.isSAR);
+		this.accountBehaviour.updateParameters(this.isSAR); // if account involved in a single SAR, set its behavior
 	}
 
 	public boolean isSAR() {
