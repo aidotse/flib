@@ -38,6 +38,7 @@ public class AMLSim extends SimState {
 	private Map<Long, AccountGroup> accountGroupsMap = new HashMap<>();
 	private int numBranches = 0;
 	private ArrayList<Branch> branches = new ArrayList<>();
+	private static Set<String> bankIDSet = new HashSet<>(); // all banks available in the simulation
 	private int normalTxInterval = 30; // Default transaction interval for normal accounts
 	// private int sarTxInterval = 10; // Default transaction interval for SAR
 	// accounts
@@ -100,6 +101,15 @@ public class AMLSim extends SimState {
 	 */
 	public static long getNumOfSteps() {
 		return numOfSteps;
+	}
+
+	/**
+	 * Get the number of simulation steps
+	 * 
+	 * @return Simulation steps as long
+	 */
+	public static Set<String> getAvailableBanks() {
+		return bankIDSet;
 	}
 
 	/**
@@ -246,6 +256,7 @@ public class AMLSim extends SimState {
 			boolean isSAR = elements[columnIndex.get("IS_SAR")].toLowerCase().equals("true");
 			float initBalance = Float.parseFloat(elements[columnIndex.get("INIT_BALANCE")]);
 			String bankID = elements[columnIndex.get("BANK_ID")];
+			AMLSim.bankIDSet.add(bankID); // add the bankID to a list banks available
 
 			Account account;
 			if (isSAR) {

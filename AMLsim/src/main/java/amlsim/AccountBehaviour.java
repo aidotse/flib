@@ -3,10 +3,13 @@ package amlsim;
 import amlsim.dists.TruncatedNormal;
 import amlsim.dists.TruncatedNormalQuick;
 
+import java.util.*;
+
 public class AccountBehaviour {
 
     private SimProperties simProperties;
     private Boolean isSAR;
+
     private int daysUntilPhoneChange;
     private int numberOfPhoneChanges = 0;
     private double meanPhoneChange = 0;
@@ -19,7 +22,10 @@ public class AccountBehaviour {
     static final double lb_phone = 1.0; // should be at least 1 day until change of phone
     static final double ub_phone = 365.0 * 10.0; // have to change phone within 10 years (3650 days)
     static final double lb_bank = 0.0;
-    static final double ub_bank = 365.0 * 10.0; // 10 years
+    static final double ub_bank = 365.0 * 10.0; // 30 years is the upper limit to change bank
+
+    private List<String> availableBanks;
+    private Random random;
 
     public AccountBehaviour(Boolean isSAR) {
         this.simProperties = AMLSim.getSimProp();
@@ -37,15 +43,26 @@ public class AccountBehaviour {
             this.stdBankChange = simProperties.getStdBankChangeFrequency();
         }
         this.daysUntilPhoneChange = this.sampleDaysUntilNextPhoneChange();
+
+        // variables to
+        this.random = new Random();
+        this.availableBanks = new ArrayList<>(AMLSim.getAvailableBanks());
+
     }
 
     public void updateParameters(Boolean isSAR) {
+        // This function is required since we may not know that the account is SAR or
+        // not at the beginning
         if (isSAR) {
             this.meanPhoneChange = simProperties.getMeanPhoneChangeFrequencySAR();
             this.stdPhoneChange = simProperties.getStdPhoneChangeFrequencySAR();
+            this.meanBankChange = simProperties.getMeanBankChangeFrequencySAR();
+            this.stdBankChange = simProperties.getStdBankChangeFrequencySAR();
         } else {
             this.meanPhoneChange = simProperties.getMeanPhoneChangeFrequency();
             this.stdPhoneChange = simProperties.getStdPhoneChangeFrequency();
+            this.meanBankChange = simProperties.getMeanBankChangeFrequency();
+            this.stdBankChange = simProperties.getStdBankChangeFrequency();
         }
     }
 
@@ -80,5 +97,16 @@ public class AccountBehaviour {
 
     public int getNumberOfPhoneChanges() {
         return this.numberOfPhoneChanges;
+    }
+
+    public String getNewBank(String currentBank) {
+        if (this.daysUntilBankChange == 0) {
+            // If the bank is changed, return a new bank
+            String newBank = this.availableBanks.get(random.nextInt(this.availableBanks.size()));
+            return newBank;
+        } else {
+            // If the bank is not changed, return the current bank
+            return currentBank;
+        }
     }
 }
