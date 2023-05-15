@@ -108,7 +108,7 @@ public class CycleTypology extends AMLTypology {
                 if (src.getBalance() < amount) {
                     amount = src.getBalance();
                 }
-                transactionAmount = new TargetedTransactionAmount(amount, random, isSAR);
+                transactionAmount = new TargetedTransactionAmount(amount, random, true);
                 makeTransaction(step, transactionAmount.doubleValue(), src, dst, isSAR, alertID, AMLTypology.CYCLE);
 
                 // Update the next transaction amount

@@ -37,10 +37,15 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
     @Override
     public void sendTransactions(long step, Account account) {
 
+<<<<<<< HEAD
         boolean isSAR = account.isSAR();
         TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
                 isSAR);
 
+=======
+        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, false);
+        
+>>>>>>> origin/edvin
         List<Account> dests = account.getBeneList();
         int numDests = dests.size();
         if (numDests == 0) {
