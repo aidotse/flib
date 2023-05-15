@@ -47,8 +47,7 @@ public class MutualTransactionModel extends AbstractTransactionModel {
             }
         }
 
-        boolean isSAR = account.isSAR();
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, isSAR);
+        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, false);
 
         if(!account.getBeneList().contains(counterpart)) {
             account.addBeneAcct(counterpart);    // Add a new destination

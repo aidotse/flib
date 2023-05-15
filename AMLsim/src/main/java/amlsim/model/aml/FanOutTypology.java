@@ -96,8 +96,8 @@ public class FanOutTypology extends AMLTypology {
     private TargetedTransactionAmount getTransactionAmount() {
         if (this.beneList.size() == 0)
         {
-            return new TargetedTransactionAmount(0, this.random, this.isSAR);
+            return new TargetedTransactionAmount(0, this.random, true);
         }
-        return new TargetedTransactionAmount(orig.getBalance() / this.beneList.size(), random, isSAR);
+        return new TargetedTransactionAmount(orig.getBalance() / this.beneList.size(), random, true);
     }
 }

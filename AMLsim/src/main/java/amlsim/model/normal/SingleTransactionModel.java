@@ -51,8 +51,7 @@ public class SingleTransactionModel extends AbstractTransactionModel {
             return;
         }
 
-        boolean isSAR = account.isSAR();
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, isSAR);
+        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, false);
 
         int index = this.random.nextInt(numBene);
         Account dest = beneList.get(index);
