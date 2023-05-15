@@ -28,6 +28,8 @@ public class TransactionRepository {
     private String[] destBankIDs;
     private long[] origPhoneChanges;
     private long[] destPhoneChanges;
+    private long[] origDaysInBank;
+    private long[] destDaysInBank;
 
     private float[] origBefore;
     private float[] origAfter;
@@ -62,6 +64,8 @@ public class TransactionRepository {
         this.modelType = new long[size];
         this.origPhoneChanges = new long[size];
         this.destPhoneChanges = new long[size];
+        this.origDaysInBank = new long[size];
+        this.destDaysInBank = new long[size];
     }
 
     void setLimit(int limit) {
@@ -70,7 +74,8 @@ public class TransactionRepository {
 
     void addTransaction(long step, String desc, double amt, String origID, String origBankID, String destID,
             String destBankID, float origBefore, float origAfter, float destBefore, float destAfter, boolean isSAR,
-            long aid, long modelType, long origPhoneChange, long destPhoneChange) {
+            long aid, long modelType, long origPhoneChange, long destPhoneChange, long origDaysInBank,
+            long destDaysInBank) {
         if (count >= limit) {
             if (count == limit) {
                 System.err.println("Warning: the number of output transactions has reached the limit: " + limit);
@@ -96,6 +101,8 @@ public class TransactionRepository {
         this.modelType[index] = modelType;
         this.origPhoneChanges[index] = origPhoneChange;
         this.destPhoneChanges[index] = destPhoneChange;
+        this.origDaysInBank[index] = origDaysInBank;
+        this.destDaysInBank[index] = destDaysInBank;
 
         if (isSAR) {
             sarTxCounter.put(step, sarTxCounter.getOrDefault(step, 0) + 1);
@@ -140,9 +147,10 @@ public class TransactionRepository {
 
             for (int i = 0; i < this.index; i++) {
                 writer.write(steps[i] + "," + descriptions[i] + "," + getDoublePrecision(amounts[i]) + "," + origIDs[i]
-                        + "," + origBankIDs[i] + "," + origPhoneChanges[i] + ","
+                        + "," + origBankIDs[i] + "," + origDaysInBank[i] + "," + origPhoneChanges[i] + ","
                         + getDoublePrecision(origBefore[i]) + "," + getDoublePrecision(origAfter[i]) + "," + destIDs[i]
-                        + "," + destBankIDs[i] + "," + destPhoneChanges[i] + "," + getDoublePrecision(destBefore[i])
+                        + "," + destBankIDs[i] + "," + destDaysInBank[i] + "," + destPhoneChanges[i] + ","
+                        + getDoublePrecision(destBefore[i])
                         + ","
                         + getDoublePrecision(destAfter[i])
                         + "," + (isSAR[i] ? "1" : "0") + "," + alertIDs[i] + "," + modelType[i] + "\n");

@@ -18,13 +18,13 @@ public class AccountBehaviour {
     private double meanBankChange = 0;
     private double stdBankChange = 0;
     private int daysUntilBankChange = 0;
+    private long daysInBank = 0;
 
     static final double lb_phone = 1.0; // should be at least 1 day until change of phone
     static final double ub_phone = 365.0 * 10.0; // have to change phone within 10 years (3650 days)
     static final double lb_bank = 0.0;
     static final double ub_bank = 365.0 * 10.0; // 30 years is the upper limit to change bank
 
-    private List<String> availableBanks;
     private Random random;
 
     public AccountBehaviour(Boolean isSAR) {
@@ -44,6 +44,8 @@ public class AccountBehaviour {
         }
 
         this.random = new Random();
+        this.daysUntilPhoneChange = this.sampleDaysUntilNextPhoneChange();
+        this.daysUntilBankChange = sampleDaysUntilBankChange();
     }
 
     public void updateParameters(Boolean isSAR) {
@@ -60,6 +62,7 @@ public class AccountBehaviour {
             this.meanBankChange = simProperties.getMeanBankChangeFrequency();
             this.stdBankChange = simProperties.getStdBankChangeFrequency();
         }
+        // resample the days
         this.daysUntilPhoneChange = this.sampleDaysUntilNextPhoneChange();
         this.daysUntilBankChange = sampleDaysUntilBankChange();
     }
@@ -69,10 +72,11 @@ public class AccountBehaviour {
         if (this.daysUntilBankChange == 0) {
             this.daysUntilBankChange = this.sampleDaysUntilBankChange();
             this.numberOfPhoneChanges = 0;
+            this.daysInBank = 0;
         } else {
             // if no bank change, just count down days until phone change
             this.daysUntilBankChange--;
-
+            this.daysInBank++;
             this.daysUntilPhoneChange--;
             if (this.daysUntilPhoneChange == 0) {
                 this.numberOfPhoneChanges++;
@@ -95,6 +99,10 @@ public class AccountBehaviour {
 
     public int getNumberOfPhoneChanges() {
         return this.numberOfPhoneChanges;
+    }
+
+    public long getDaysInBank() {
+        return this.daysInBank;
     }
 
     public String getNewBank(String currentBank) {

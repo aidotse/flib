@@ -52,13 +52,8 @@ public class PeriodicalTransactionModel extends AbstractTransactionModel {
         int totalCount = getNumberOfTransactions(); // Total number of transactions
         int eachCount = (numDests < totalCount) ? 1 : numDests / totalCount;
 
-<<<<<<< HEAD
-        boolean isSAR = account.isSAR();
         TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance() / eachCount,
-                random, isSAR);
-=======
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance() / eachCount, random, false);
->>>>>>> origin/edvin
+                random, false);
 
         for (int i = 0; i < eachCount; i++) {
             Account dest = account.getBeneList().get(index);

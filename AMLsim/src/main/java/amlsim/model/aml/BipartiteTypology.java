@@ -55,15 +55,8 @@ public class BipartiteTypology extends AMLTypology {
 
     private TargetedTransactionAmount getTransactionAmount(int numBene, double origBalance) {
         if (numBene == 0) {
-<<<<<<< HEAD
-            return new TargetedTransactionAmount(0, random, this.isSAR); // TODO: unsure if this.isSAR is correct
-        }
-        return new TargetedTransactionAmount(origBalance / numBene, random, this.isSAR); // TODO: unsure if this.isSAR
-                                                                                         // is correct
-=======
-            return new TargetedTransactionAmount(0, random, true); 
+            return new TargetedTransactionAmount(0, random, true);
         }
         return new TargetedTransactionAmount(origBalance / numBene, random, true);
->>>>>>> origin/edvin
     }
 }

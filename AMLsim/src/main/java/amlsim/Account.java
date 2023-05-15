@@ -220,6 +220,7 @@ public class Account implements Steppable {
 		long currentStep = state.schedule.getSteps(); // Current simulation step
 		long start = this.startStep >= 0 ? this.startStep : 0;
 		long end = this.endStep > 0 ? this.endStep : AMLSim.getNumOfSteps();
+
 		this.bankID = this.accountBehaviour.getNewBank(this.bankID);
 		this.accountBehaviour.update();
 		if (currentStep < start || end < currentStep) {
@@ -272,6 +273,10 @@ public class Account implements Steppable {
 
 	public String getID() {
 		return this.id;
+	}
+
+	public long getDaysInBank() {
+		return this.accountBehaviour.getDaysInBank();
 	}
 
 	/*
