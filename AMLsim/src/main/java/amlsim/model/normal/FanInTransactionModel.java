@@ -50,12 +50,9 @@ public class FanInTransactionModel extends AbstractTransactionModel {
         if (index >= numOrigs) {
             index = 0;
         }
-
         this.transactionAmount = new TargetedTransactionAmount(account.getBalance(), this.random, false);
         double amount = this.transactionAmount.doubleValue();
-
         Account bene = beneList.get(index);
-
         makeTransaction(step, amount, account, bene, AbstractTransactionModel.NORMAL_FAN_IN);
         index++;
     }
