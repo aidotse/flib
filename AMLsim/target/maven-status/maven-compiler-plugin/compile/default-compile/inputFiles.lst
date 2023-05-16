@@ -18,6 +18,7 @@
 /home/edvin/Desktop/flib/AMLsim/src/main/java/amlsim/dists/TruncatedNormalQuick.java
 /home/edvin/Desktop/flib/AMLsim/src/main/java/amlsim/model/cash/CashOutModel.java
 /home/edvin/Desktop/flib/AMLsim/src/main/java/amlsim/SimProperties.java
+/home/edvin/Desktop/flib/AMLsim/src/main/java/amlsim/AccountBehaviour.java
 /home/edvin/Desktop/flib/AMLsim/src/main/java/amlsim/model/normal/FanInTransactionModel.java
 /home/edvin/Desktop/flib/AMLsim/src/main/java/amlsim/stat/Diameter.java
 /home/edvin/Desktop/flib/AMLsim/src/main/java/amlsim/model/aml/CycleTypology.java
