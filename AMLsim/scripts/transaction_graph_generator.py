@@ -713,6 +713,7 @@ class TransactionGenerator:
             nm.remove_node_ids(candidates)
 
         result_ids = candidates | { node_id }
+        # TODO: smaple from candidates according to min max from csv
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
