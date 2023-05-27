@@ -1,5 +1,5 @@
-name: test-for-banks2
-chanel:
+name: test-for-banks
+channels:
   - conda-forge
 dependencies:
   - python==3.8
