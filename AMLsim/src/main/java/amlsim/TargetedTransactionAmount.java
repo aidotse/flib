@@ -25,100 +25,24 @@ public class TargetedTransactionAmount {
         this.target = target.doubleValue();
         this.isSAR = isSAR;
     }
-
+    
     public double doubleValue() {
-        // double minTransactionAmount = simProperties.getMinTransactionAmount();
-        // double maxTransactionAmount = simProperties.getMaxTransactionAmount();
-        // double min, max, result;
-        // if (this.target < maxTransactionAmount) {
-        //  max = this.target;
-        // }
-        // else {
-        //  max = maxTransactionAmount;
-        // }
-        // 
-        // if (this.target < minTransactionAmount) {
-        //  min = this.target;
-        // }
-        // else {
-        //  min = minTransactionAmount;
-        // }
-        // 
-        // if (max - min <= 0)
-        // {
-        //  result = this.target;
-        // }
-        // if (this.target - min <= 100)
-        // {
-        //  result = this.target;
-        // }
-        // else
-        // {
-        //  result =  min + random.nextDouble() * (max - min);
-        // }
-        
-        // double mean = simProperties.getMeanTransactionAmount();
-        // double std = simProperties.getStdTransactionAmount();
-        // double mu = mean * this.target;
-        // double sigma = std * this.target;
-        // double result = mu + sigma * random.nextGaussian();
-        // if (result >= this.target) {
-        //  result = this.target;
-        // }
-        // if (result <= 0) {
-        //  result = 0;
-        // }
-
-        // double mean, std, result;
-        // if (this.isSAR) {
-        //     mean = simProperties.getMeanTransactionAmountSAR();
-        //     std = simProperties.getStdTransactionAmountSAR();
-        // }
-        // else {
-        //     mean = simProperties.getMeanTransactionAmount();
-        //     std = simProperties.getStdTransactionAmount();
-        // }
-        // result = mean + std * random.nextGaussian();
-        // if (result >= this.target * 0.9) {
-        //     result = this.target * 0.9;
-        // }
-        // if (result <= 0.0) {
-        //     result = this.target * 0.1;
-        // }
-
-        // if (this.target == 0.0) {
-        //     return this.target;
-        // }
-        // double mean, std, result;
-        // if (this.isSAR) {
-        //     mean = simProperties.getMeanTransactionAmountSAR();
-        //     std = simProperties.getStdTransactionAmountSAR();
-        // }
-        // else {
-        //     mean = simProperties.getMeanTransactionAmount();
-        //     std = simProperties.getStdTransactionAmount();
-        // }
-        // RandomGenerator randomGenerator = new JDKRandomGenerator();
-        // NormalDistribution normalDistribution = new NormalDistribution(randomGenerator, mean, std);
-        // do {
-        //     result = normalDistribution.sample();
-        //     System.out.println("result: " + result);
-        // } while (result < this.target * 0.1 || result > this.target * 0.9);
-        
+        double mean, std, result, lb, ub;
+        lb = simProperties.getMinTransactionAmount();
+        ub = simProperties.getMaxTransactionAmount();
         if (this.target == 0.0) {
             return this.target;
         }
-        double mean, std, result;
         if (this.isSAR) {
             mean = simProperties.getMeanTransactionAmountSAR();
             std = simProperties.getStdTransactionAmountSAR();
+            lb = 500.0;
+            ub = 10000.0;
         }
         else {
             mean = simProperties.getMeanTransactionAmount();
             std = simProperties.getStdTransactionAmount();
         }
-        double lb = 10.0; //this.target * 0.1;
-        double ub = 5000.0; //this.target * 0.9;
         if (this.target < ub) {
             ub = this.target * 0.9;
         }
