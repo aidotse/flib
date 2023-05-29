@@ -1,9 +1,5 @@
 target
 outputs
 tmp
-<<<<<<< HEAD
-scripts/amlsim/__pycache__
-=======
 scripts/amlsim/__pycache__
 
->>>>>>> 5d86045 (Bug fixes on SAR + TNE stuff)
