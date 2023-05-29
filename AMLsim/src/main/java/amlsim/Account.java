@@ -240,8 +240,9 @@ public class Account implements Steppable {
 		}
 
 		for (AccountGroup accountGroup : this.accountGroups) {
+			Account account = accountGroup.getMainAccount();
 			if (this == accountGroup.getMainAccount()) {
-				accountGroup.registerTransactions(step, this);
+				accountGroup.registerTransactions(step, account);
 			}
 		}
 
