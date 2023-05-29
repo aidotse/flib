@@ -243,11 +243,18 @@ public class Account implements Steppable {
 			Account account = accountGroup.getMainAccount();
 			if (accountGroup.getModel().getModelName().equals("FanIn") && this != accountGroup.getMainAccount()) {
 				accountGroup.registerTransactions(step, this);
-			} else {
-				if (this == accountGroup.getMainAccount()) {
-					accountGroup.registerTransactions(step, account);
+			} else if (accountGroup.getModel().getModelName().equals("Mutual") && this == accountGroup.getMainAccount()) {
+				accountGroup.registerTransactions(step, account);
+				List<Account> members = accountGroup.getMembers();
+				for (Account member : members){
+					if (member != account){
+						accountGroup.setMainAccount(member);
+					}
 				}
+			} else if (this == accountGroup.getMainAccount()) {
+				accountGroup.registerTransactions(step, account);
 			}
+			
 		}
 
 		handleCashTransaction(amlsim);
@@ -270,6 +277,10 @@ public class Account implements Steppable {
 	 */
 	public Account getPrevOrig() {
 		return prevOrig;
+	}
+
+	public void setPrevOrig(Account account) {
+		this.prevOrig = account;
 	}
 
 	public String getName() {
