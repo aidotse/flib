@@ -80,7 +80,7 @@
     "diameter_log": "diameter.csv"
   },
   "graph_generator": {
-    "degree_threshold": 2,
+    "degree_threshold": 1,
     "high_risk_countries": "",
     "high_risk_business": ""
   },
