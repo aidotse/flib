@@ -1,8 +1,8 @@
 {
   "general": {
-    "random_seed": 0,
-    "simulation_name": "1K",
-    "total_steps": 365,
+    "random_seed": 111,
+    "simulation_name": "dataset1",
+    "total_steps": 50,
     "base_date": "2023-01-01"
   },
   "default": {
@@ -47,7 +47,7 @@
     }
   },
   "input": {
-    "directory": "paramFiles/1K",
+    "directory": "paramFiles/dataset1",
     "schema": "schema.json",
     "accounts": "accounts.csv",
     "alert_patterns": "alertPatterns.csv",
@@ -86,7 +86,7 @@
   },
   "simulator": {
     "compute_diameter": false,
-    "transaction_limit": 0,
+    "transaction_limit": 10000,
     "transaction_interval": 7,
     "sar_interval": 7,
     "sar_balance_ratio": 1.0,

@@ -476,7 +476,7 @@ public class AMLSim extends SimState {
 
 		// Create account objects
 		super.start();
-		this.initSimulation();
+		this.initSimulation(); // this is where
 
 		// Starting the simulation
 		long begin = System.currentTimeMillis();

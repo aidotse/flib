@@ -427,7 +427,7 @@ class Nominator:
         num_not = fan_in_or_not_list.count(False)
         num_fan_in = fan_in_or_not_list.count(True)
 
-        num_to_work_with = (num_fan_in % self.degree_threshold) + num_not
+        num_to_work_with = (num_fan_in % self.degree_threshold) + num_not #how many can be spared from current fan-in assignments and how many are not assigned fan-in
         return num_to_work_with < self.degree_threshold
         
 

@@ -233,15 +233,20 @@ public class Account implements Steppable {
 		AMLSim amlsim = (AMLSim) state;
 		long step = state.schedule.getSteps();
 
-		for (Alert alert : this.alerts) {
-			if (this == alert.getMainAccount()) {
+		for (Alert alert : this.alerts) { // go through the alert patterns the account is involved in
+			if (this == alert.getMainAccount()) { // Check if account is the main account of the alert
 				alert.registerTransactions(step, this);
 			}
 		}
 
 		for (AccountGroup accountGroup : this.accountGroups) {
-			if (this == accountGroup.getMainAccount()) {
+			Account account = accountGroup.getMainAccount();
+			if (accountGroup.getModel().getModelName().equals("FanIn") && this != accountGroup.getMainAccount()) {
 				accountGroup.registerTransactions(step, this);
+			} else {
+				if (this == accountGroup.getMainAccount()) {
+					accountGroup.registerTransactions(step, account);
+				}
 			}
 		}
 

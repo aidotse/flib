@@ -45,7 +45,7 @@ public class AccountBehaviour {
 
         this.random = new Random();
         this.daysUntilPhoneChange = this.sampleDaysUntilNextPhoneChange();
-        this.daysUntilBankChange = sampleDaysUntilBankChange();
+        this.daysUntilBankChange = this.sampleDaysUntilBankChange();
     }
 
     public void updateParameters(Boolean isSAR) {
@@ -113,6 +113,9 @@ public class AccountBehaviour {
                 if (!s.equals(currentBank)) {
                     bankList.add(s);
                 }
+            }
+            if (bankList.isEmpty()) {
+                return currentBank;
             }
             String newBank = bankList.get(random.nextInt(bankList.size()));
             return newBank;
