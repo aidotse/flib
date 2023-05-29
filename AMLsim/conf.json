@@ -1,7 +1,7 @@
 {
   "general": {
     "random_seed": 111,
-    "simulation_name": "dataset1",
+    "simulation_name": "mutual",
     "total_steps": 50,
     "base_date": "2023-01-01"
   },
@@ -47,7 +47,7 @@
     }
   },
   "input": {
-    "directory": "paramFiles/dataset1",
+    "directory": "paramFiles/mutual",
     "schema": "schema.json",
     "accounts": "accounts.csv",
     "alert_patterns": "alertPatterns.csv",
