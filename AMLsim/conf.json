@@ -1,6 +1,6 @@
 {
   "general": {
-    "random_seed": 111,
+    "random_seed": 123456,
     "simulation_name": "mutual",
     "total_steps": 50,
     "base_date": "2023-01-01"
