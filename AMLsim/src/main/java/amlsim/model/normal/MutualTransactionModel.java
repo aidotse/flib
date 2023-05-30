@@ -37,24 +37,36 @@ public class MutualTransactionModel extends AbstractTransactionModel {
         if ((step - this.startStep) % interval != 0)
             return;
 
-        Account counterpart = account.getPrevOrig();
-        if (counterpart == null) {
+        Account debtor = account.getDebtor();
+        double debt = account.getDebt();
+        if (debtor != null && debt > 0) { // Return money from debtor to main account
+            if (debt > debtor.getBalance()) { // Return part of the debt
+                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(debtor.getBalance(), random, false);
+                double amount = transactionAmount.doubleValue();
+                makeTransaction(step, amount, debtor, account, AbstractTransactionModel.NORMAL_MUTUAL);
+                account.setDebtor(debtor);
+                account.setDebt(debt - amount);
+            } else { // Return all the debt
+                makeTransaction(step, debt, debtor, account, AbstractTransactionModel.NORMAL_MUTUAL);
+                account.setDebtor(null);
+                account.setDebt(0);
+            }
+        } else { // Lend money to a random neighbour
             List<Account> origs = account.getOrigList();
             if (origs.isEmpty()) {
                 return;
             } else {
-                counterpart = origs.get(0);
+                int i = random.nextInt(origs.size());
+                debtor = origs.get(i);
             }
+            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, false);
+            if (!account.getBeneList().contains(debtor)) { // TODO: this effects the structure of the graph, fix? This function exist cuz the python code only creates mutal models with two accounts, in more complex networks this if is needed 
+                account.addBeneAcct(debtor); // Add a new destination
+            }
+            debt = transactionAmount.doubleValue();
+            makeTransaction(step, debt, account, debtor, AbstractTransactionModel.NORMAL_MUTUAL);
+            account.setDebtor(debtor);
+            account.setDebt(debt);
         }
-
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
-                false);
-
-        if (!account.getBeneList().contains(counterpart)) {
-            account.addBeneAcct(counterpart); // Add a new destination
-        }
-
-        makeTransaction(step, transactionAmount.doubleValue(), account, counterpart,
-                AbstractTransactionModel.NORMAL_MUTUAL);
     }
 }

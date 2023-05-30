@@ -25,6 +25,8 @@ public class Account implements Steppable {
 	private String bankID = ""; // Bank ID
 
 	private Account prevOrig = null; // Previous originator account
+	private Account debtor = null; // Previous beneficiary account
+	private double debt = 0; // Amount of money owed to the previous beneficiary account
 
 	List<Alert> alerts = new ArrayList<>();
 	List<AccountGroup> accountGroups = new ArrayList<>();
@@ -243,14 +245,6 @@ public class Account implements Steppable {
 			Account account = accountGroup.getMainAccount();
 			if (accountGroup.getModel().getModelName().equals("FanIn") && this != accountGroup.getMainAccount()) {
 				accountGroup.registerTransactions(step, this);
-			} else if (accountGroup.getModel().getModelName().equals("Mutual") && this == accountGroup.getMainAccount()) {
-				accountGroup.registerTransactions(step, account);
-				List<Account> members = accountGroup.getMembers();
-				for (Account member : members){
-					if (member != account){
-						accountGroup.setMainAccount(member);
-					}
-				}
 			} else if (this == accountGroup.getMainAccount()) {
 				accountGroup.registerTransactions(step, account);
 			}
@@ -275,12 +269,24 @@ public class Account implements Steppable {
 	 * 
 	 * @return Previous originat or account objects
 	 */
-	public Account getPrevOrig() {
+	public Account getPrevOrig() { // TODO: This method is not used? Remove?
 		return prevOrig;
 	}
 
-	public void setPrevOrig(Account account) {
-		this.prevOrig = account;
+	public Account getDebtor() {
+		return debtor;
+	}
+
+	public void setDebtor(Account account) {
+		debtor = account;
+	}
+
+	public double getDebt() {
+		return debt;
+	}
+
+	public void setDebt(double amount) {
+		debt = amount;
 	}
 
 	public String getName() {
