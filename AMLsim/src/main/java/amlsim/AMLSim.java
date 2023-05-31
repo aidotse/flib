@@ -312,12 +312,13 @@ public class AMLSim extends SimState {
 				String accountID = elements[columnIndexMap.get("accountID")];
 				long accountGroupId = Long.parseLong(elements[columnIndexMap.get("modelID")]);
 				boolean isMain = elements[columnIndexMap.get("isMain")].toLowerCase().equals("true");
+				int scheduleID = Integer.parseInt(elements[columnIndexMap.get("scheduleID")]);
 
 				AccountGroup accountGroup;
 				if (this.accountGroupsMap.containsKey(accountGroupId)) {
 					accountGroup = this.accountGroupsMap.get(accountGroupId);
 				} else {
-					accountGroup = new AccountGroup(accountGroupId, this);
+					accountGroup = new AccountGroup(accountGroupId, scheduleID, this);
 					accountGroupsMap.put(accountGroupId, accountGroup);
 				}
 
@@ -356,10 +357,14 @@ public class AMLSim extends SimState {
 						model = new EmptyModel(accountGroup, rand);
 						break;
 				}
-
 				accountGroup.setModel(model);
+			}
 
-				model.setParameters(this.normalTxInterval, -1, -1);
+			// Here, we would preferrably set the start, end, interval of the models
+			for (AccountGroup accountGroup : accountGroupsMap.values()) {
+				int startStep = 0;
+				int endStep = (int) AMLSim.numOfSteps;
+				accountGroup.getModel().setParameters(this.normalTxInterval, startStep, endStep);
 			}
 		}
 	}

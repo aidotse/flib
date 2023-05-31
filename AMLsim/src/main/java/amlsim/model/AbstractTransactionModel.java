@@ -25,6 +25,12 @@ public abstract class AbstractTransactionModel {
     protected static final long NORMAL_MUTUAL = 10;
     protected static final long NORMAL_PERIODICAL = 11;
 
+    // Transaction scheduling ID
+    public static final int FIXED_INTERVAL = 0; // All accounts send money in order with the same interval
+    public static final int RANDOM_INTERVAL = 1; // All accounts send money in order with random intervals
+    public static final int UNORDERED = 2; // All accounts send money randomly
+    public static final int SIMULTANEOUS = 3; // All transactions are performed at single step simultaneously
+
     // protected static Random rand = new Random(AMLSim.getSeed());
 
     protected AccountGroup accountGroup; // Account group object

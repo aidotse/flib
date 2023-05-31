@@ -40,6 +40,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
 
     final double marginRatio = AMLSim.getSimProp().getMarginRatio(); // Each member holds this ratio of the received
                                                                      // amount
+                                                                     // amount
 
     /**
      * Create an AML typology object (alert transaction model)

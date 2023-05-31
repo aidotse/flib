@@ -1,7 +1,12 @@
 {
   "general": {
+<<<<<<< HEAD
     "random_seed": 0,
     "simulation_name": "periodical",
+=======
+    "random_seed": 4,
+    "simulation_name": "dataset1",
+>>>>>>> 3ad649b (added schedule ID to forward)
     "total_steps": 50,
     "base_date": "2023-01-01"
   },

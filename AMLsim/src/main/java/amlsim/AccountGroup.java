@@ -5,20 +5,21 @@ import amlsim.model.AbstractTransactionModel;
 import java.util.*;
 
 public class AccountGroup {
-    
-    private long accountGroupId;
-    private List<Account> members;  // Accounts involved in this alert
-    private Account mainAccount;   // Main account of this alert
-    private AbstractTransactionModel model;    // Transaction model
-    private AMLSim amlsim;  // AMLSim main object
 
-    AccountGroup(long accountGroupId, AMLSim sim) {
+    private long accountGroupId;
+    private int scheduleID;
+    private List<Account> members; // Accounts involved in this alert
+    private Account mainAccount; // Main account of this alert
+    private AbstractTransactionModel model; // Transaction model
+    private AMLSim amlsim; // AMLSim main object
+
+    AccountGroup(long accountGroupId, int scheduleID, AMLSim sim) {
         this.accountGroupId = accountGroupId;
+        this.scheduleID = scheduleID;
         this.members = new ArrayList<>();
         this.mainAccount = null;
         this.amlsim = sim;
     }
-
 
     void setModel(AbstractTransactionModel model) {
         this.model = model;
@@ -45,41 +46,50 @@ public class AccountGroup {
 
     /**
      * Get main AMLSim object
+     * 
      * @return AMLSim object
      */
-    public AMLSim getSimulator(){
+    public AMLSim getSimulator() {
         return amlsim;
+    }
+
+    public int getScheduleID() {
+        return this.scheduleID;
     }
 
     /**
      * Get account group identifier as long type
+     * 
      * @return Account group identifier
      */
-    public long getAccoutGroupId(){
+    public long getAccoutGroupId() {
         return this.accountGroupId;
     }
 
     /**
      * Get member list of the alert
+     * 
      * @return Alert account list
      */
-    public List<Account> getMembers(){
+    public List<Account> getMembers() {
         return members;
     }
 
     /**
      * Get the main account
+     * 
      * @return The main account if exists.
      */
-    public Account getMainAccount(){
+    public Account getMainAccount() {
         return mainAccount;
     }
 
     /**
      * Set the main account
+     * 
      * @param account Main account object
      */
-    void setMainAccount(Account account){
+    public void setMainAccount(Account account) {
         this.mainAccount = account;
     }
 

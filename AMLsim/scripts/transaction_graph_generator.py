@@ -635,7 +635,7 @@ class TransactionGenerator:
             if bank_id is None:
                 bank_id = self.default_bank_id
 
-            self.nominator.initialize_count(type, count)
+            self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period, bank_id)
 
 
     def build_normal_models(self):
@@ -737,7 +737,7 @@ class TransactionGenerator:
         set = next(
             set for set in sets if not self.nominator.is_in_type_relationship(type, node_id, set)
         )
-        normal_model = NormalModel(self.normal_model_id, type, list(set), node_id)
+        normal_model = NormalModel(self.normal_model_id, type, list(set), pred_ids[0])
         for id in set:
             self.g.node[id]['normal_models'].append(normal_model)
 
