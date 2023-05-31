@@ -1,12 +1,7 @@
 {
   "general": {
-<<<<<<< HEAD
-    "random_seed": 0,
-    "simulation_name": "periodical",
-=======
     "random_seed": 4,
     "simulation_name": "dataset1",
->>>>>>> 3ad649b (added schedule ID to forward)
     "total_steps": 50,
     "base_date": "2023-01-01"
   },
@@ -52,7 +47,7 @@
     }
   },
   "input": {
-    "directory": "paramFiles/periodical",
+    "directory": "paramFiles/dataset1",
     "schema": "schema.json",
     "accounts": "accounts.csv",
     "alert_patterns": "alertPatterns.csv",

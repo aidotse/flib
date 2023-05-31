@@ -14,6 +14,9 @@ class NormalModel:
         self.type = type
         self.node_ids = node_ids or set()
         self.main_id = main_id
+        self.schedule_id = -1
+        self.start_step = -1
+        self.end_step = -1
 
 
     def add_account(self, id):
@@ -23,6 +26,18 @@ class NormalModel:
             id (int): The id of the account to add.
         """        
         self.node_ids.add(id)
+    
+    def set_params(self, schedule_id, start_step, end_step):
+        """Sets the parameters of the model.
+
+        Args:
+            schedule_id (int): The schedule id of the model.
+            start_step (int): The start step of the model.
+            end_step (int): The end step of the model.
+        """        
+        self.schedule_id = schedule_id
+        self.start_step = start_step
+        self.end_step = end_step
 
 
     def is_main(self, node_id):

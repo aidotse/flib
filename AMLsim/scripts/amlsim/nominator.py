@@ -8,6 +8,7 @@ class Nominator:
         self.degree_threshold = degree_threshold
         self.remaining_count_dict = dict()
         self.used_count_dict = dict()
+        self.model_params_dict = dict()
         self.fan_in_candidates = self.get_fan_in_candidates()
         self.fan_out_candidates = self.get_fan_out_candidates()
         self.alt_fan_in_candidates = []
@@ -30,7 +31,7 @@ class Nominator:
         self.periodical_index = 0
 
 
-    def initialize_count(self, type, count):
+    def initialize_count(self, type, count, schedule_id, min_accounts, max_accounts, min_period, max_period):
         """Counts the number of nodes of a given type.
 
         Args:
@@ -39,10 +40,14 @@ class Nominator:
         """        
         if type in self.remaining_count_dict:
             self.remaining_count_dict[type] += count
+            param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
+            self.model_params_dict[type] = param_list.append(param_list)
         else:
             self.remaining_count_dict[type] = count
+            param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
+            self.model_params_dict[type] = param_list
         self.used_count_dict[type] = 0
-
+        
 
     def get_fan_in_candidates(self):
         """Returns a list of node ids that have at least degree_threshold incoming edges.

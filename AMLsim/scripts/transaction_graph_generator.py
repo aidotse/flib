@@ -635,7 +635,7 @@ class TransactionGenerator:
             if bank_id is None:
                 bank_id = self.default_bank_id
 
-            self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period, bank_id)
+            self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period)
 
 
     def build_normal_models(self):
@@ -683,6 +683,8 @@ class TransactionGenerator:
             raise ValueError('should always be candidates')
 
         normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_in_index]
+        normal_model.set_params(schedule_id, start_step, end_step)
         for nm in normal_models:
             nm.remove_node_ids(candidates)
             
@@ -709,6 +711,8 @@ class TransactionGenerator:
             raise ValueError('should always be candidates')
 
         normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_out_index]
+        normal_model.set_params(schedule_id, start_step, end_step)
         for nm in normal_models:
             nm.remove_node_ids(candidates)
 
@@ -724,7 +728,7 @@ class TransactionGenerator:
 
     def forward_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
-
+        
         if node_id is None:
             return
 
@@ -738,6 +742,10 @@ class TransactionGenerator:
             set for set in sets if not self.nominator.is_in_type_relationship(type, node_id, set)
         )
         normal_model = NormalModel(self.normal_model_id, type, list(set), pred_ids[0])
+        
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.forward_index]
+        normal_model.set_params(schedule_id, start_step, end_step)
+        
         for id in set:
             self.g.node[id]['normal_models'].append(normal_model)
 
@@ -758,6 +766,8 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id) # create a normal model with the node_id and the connected account
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.single_index]
+        normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model) # add the normal model to the nodes
 
@@ -777,6 +787,8 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.periodical_index]
+        normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
@@ -796,6 +808,8 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.mutual_index]
+        normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
@@ -1306,12 +1320,16 @@ class TransactionGenerator:
         output_file = os.path.join(self.output_dir, self.out_normal_models_file)
         with open(output_file, "w") as wf:
             writer = csv.writer(wf)
-            column_headers = ["modelID", "type", "accountID", "isMain", "isSAR", "scheduleID"]
+            column_headers = ["modelID", "type", "accountID", "isMain", "isSAR", "scheduleID", "startStep", "endStep"]
             writer.writerow(column_headers)
             
             for normal_model in self.normal_models: # go over the normal models
                 for account_id in normal_model.node_ids: # go over the accounts in the normal model
-                    values = [normal_model.id, normal_model.type, account_id, normal_model.is_main(account_id), False, 2] # TODO: check if the scheduleID should be 2
+                    schedule_id = normal_model.schedule_id
+                    start_step = normal_model.start_step
+                    end_step = normal_model.end_step
+                    is_main = normal_model.is_main(account_id)
+                    values = [normal_model.id, normal_model.type, account_id, is_main, False, schedule_id, start_step, end_step] # TODO: check if the scheduleID should be 2
                     writer.writerow(values)
 
 
