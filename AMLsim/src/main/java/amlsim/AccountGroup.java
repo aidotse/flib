@@ -23,9 +23,10 @@ public class AccountGroup {
         assert interval > 0 : "interval must be positive";
 
         if (startStep >= 0 && startStep < AMLSim.getNumOfSteps()) {
-            this.startStep = startStep;
+            int range = (int) (endStep - startStep + 1);
+            this.startStep = AMLSim.getRandom().nextInt(range) + startStep;
         } else {
-            this.startStep = 0;
+            this.startStep = AMLSim.getRandom().nextInt((int) AMLSim.getNumOfSteps() - 1);
         }
 
         if (endStep >= 0 && endStep < AMLSim.getNumOfSteps()) {

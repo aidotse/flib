@@ -18,6 +18,9 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
     private int scheduleID = -1;
     private int interval = -1;
 
+    private TargetedTransactionAmount targedTransactionAmount = null;
+    private double amount = -1;
+
     private Random random;
 
     private long[] steps;
@@ -105,8 +108,11 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
     @Override
     public void sendTransactions(long step, Account account) {
 
-        TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
-                false);
+        if (this.targedTransactionAmount == null) {
+            this.targedTransactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
+                    false);
+            amount = this.targedTransactionAmount.doubleValue();
+        }
 
         // get the next destination account by looking at the intersection between
         // beneficiary list and account group members
@@ -124,7 +130,10 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
         // make transactions if step is correct
         if (steps[index] == step) {
             Account dest = destsSet.iterator().next(); // it is unlikely that this set is larger than 1
-            this.makeTransaction(step, transactionAmount.doubleValue(), account, dest,
+            if (account.getBalance() < amount) {
+                amount = 0.9 * account.getBalance();
+            }
+            this.makeTransaction(step, amount, account, dest,
                     AbstractTransactionModel.NORMAL_FORWARD);
             this.accountGroup.setMainAccount(dest); // set the main account to be the destination
             index = (index + 1) % 2; // get index of next time for action
