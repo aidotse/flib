@@ -684,12 +684,12 @@ class TransactionGenerator:
 
         normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_in_index]
-        normal_model.set_params(schedule_id, start_step, end_step)
         for nm in normal_models:
             nm.remove_node_ids(candidates)
             
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
+        normal_model.set_params(schedule_id, start_step, end_step)
 
         for result_id in result_ids:
             self.g.node[result_id]['normal_models'].append(normal_model)
@@ -712,12 +712,12 @@ class TransactionGenerator:
 
         normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_out_index]
-        normal_model.set_params(schedule_id, start_step, end_step)
         for nm in normal_models:
             nm.remove_node_ids(candidates)
 
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
+        normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
