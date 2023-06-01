@@ -37,6 +37,7 @@ public abstract class AbstractTransactionModel {
     protected int interval = 1; // Default transaction interval
     protected long startStep = -1; // The first step of transactions
     protected long endStep = -1; // The end step of transactions
+    protected int scheduleID = -1; // Scheduling ID
     protected boolean isSAR = false;
 
     /**
@@ -84,9 +85,14 @@ public abstract class AbstractTransactionModel {
      * @param range Simulation step range
      * @return random int value [0, range-1]
      */
-    protected static int generateStartStep(int range) {
+    protected static int generateFromInterval(int range) {
         // return rand.nextInt(range);
         return AMLSim.getRandom().nextInt(range);
+    }
+
+    protected static int generateFromInterval(int range, int lowerBound) {
+        // return rand.nextInt(range);
+        return AMLSim.getRandom().nextInt(range) + lowerBound;
     }
 
     /**
@@ -99,9 +105,13 @@ public abstract class AbstractTransactionModel {
      * @param end      End simulation step (It never makes any transactions after
      *                 this step)
      */
-    public void setParameters(int interval, long start, long end) {
+    public void setParameters(long start, long end, int interval) {
         this.interval = interval;
         setParameters(start, end);
+    }
+
+    public void setParameters() {
+        return;
     }
 
     /**

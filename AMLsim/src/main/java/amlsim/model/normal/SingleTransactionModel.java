@@ -32,8 +32,8 @@ public class SingleTransactionModel extends AbstractTransactionModel {
         return "Single";
     }
 
-    public void setParameters(int interval, long start, long end) {
-        super.setParameters(interval, start, end);
+    public void setParameters(long start, long end, int interval) {
+        super.setParameters(start, end, interval);
         if (this.startStep < 0) { // Unlimited start step
             this.startStep = 0;
         }

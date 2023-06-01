@@ -37,7 +37,7 @@ public class CycleTypology extends AMLTypology {
 
         int allStep = (int) AMLSim.getNumOfSteps();
         int period = (int) (endStep - startStep);
-        this.startStep = generateStartStep(allStep - period); // decentralize the first transaction step
+        this.startStep = generateFromInterval(allStep - period); // decentralize the first transaction step
         this.endStep = Math.min(this.startStep + period, allStep);
 
         if (modelID == FIXED_INTERVAL) { // Ordered, same interval

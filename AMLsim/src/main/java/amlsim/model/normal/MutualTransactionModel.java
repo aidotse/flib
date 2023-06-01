@@ -20,10 +20,10 @@ public class MutualTransactionModel extends AbstractTransactionModel {
         this.random = random;
     }
 
-    public void setParameters(int interval, long start, long end) {
-        super.setParameters(interval, start, end);
+    public void setParameters(long start, long end, int interval) {
+        super.setParameters(start, end, interval);
         if (this.startStep < 0) { // decentralize the first transaction step
-            this.startStep = generateStartStep(interval);
+            this.startStep = generateFromInterval(interval);
         }
     }
 
@@ -41,7 +41,8 @@ public class MutualTransactionModel extends AbstractTransactionModel {
         double debt = account.getDebt();
         if (debtor != null && debt > 0) { // Return money from debtor to main account
             if (debt > debtor.getBalance()) { // Return part of the debt
-                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(debtor.getBalance(), random, false);
+                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(debtor.getBalance(), random,
+                        false);
                 double amount = transactionAmount.doubleValue();
                 makeTransaction(step, amount, debtor, account, AbstractTransactionModel.NORMAL_MUTUAL);
                 account.setDebtor(debtor);
@@ -59,8 +60,12 @@ public class MutualTransactionModel extends AbstractTransactionModel {
                 int i = random.nextInt(origs.size());
                 debtor = origs.get(i);
             }
-            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random, false);
-            if (!account.getBeneList().contains(debtor)) { // TODO: this effects the structure of the graph, fix? This function exist cuz the python code only creates mutal models with two accounts, in more complex networks this if is needed 
+            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
+                    false);
+            if (!account.getBeneList().contains(debtor)) { // TODO: this effects the structure of the graph, fix? This
+                                                           // function exist cuz the python code only creates mutal
+                                                           // models with two accounts, in more complex networks this if
+                                                           // is needed
                 account.addBeneAcct(debtor); // Add a new destination
             }
             debt = transactionAmount.doubleValue();

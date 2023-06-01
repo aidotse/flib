@@ -24,10 +24,10 @@ public class FanInTransactionModel extends AbstractTransactionModel {
         this.random = random;
     }
 
-    public void setParameters(int interval, long start, long end) {
-        super.setParameters(interval, start, end);
+    public void setParameters(long start, long end, int interval) {
+        super.setParameters(start, end, interval);
         if (this.startStep < 0) { // decentralize the first transaction step
-            this.startStep = generateStartStep(interval);
+            this.startStep = generateFromInterval(interval);
         }
     }
 

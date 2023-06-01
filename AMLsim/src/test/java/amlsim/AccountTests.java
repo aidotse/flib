@@ -95,13 +95,13 @@ class AccountTests {
                         anAccount.addBeneAcct(beneAccount);
                         anAccount.addTxType(beneAccount, "TRANSFER");
 
-                        AccountGroup accountGroup = new AccountGroup(1, 2, this.amlSim);
+                        AccountGroup accountGroup = new AccountGroup(1, 1, 2, 2, 2, this.amlSim);
                         accountGroup.addMember(anAccount);
                         accountGroup.addMember(beneAccount);
                         accountGroup.setMainAccount(anAccount);
 
                         SingleTransactionModel model = new SingleTransactionModel(accountGroup, this.random);
-                        model.setParameters(30, 1, 1);
+                        model.setParameters(1, 1, 30);
 
                         accountGroup.setModel(
                                         model);
@@ -138,13 +138,13 @@ class AccountTests {
                         anAccount.addBeneAcct(beneAccount);
                         anAccount.addTxType(beneAccount, "TRANSFER");
 
-                        AccountGroup accountGroup = new AccountGroup(1, 2, this.amlSim);
+                        AccountGroup accountGroup = new AccountGroup(1, 1, 2, 2, 2, this.amlSim);
                         accountGroup.addMember(anAccount);
                         accountGroup.addMember(beneAccount);
                         accountGroup.setMainAccount(beneAccount);
 
                         SingleTransactionModel model = new SingleTransactionModel(accountGroup, this.random);
-                        model.setParameters(30, 1, 1);
+                        model.setParameters(1, 1, 30);
 
                         accountGroup.setModel(
                                         model);

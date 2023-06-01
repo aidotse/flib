@@ -13,6 +13,10 @@ import java.util.*;
 public class ForwardTransactionModel extends AbstractTransactionModel {
     private int index = 0;
     private String initialMainAccountID;
+    private long startStep = -1;
+    private long endStep = -1;
+    private int scheduleID = -1;
+    private int interval = -1;
 
     private Random random;
 
@@ -22,44 +26,63 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
             AccountGroup accountGroup,
             Random random) {
         this.accountGroup = accountGroup;
+
+        this.startStep = accountGroup.getStartStep();
+        this.endStep = accountGroup.getEndStep();
+        this.scheduleID = accountGroup.getScheduleID();
+        this.interval = accountGroup.getInterval();
+
         this.random = random;
     }
 
-    public void setParameters(int interval, long start, long end) {
+    public void setParameters() {
         this.initialMainAccountID = accountGroup.getMainAccount().getID();
-        super.setParameters(interval, start, end);
 
         // this will cause the forward transactions to start in [0, interval]
         if (this.startStep < 0) { // decentralize the first transaction step
-            this.startStep = generateStartStep(interval);
+            this.startStep = generateFromInterval(interval);
         }
-        int schedulingID = this.accountGroup.getScheduleID();
 
         // Set members
         List<Account> members = accountGroup.getMembers(); // get all members in accountgroup
         Account mainAccount = accountGroup.getMainAccount(); // get main account
         mainAccount = mainAccount != null ? mainAccount : members.get(0); // get main account (if not set, pick the
                                                                           // first member)
-
         // Set transaction schedule
         steps = new long[2]; // keep track of when the two first members should perform an action
-
-        int range = (int) (end - start + 1);// get the range of steps
+        int range = (int) (this.endStep - this.startStep + 1);// get the range of steps
 
         // if simultaneous or model is only alive for one step, make them consecutive
-        if (schedulingID == SIMULTANEOUS || range < 2) {
-            long step = generateStartStep(range) + start; // generate a step in [start, end] randomly
-            steps[0] = step;
-            steps[1] = step + 1;
-        } else if (schedulingID == FIXED_INTERVAL) { // if fixed interval, set steps to be evenly spaced
-            for (int i = 0; i < 2; i++) {
-                steps[i] = startStep + interval * i;
-            }
-        } else if (schedulingID == RANDOM_INTERVAL || schedulingID == UNORDERED) { // if unordered, set steps random
-            for (int i = 0; i < 2; i++) {
-                steps[i] = generateStartStep(range) + start;
-            }
-            Arrays.sort(steps); // make sure the steps are in order
+        switch (this.scheduleID) {
+            case SIMULTANEOUS:
+                long step = generateFromInterval(range, (int) this.startStep); // generate a step in [start, end]
+                steps[0] = step;
+                steps[1] = step + 1;
+                break;
+            case FIXED_INTERVAL:
+                if (interval > range) {
+                    interval = range;
+                }
+                for (int i = 0; i < 2; i++) {
+                    steps[i] = startStep + interval * i;
+                }
+                break;
+            case RANDOM_INTERVAL:
+                int random_interval = generateFromInterval(range);
+                for (int i = 0; i < 2; i++) {
+                    steps[i] = startStep + random_interval * i;
+                }
+                break;
+            case UNORDERED:
+                for (int i = 0; i < 2; i++) {
+                    steps[i] = generateFromInterval(range, (int) this.startStep);
+                }
+                Arrays.sort(steps); // make sure the steps are in order
+                break;
+            default:
+                steps[0] = this.startStep;
+                steps[1] = this.startStep + 1;
+                break;
         }
     }
 
@@ -104,7 +127,7 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
             this.makeTransaction(step, transactionAmount.doubleValue(), account, dest,
                     AbstractTransactionModel.NORMAL_FORWARD);
             this.accountGroup.setMainAccount(dest); // set the main account to be the destination
-            index = (index + 1) % 2; // use the next time step for the next transaction
+            index = (index + 1) % 2; // get index of next time for action
 
             // if we have done two transactions, reset the main account to initial account
             if (index == 0) {

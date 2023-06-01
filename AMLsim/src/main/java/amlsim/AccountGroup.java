@@ -8,14 +8,34 @@ public class AccountGroup {
 
     private long accountGroupId;
     private int scheduleID;
+    private long startStep;
+    private long endStep;
+    private int interval;
     private List<Account> members; // Accounts involved in this alert
     private Account mainAccount; // Main account of this alert
     private AbstractTransactionModel model; // Transaction model
     private AMLSim amlsim; // AMLSim main object
 
-    AccountGroup(long accountGroupId, int scheduleID, AMLSim sim) {
+    AccountGroup(long accountGroupId, long startStep, long endStep, int scheduleID, int interval, AMLSim sim) {
         this.accountGroupId = accountGroupId;
+
+        assert startStep < endStep : "startStep must be smaller than endStep";
+        assert interval > 0 : "interval must be positive";
+
+        if (startStep >= 0 && startStep < AMLSim.getNumOfSteps()) {
+            this.startStep = startStep;
+        } else {
+            this.startStep = 0;
+        }
+
+        if (endStep >= 0 && endStep < AMLSim.getNumOfSteps()) {
+            this.endStep = endStep;
+        } else {
+            this.endStep = AMLSim.getNumOfSteps();
+        }
+
         this.scheduleID = scheduleID;
+        this.interval = interval;
         this.members = new ArrayList<>();
         this.mainAccount = null;
         this.amlsim = sim;
@@ -55,6 +75,18 @@ public class AccountGroup {
 
     public int getScheduleID() {
         return this.scheduleID;
+    }
+
+    public long getStartStep() {
+        return this.startStep;
+    }
+
+    public long getEndStep() {
+        return this.endStep;
+    }
+
+    public int getInterval() {
+        return this.interval;
     }
 
     /**
