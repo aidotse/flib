@@ -243,9 +243,7 @@ public class Account implements Steppable {
 
 		for (AccountGroup accountGroup : this.accountGroups) {
 			Account account = accountGroup.getMainAccount();
-			if (accountGroup.getModel().getModelName().equals("FanIn") && this != accountGroup.getMainAccount()) {
-				accountGroup.registerTransactions(step, this);
-			} else if (this == accountGroup.getMainAccount()) {
+			if (this == accountGroup.getMainAccount()) {
 				accountGroup.registerTransactions(step, account);
 			}
 			
