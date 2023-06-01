@@ -12,7 +12,11 @@ import java.util.*;
  */
 public class FanInTransactionModel extends AbstractTransactionModel {
 
-    private int index = 0;
+    // Originators and the main beneficiary
+    private Account bene; // The destination (beneficiary) account
+    private List<Account> origList = new ArrayList<>(); // The origin (originator) accounts
+
+    private long[] steps;
 
     private Random random;
     private TargetedTransactionAmount transactionAmount;
@@ -29,6 +33,45 @@ public class FanInTransactionModel extends AbstractTransactionModel {
         if (this.startStep < 0) { // decentralize the first transaction step
             this.startStep = generateStartStep(interval);
         }
+
+        // Set members
+        List<Account> members = accountGroup.getMembers();
+        Account mainAccount = accountGroup.getMainAccount();
+        bene = mainAccount != null ? mainAccount : members.get(0); // The main account is the beneficiary
+        for (Account orig : members) { // The rest of accounts are originators
+            if (orig != bene)
+                origList.add(orig);
+        }
+        
+        // Set transaction schedule
+        int schedulingID = this.accountGroup.getScheduleID();
+        int numOrigs = origList.size();
+        
+        steps = new long[numOrigs];
+
+        int range = (int) (end - start + 1);// get the range of steps
+
+        if (schedulingID == FIXED_INTERVAL) {
+            if (interval * numOrigs > range) { // if needed modifies interval to make time for all txs
+                interval = range / numOrigs;
+            }
+            for (int i = 0; i < numOrigs; i++) {
+                steps[i] = startStep + interval * i;
+            }
+        } else if (schedulingID == RANDOM_INTERVAL) {
+            interval = generateStartStep(range / numOrigs);
+            for (int i = 0; i < numOrigs; i++) {
+                steps[i] = startStep + interval * i;
+            }
+        } else if (schedulingID == UNORDERED) {
+            steps[0] = generateStartStep(range) + start;
+            for (int i = 1; i < numOrigs; i++) {
+                steps[i] = generateStartStep(range - (int) steps[i-1]) + steps[i-1];
+            }
+        } else if (schedulingID == SIMULTANEOUS || range <2) {
+            long step = generateStartStep(range) + start;
+            Arrays.fill(steps, step);
+        }
     }
 
     @Override
@@ -42,18 +85,12 @@ public class FanInTransactionModel extends AbstractTransactionModel {
 
     @Override
     public void sendTransactions(long step, Account account) {
-        List<Account> beneList = account.getBeneList(); // Destination accounts
-        int numOrigs = beneList.size();
-        if (!isValidStep(step) || numOrigs == 0) {
-            return;
+        for (int i = 0; i < origList.size(); i++) {
+            if (steps[i] == step) {
+                Account orig = origList.get(i);
+                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, true);
+                makeTransaction(step, this.transactionAmount.doubleValue(), orig, account, AbstractTransactionModel.NORMAL_FAN_IN);
+            }
         }
-        if (index >= numOrigs) {
-            index = 0;
-        }
-        this.transactionAmount = new TargetedTransactionAmount(account.getBalance(), this.random, false);
-        double amount = this.transactionAmount.doubleValue();
-        Account bene = beneList.get(index);
-        makeTransaction(step, amount, account, bene, AbstractTransactionModel.NORMAL_FAN_IN);
-        index++;
     }
 }
