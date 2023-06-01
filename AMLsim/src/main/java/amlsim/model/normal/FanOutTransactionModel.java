@@ -23,14 +23,16 @@ public class FanOutTransactionModel extends AbstractTransactionModel {
             AccountGroup accountGroup,
             Random random) {
         this.accountGroup = accountGroup;
+
+        this.startStep = accountGroup.getStartStep();
+        this.endStep = accountGroup.getEndStep();
+        this.scheduleID = accountGroup.getScheduleID();
+        this.interval = accountGroup.getInterval();
+
         this.random = random;
     }
 
-    public void setParameters(long start, long end, int interval) {
-        super.setParameters(start, end, interval);
-        if (this.startStep < 0) { // decentralize the first transaction step
-            this.startStep = generateFromInterval(interval);
-        }
+    public void setParameters() {
 
         // Set members
         List<Account> members = accountGroup.getMembers();
@@ -47,7 +49,7 @@ public class FanOutTransactionModel extends AbstractTransactionModel {
 
         steps = new long[numBenes];
 
-        int range = (int) (end - start + 1);// get the range of steps
+        int range = (int) (this.endStep - this.startStep + 1);// get the range of steps
 
         if (schedulingID == FIXED_INTERVAL) {
             if (interval * numBenes > range) { // if needed modifies interval to make time for all txs
@@ -62,12 +64,12 @@ public class FanOutTransactionModel extends AbstractTransactionModel {
                 steps[i] = startStep + interval * i;
             }
         } else if (schedulingID == UNORDERED) {
-            steps[0] = generateFromInterval(range) + start;
+            steps[0] = generateFromInterval(range) + this.startStep;
             for (int i = 1; i < numBenes; i++) {
                 steps[i] = generateFromInterval(range - (int) steps[i - 1]) + steps[i - 1];
             }
         } else if (schedulingID == SIMULTANEOUS || range < 2) {
-            long step = generateFromInterval(range) + start;
+            long step = generateFromInterval(range) + this.startStep;
             Arrays.fill(steps, step);
         }
     }
@@ -87,7 +89,7 @@ public class FanOutTransactionModel extends AbstractTransactionModel {
             if (steps[i] == step) {
                 Account bene = beneList.get(i);
                 this.transactionAmount = new TargetedTransactionAmount(bene.getBalance(), this.random, true);
-                makeTransaction(step, this.transactionAmount.doubleValue(), bene, account,
+                makeTransaction(step, this.transactionAmount.doubleValue(), account, bene,
                         AbstractTransactionModel.NORMAL_FAN_OUT);
             }
         }

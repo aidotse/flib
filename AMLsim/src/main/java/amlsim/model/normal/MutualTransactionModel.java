@@ -20,14 +20,16 @@ public class MutualTransactionModel extends AbstractTransactionModel {
             AccountGroup accountGroup,
             Random random) {
         this.accountGroup = accountGroup;
+
+        this.startStep = accountGroup.getStartStep();
+        this.endStep = accountGroup.getEndStep();
+        this.scheduleID = accountGroup.getScheduleID();
+        this.interval = accountGroup.getInterval();
+
         this.random = random;
     }
 
-    public void setParameters(long start, long end, int interval) {
-        super.setParameters(start, end, interval);
-        if (this.startStep < 0) { // decentralize the first transaction step
-            this.startStep = generateFromInterval(interval);
-        }
+    public void setParameters() {
 
         // Set members
         List<Account> members = accountGroup.getMembers();
@@ -40,13 +42,12 @@ public class MutualTransactionModel extends AbstractTransactionModel {
         debtor = debtorList.get(0);
         debt = 0.0;
 
-        int schedulingID = this.accountGroup.getScheduleID();
-        int range = (int) (end - start + 1);// get the range of steps
-        if (schedulingID == FIXED_INTERVAL) {
-            this.interval = interval;
-        } else if (schedulingID == RANDOM_INTERVAL || schedulingID == UNORDERED) {
-            this.interval = generateFromInterval(range) + (int) start;
-        } else if (schedulingID == SIMULTANEOUS || range < 2) {
+        int range = (int) (this.endStep - this.startStep + 1);// get the range of steps
+        if (scheduleID == FIXED_INTERVAL) {
+            ;
+        } else if (scheduleID == RANDOM_INTERVAL || scheduleID == UNORDERED) {
+            this.interval = generateFromInterval(range) + (int) this.startStep;
+        } else if (scheduleID == SIMULTANEOUS || range < 2) {
             this.interval = 1;
         }
     }

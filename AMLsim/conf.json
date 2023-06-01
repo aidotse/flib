@@ -1,7 +1,7 @@
 {
   "general": {
-    "random_seed": 100,
-    "simulation_name": "mutual",
+    "random_seed": 1,
+    "simulation_name": "fan_out",
     "total_steps": 50,
     "base_date": "2023-01-01"
   },
@@ -47,7 +47,7 @@
     }
   },
   "input": {
-    "directory": "paramFiles/mutual",
+    "directory": "paramFiles/fan_out",
     "schema": "schema.json",
     "accounts": "accounts.csv",
     "alert_patterns": "alertPatterns.csv",
