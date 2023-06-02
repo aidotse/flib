@@ -246,7 +246,7 @@ public class Account implements Steppable {
 			if (this == accountGroup.getMainAccount()) {
 				accountGroup.registerTransactions(step, account);
 			}
-			
+
 		}
 
 		handleCashTransaction(amlsim);
@@ -259,32 +259,6 @@ public class Account implements Steppable {
 		long step = amlsim.schedule.getSteps();
 		this.cashInModel.makeTransaction(step);
 		this.cashOutModel.makeTransaction(step);
-	}
-
-	/*
-	 * 
-	 * Get the previous originator account
-	 * 
-	 * @return Previous originat or account objects
-	 */
-	public Account getPrevOrig() { // TODO: This method is not used? Remove?
-		return prevOrig;
-	}
-
-	public Account getDebtor() {
-		return debtor;
-	}
-
-	public void setDebtor(Account account) {
-		debtor = account;
-	}
-
-	public double getDebt() {
-		return debt;
-	}
-
-	public void setDebt(double amount) {
-		debt = amount;
 	}
 
 	public String getName() {
