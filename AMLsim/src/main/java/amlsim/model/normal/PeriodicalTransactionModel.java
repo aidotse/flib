@@ -55,10 +55,10 @@ public class PeriodicalTransactionModel extends AbstractTransactionModel {
             case FIXED_INTERVAL:
                 break;
             case RANDOM_INTERVAL:
-                this.interval = generateFromInterval(range); // generate random period
+                this.interval = generateFromInterval(range) + 1; // generate random period
                 break;
             case UNORDERED:
-                this.interval = generateFromInterval(range);
+                this.interval = generateFromInterval(range) + 1; // TODO: isValid breaks if interval is zero, fix this?
                 break;
             default:
                 this.steps = this.startStep;
@@ -90,8 +90,7 @@ public class PeriodicalTransactionModel extends AbstractTransactionModel {
         }
 
         if (this.targedTransactionAmount == null) {
-            this.targedTransactionAmount = new TargetedTransactionAmount(account.getBalance(), random,
-                    false);
+            this.targedTransactionAmount = new TargetedTransactionAmount(account.getBalance(), random, false);
             amount = this.targedTransactionAmount.doubleValue();
         }
 
