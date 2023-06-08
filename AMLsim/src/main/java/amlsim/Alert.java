@@ -18,7 +18,7 @@ public class Alert {
     private AMLTypology model;    // Transaction model
     private AMLSim amlsim;  // AMLSim main object
 
-    Alert(long alertID, AMLTypology model, AMLSim sim) {
+    Alert(long alertID, AMLTypology model, AMLSim sim){
         this.alertID = alertID;
         //this.scheduleID = scheduleID;
         //this.interval = interval;
