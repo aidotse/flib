@@ -16,15 +16,70 @@ import java.util.*;
  */
 public class BipartiteTypology extends AMLTypology {
 
-    private Random random = AMLSim.getRandom();
+    List<Account> members;
+    private int[] origIdxs;
+    private int[] beneIdxs;
 
-    @Override
-    public void setParameters(int modelID) {
+    private int numOrigs;
+    private int numBenes;
+    private int numTxs;
+    
+    private long[] steps;
+
+    private TargetedTransactionAmount transactionAmount;
+
+    private Random random = AMLSim.getRandom();
+    
+    public BipartiteTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval) {
+        super(minAmount, maxAmount, minStep, maxStep);
+        
+        this.startStep = minStep; //alert.getStartStep();
+        this.endStep = maxStep; //alert.getEndStep();
+        this.scheduleID = scheduleID; //alert.getScheduleID();
+        this.interval = interval; //alert.getInterval();
 
     }
 
-    public BipartiteTypology(double minAmount, double maxAmount, int minStep, int maxStep) {
-        super(minAmount, maxAmount, minStep, maxStep);
+    @Override
+    public void setParameters(int modelID) {
+        // Set members
+        members = alert.getMembers();
+        int numMembers = members.size();
+        numOrigs = numMembers / 2;
+        numBenes = numMembers - numOrigs;
+        
+        numTxs = numOrigs * numBenes;
+        origIdxs = new int[numTxs];
+        beneIdxs = new int[numTxs];
+
+        for (int i = 0; i < numTxs; i++){
+            origIdxs[i] = i / numBenes;
+            beneIdxs[i] = i % numBenes + numOrigs;
+        }
+        
+        // Set transaction schedule
+        int range = (int) (this.endStep - this.startStep + 1);// get the range of steps
+        steps = new long[numTxs];
+        if (scheduleID == FIXED_INTERVAL) {
+            if (interval * numTxs > range) { // if needed modifies interval to make time for all txs
+                interval = range / numTxs;
+            }
+            for (int i = 0; i < numTxs; i++) {
+                steps[i] = startStep + interval * i;
+            }
+        } else if (scheduleID == RANDOM_INTERVAL) {
+            interval = generateFromInterval(range / numTxs) + 1;
+            for (int i = 0; i < numTxs; i++) {
+                steps[i] = startStep + interval * i;
+            }
+        } else if (scheduleID == UNORDERED) {
+            for (int i = 0; i < numTxs; i++) {
+                steps[i] = generateFromInterval(range) + startStep;
+            }
+        } else if (scheduleID == SIMULTANEOUS || range < 2) {
+            long step = generateFromInterval(range) + this.startStep;
+            Arrays.fill(steps, step);
+        }
     }
 
     @Override
@@ -34,29 +89,13 @@ public class BipartiteTypology extends AMLTypology {
 
     @Override
     public void sendTransactions(long step, Account acct) {
-        List<Account> members = alert.getMembers(); // All members
-
-        int last_orig_index = members.size() / 2; // The first half accounts are originators
-        for (int i = 0; i < last_orig_index; i++) {
-            Account orig = members.get(i);
-            if (!orig.getID().equals(acct.getID())) {
-                continue;
-            }
-
-            TargetedTransactionAmount transactionAmount = getTransactionAmount(members.size() - last_orig_index,
-                    orig.getBalance());
-
-            for (int j = last_orig_index; j < members.size(); j++) {
-                Account bene = members.get(j); // The latter half accounts are beneficiaries
-                makeTransaction(step, transactionAmount.doubleValue(), orig, bene, AMLTypology.BIPARTITE);
+        for (int i = 0; i < numTxs; i++) {
+            if (step == steps[i]) {
+                Account orig = members.get(origIdxs[i]);
+                Account bene = members.get(beneIdxs[i]);
+                transactionAmount = new TargetedTransactionAmount(orig.getBalance(), random, true);
+                makeTransaction(step, transactionAmount.doubleValue(), orig, bene, alert.isSAR(), alert.getAlertID(), AMLTypology.BIPARTITE);
             }
         }
-    }
-
-    private TargetedTransactionAmount getTransactionAmount(int numBene, double origBalance) {
-        if (numBene == 0) {
-            return new TargetedTransactionAmount(0, random, true);
-        }
-        return new TargetedTransactionAmount(origBalance / numBene, random, true);
     }
 }
