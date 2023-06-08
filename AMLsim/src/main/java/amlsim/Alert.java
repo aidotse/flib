@@ -11,13 +11,17 @@ import java.util.*;
 public class Alert {
 
     private long alertID;  // Alert identifier
+    private int scheduleID;
+    private int interval;
     private List<Account> members;  // Accounts involved in this alert
     private Account mainAccount;   // Main account of this alert
     private AMLTypology model;    // Transaction model
     private AMLSim amlsim;  // AMLSim main object
 
-    Alert(long alertID, AMLTypology model, AMLSim sim){
+    Alert(long alertID, AMLTypology model, AMLSim sim) {
         this.alertID = alertID;
+        //this.scheduleID = scheduleID;
+        //this.interval = interval;
         this.members = new ArrayList<>();
         this.mainAccount = null;
         this.model = model;
@@ -42,6 +46,14 @@ public class Alert {
     void addMember(Account acct){
         this.members.add(acct);
         acct.addAlert(this);
+    }
+
+    public int getScheduleID() {
+        return this.scheduleID;
+    }
+
+    public int getInterval() {
+        return this.interval;
     }
 
     /**
