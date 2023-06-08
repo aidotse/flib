@@ -65,9 +65,8 @@ public class FanInTransactionModel extends AbstractTransactionModel {
                 steps[i] = startStep + interval * i;
             }
         } else if (scheduleID == UNORDERED) {
-            steps[0] = generateFromInterval(range) + this.startStep;
-            for (int i = 1; i < numOrigs; i++) {
-                steps[i] = generateFromInterval(range - (int) steps[i - 1]) + steps[i - 1];
+            for (int i = 0; i < numOrigs; i++) {
+                steps[i] = generateFromInterval(range) + this.startStep;
             }
         } else if (scheduleID == SIMULTANEOUS || range < 2) {
             long step = generateFromInterval(range) + this.startStep;
@@ -89,7 +88,7 @@ public class FanInTransactionModel extends AbstractTransactionModel {
         for (int i = 0; i < origList.size(); i++) {
             if (steps[i] == step) {
                 Account orig = origList.get(i);
-                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, true);
+                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, false);
                 makeTransaction(step, this.transactionAmount.doubleValue(), orig, account,
                         AbstractTransactionModel.NORMAL_FAN_IN);
             }
