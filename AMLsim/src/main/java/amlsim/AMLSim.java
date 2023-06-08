@@ -409,8 +409,8 @@ public class AMLSim extends SimState {
 				model.updateEndStep(endStep);
 
 			} else { // Create a new AML typology object
-				AMLTypology model = AMLTypology.createTypology(modelID, minAmount, maxAmount, startStep, endStep);
-				alert = new Alert(alertID, model, this);
+				AMLTypology model = AMLTypology.createTypology(modelID, minAmount, maxAmount, startStep, endStep, scheduleID, this.normalTxInterval); // TODO: add sarTxInterval
+				alert = new Alert(alertID, model, this); // TODO: implement same structure as normal where the model has access to the alert
 				alerts.put(alertID, alert);
 			}
 			Account account = getAccountFromID(accountID);
