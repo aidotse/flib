@@ -55,7 +55,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      * @return AML typology model object
      */
     public static AMLTypology createTypology(int modelID, double minAmount, double maxAmount,
-            int startStep, int endStep) {
+            int startStep, int endStep, int scheduleID, int interval) {
         AMLTypology model;
         switch (modelID) {
             case AML_FAN_OUT:
@@ -68,7 +68,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
                 model = new CycleTypology(minAmount, maxAmount, startStep, endStep);
                 break;
             case BIPARTITE:
-                model = new BipartiteTypology(minAmount, maxAmount, startStep, endStep);
+                model = new BipartiteTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval);
                 break;
             case STACK:
                 model = new StackTypology(minAmount, maxAmount, startStep, endStep);
