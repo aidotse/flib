@@ -45,7 +45,7 @@ public class BipartiteTypology extends AMLTypology {
         // Set members
         members = alert.getMembers();
         int numMembers = members.size();
-        numOrigs = numMembers / 2;
+        numOrigs = numMembers / 2; // TODO: make random
         numBenes = numMembers - numOrigs;
         
         numTxs = numOrigs * numBenes;
