@@ -53,8 +53,7 @@ public class StackTypology extends AMLTypology {
     public void setParameters(int modelID) {
         members = alert.getMembers();
         int numMembers = members.size();
-        List<List<Account>> acctLists = new ArrayList<>();
-
+        
         numTxs = 0;
         int count = 0;
         int layerSize = random.nextInt(numMembers / 3);
@@ -79,17 +78,19 @@ public class StackTypology extends AMLTypology {
 
         origIdxs = new int[numTxs];
         beneIdxs = new int[numTxs];
-        int numOrigs, numBenes, start, end;
+        int numOrigs, numBenes, start, end, increse;
         start = 0;
+        increse = 0;
         for (int i = 0; i < layerSizes.size() - 1; i++) {
             numOrigs = layerSizes.get(i);
             numBenes = layerSizes.get(i+1);
             end = start + numOrigs * numBenes;
-            for (int j = start; j < end; j++) {
-                origIdxs[j] = j / numBenes;
-                beneIdxs[j] = j % numBenes + numOrigs + start / numBenes;
+            for (int j = 0; j < end - start; j++) {
+                origIdxs[j + start] = j / numBenes + increse;
+                beneIdxs[j + start] = j % numBenes + numOrigs + increse;
             }
             start = end;
+            increse = increse + numOrigs;
         }
 
         // Set transaction schedule
@@ -116,6 +117,23 @@ public class StackTypology extends AMLTypology {
             Arrays.fill(steps, step);
         }
         // TODO: shuffle steps
+        start = 0;
+        for (int i = 0; i < layerSizes.size()-1; i++) {
+            end = start + layerSizes.get(i) * layerSizes.get(i+1);
+            for (int j = start; j < end; j++) {
+                int randomIndexToSwap = random.nextInt(end - start) + start;
+			    long temp = steps[randomIndexToSwap];
+			    //int temp1 = origIdxs[randomIndexToSwap];
+                //int temp2 = beneIdxs[randomIndexToSwap];
+                steps[randomIndexToSwap] = steps[j];
+                //origIdxs[randomIndexToSwap] = origIdxs[j];
+                //beneIdxs[randomIndexToSwap] = beneIdxs[j];
+                steps[j] = temp;
+                //origIdxs[j] = temp1;
+                //beneIdxs[j] = temp2;
+			}
+            start = end;
+        }
     }
 
     @Override
