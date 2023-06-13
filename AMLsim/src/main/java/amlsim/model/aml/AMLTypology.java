@@ -71,7 +71,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
                 model = new BipartiteTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval);
                 break;
             case STACK:
-                model = new StackTypology(minAmount, maxAmount, startStep, endStep,  scheduleID, interval);
+                model = new StackTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval);
                 break;
             case RANDOM:
                 model = new RandomTypology(minAmount, maxAmount, startStep, endStep);
