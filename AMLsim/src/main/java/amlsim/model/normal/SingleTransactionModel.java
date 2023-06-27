@@ -17,8 +17,10 @@ public class SingleTransactionModel extends AbstractTransactionModel {
     /**
      * Simulation step when this transaction is done
      */
+    private long startStep = -1;
+    private long endStep = -1;
     private long txStep = -1;
-
+    
     private Random random;
 
     public SingleTransactionModel(
@@ -26,20 +28,17 @@ public class SingleTransactionModel extends AbstractTransactionModel {
             Random random) {
         this.random = random;
         this.accountGroup = accountGroup;
+        this.startStep = accountGroup.getStartStep();
+        this.endStep = accountGroup.getEndStep();
+        this.scheduleID = accountGroup.getScheduleID();
+        this.interval = accountGroup.getInterval();
     }
 
     public String getModelName() {
         return "Single";
     }
 
-    public void setParameters(long start, long end, int interval) {
-        super.setParameters(start, end, interval);
-        if (this.startStep < 0) { // Unlimited start step
-            this.startStep = 0;
-        }
-        if (this.endStep < 0) { // Unlimited end step
-            this.endStep = AMLSim.getNumOfSteps();
-        }
+    public void setParameters() {
         // The transaction step is determined randomly within the given range of steps
         this.txStep = this.startStep + this.random.nextInt((int) (endStep - startStep + 1));
     }

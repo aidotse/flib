@@ -348,23 +348,38 @@ class TransactionGenerator:
             bank_accts = self.bank_to_accts[bank_id]
             main_candidates = self.hubs & bank_accts
             main_acct = random.sample(main_candidates, 1)[0]
-            self.remove_typology_candidate(main_acct)
+            #self.remove_typology_candidate(main_acct)
             sub_accts = random.sample(bank_accts, num - 1)
-            for n in sub_accts:
-                self.remove_typology_candidate(n)
+            #for n in sub_accts:
+            #    self.remove_typology_candidate(n)
 
             members = [main_acct] + sub_accts
             return main_acct, members
 
         elif bank_id == "":  # Choose members from all accounts
+            #self.check_hub_exists()
+            #main_acct = random.sample(self.hubs, 1)[0]
+            ##self.remove_typology_candidate(main_acct)
+            #
+            #sub_accts = random.sample(self.acct_to_bank.keys(), num - 1)
+            ##for n in sub_accts:
+            ##    self.remove_typology_candidate(n)
+            #members = [main_acct] + sub_accts
+            
             self.check_hub_exists()
-            main_acct = random.sample(self.hubs, 1)[0]
-            self.remove_typology_candidate(main_acct)
-
-            sub_accts = random.sample(self.acct_to_bank.keys(), num - 1)
-            for n in sub_accts:
-                self.remove_typology_candidate(n)
+            sub_accts = random.sample(self.acct_to_bank.keys(), num)
+            main_acct = None
+            for sub_acct in sub_accts:
+                if sub_acct in self.hubs:
+                    main_acct = sub_acct
+                    sub_accts.remove(sub_acct)
+                    break
+            if main_acct is None:
+                main_acct = random.sample(self.hubs, 1)[0]
             members = [main_acct] + sub_accts
+            #for member in members:
+            #    if member == 181:
+            #        print("181")
             return main_acct, members
 
         else:
@@ -952,7 +967,7 @@ class TransactionGenerator:
 
         # Decide transaction start and end dates
         start_date = random.randrange(0, self.total_steps - period + 1)
-        end_date = start_date + period - 1 # end_date is inclusive
+        end_date = start_date + period # - 1 # end_date is inclusive
 
         # Create subgraph structure with transaction attributes
         model_id = self.alert_types[typology_name]  # alert model ID
@@ -961,265 +976,457 @@ class TransactionGenerator:
 
 
         if typology_name == "fan_in":  # fan_in pattern (multiple accounts --> single (main) account)
-            main_acct, main_bank_id = add_main_acct() # Create a main account ID and a bank ID from hub accounts 
-            num_neighbors = num_accounts - 1
-            amount = RoundedAmount(min_amount, max_amount).getAmount() # TODO: make random assignment
-
+            #main_acct, main_bank_id = add_main_acct() # Create a main account ID and a bank ID from hub accounts 
+            #num_neighbors = num_accounts - 1
+            #amount = RoundedAmount(min_amount, max_amount).getAmount() # TODO: make random assignment
+            #
+            #if is_external:
+            #    # Choose a bank ID from banks with enough neighboring accounts
+            #    sub_bank_candidates = [b for b, nbs in self.bank_to_accts.items()
+            #                           if b != main_bank_id and len(nbs) >= num_neighbors]
+            #    if not sub_bank_candidates:
+            #        logger.warning("No banks with appropriate number of neighboring accounts found.")
+            #        return
+            #    sub_bank_id = random.choice(sub_bank_candidates)
+            #else:
+            #    sub_bank_id = main_bank_id
+            #sub_accts = random.sample(self.bank_to_accts[sub_bank_id], num_neighbors) # randomly sample accounts from the bank
+            #for n in sub_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, sub_bank_id)
+            #
+            #for orig in sub_accts:
+            #    date = random.randrange(start_date, end_date + 1)
+            #    add_edge(orig, main_acct, amount, date)
+            
+            amount = RoundedAmount(min_amount, max_amount).getAmount()
             if is_external:
-                # Choose a bank ID from banks with enough neighboring accounts
-                sub_bank_candidates = [b for b, nbs in self.bank_to_accts.items()
-                                       if b != main_bank_id and len(nbs) >= num_neighbors]
-                if not sub_bank_candidates:
-                    logger.warning("No banks with appropriate number of neighboring accounts found.")
-                    return
-                sub_bank_id = random.choice(sub_bank_candidates)
+                main_acct, members = self.get_typology_members(num_accounts)
             else:
-                sub_bank_id = main_bank_id
-            sub_accts = random.sample(self.bank_to_accts[sub_bank_id], num_neighbors) # randomly sample accounts from the bank
-            for n in sub_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, sub_bank_id)
-
-            for orig in sub_accts:
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
+            add_node(main_acct, self.acct_to_bank[main_acct])
+            self.remove_typology_candidate(main_acct)
+            for member in members:
+                if member == main_acct:
+                    continue
+                add_node(member, self.acct_to_bank[member])
+                self.remove_typology_candidate(member)
                 date = random.randrange(start_date, end_date + 1)
-                add_edge(orig, main_acct, amount, date)
+                add_edge(member, main_acct, amount, date)
 
         elif typology_name == "fan_out":  # fan_out pattern (single (main) account --> multiple accounts)
-            main_acct, main_bank_id = add_main_acct()
-            num_neighbors = num_accounts - 1
+            #main_acct, main_bank_id = add_main_acct()
+            #num_neighbors = num_accounts - 1
+            #amount = RoundedAmount(min_amount, max_amount).getAmount()
+            #
+            #if is_external:
+            #    sub_bank_candidates = [b for b, nbs in self.bank_to_accts.items()
+            #                           if b != main_bank_id and len(nbs) >= num_neighbors]
+            #    if not sub_bank_candidates:
+            #        logger.warning("No banks with appropriate number of neighboring accounts found.")
+            #        return
+            #    sub_bank_id = random.choice(sub_bank_candidates)
+            #else:
+            #    sub_bank_id = main_bank_id
+            #sub_accts = random.sample(self.bank_to_accts[sub_bank_id], num_neighbors)
+            #for n in sub_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, sub_bank_id)
+            #
+            #for bene in sub_accts:
+            #    date = random.randrange(start_date, end_date + 1)
+            #    add_edge(main_acct, bene, amount, date)
+
             amount = RoundedAmount(min_amount, max_amount).getAmount()
-
             if is_external:
-                sub_bank_candidates = [b for b, nbs in self.bank_to_accts.items()
-                                       if b != main_bank_id and len(nbs) >= num_neighbors]
-                if not sub_bank_candidates:
-                    logger.warning("No banks with appropriate number of neighboring accounts found.")
-                    return
-                sub_bank_id = random.choice(sub_bank_candidates)
+                main_acct, members = self.get_typology_members(num_accounts)
             else:
-                sub_bank_id = main_bank_id
-            sub_accts = random.sample(self.bank_to_accts[sub_bank_id], num_neighbors)
-            for n in sub_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, sub_bank_id)
-
-            for bene in sub_accts:
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
+            add_node(main_acct, self.acct_to_bank[main_acct])
+            self.remove_typology_candidate(main_acct)
+            for member in members:
+                if member == main_acct:
+                    continue
+                add_node(member, self.acct_to_bank[member])
+                self.remove_typology_candidate(member)
                 date = random.randrange(start_date, end_date + 1)
-                add_edge(main_acct, bene, amount, date)
+                add_edge(main_acct, member, amount, date)
 
         elif typology_name == "bipartite":  # bipartite (originators -> many-to-many -> beneficiaries)
-            orig_bank_id = random.choice(self.get_all_bank_ids())
+            #orig_bank_id = random.choice(self.get_all_bank_ids())
+            #if is_external:
+            #    bene_bank_id = random.choice([b for b in self.get_all_bank_ids() if b != orig_bank_id])
+            #else:
+            #    bene_bank_id = orig_bank_id
+            #
+            #num_orig_accts = num_accounts // 2  # The former half members are originator accounts
+            #num_bene_accts = num_accounts - num_orig_accts  # The latter half members are beneficiary accounts
+            #
+            #orig_accts = random.sample(self.bank_to_accts[orig_bank_id], num_orig_accts)
+            #for n in orig_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, orig_bank_id)
+            #main_acct = orig_accts[0]
+            #
+            #bene_accts = random.sample(self.bank_to_accts[bene_bank_id], num_bene_accts)
+            #for n in bene_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, bene_bank_id)
+            #
+            #for orig, bene in itertools.product(orig_accts, bene_accts):  # All-to-all transaction edges
+            #    amount = RandomAmount(min_amount, max_amount).getAmount()
+            #    date = random.randrange(start_date, end_date + 1)
+            #    add_edge(orig, bene, amount, date)
+            
             if is_external:
-                bene_bank_id = random.choice([b for b in self.get_all_bank_ids() if b != orig_bank_id])
+                main_acct, members = self.get_typology_members(num_accounts)
             else:
-                bene_bank_id = orig_bank_id
-
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
+            for member in members:
+                add_node(member, self.acct_to_bank[member])
+                self.remove_typology_candidate(member)
             num_orig_accts = num_accounts // 2  # The former half members are originator accounts
-            num_bene_accts = num_accounts - num_orig_accts  # The latter half members are beneficiary accounts
-
-            orig_accts = random.sample(self.bank_to_accts[orig_bank_id], num_orig_accts)
-            for n in orig_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, orig_bank_id)
-            main_acct = orig_accts[0]
-
-            bene_accts = random.sample(self.bank_to_accts[bene_bank_id], num_bene_accts)
-            for n in bene_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, bene_bank_id)
-
-            for orig, bene in itertools.product(orig_accts, bene_accts):  # All-to-all transaction edges
+            benes = members[num_orig_accts:]
+            origs = members[:num_orig_accts]
+            for orig, bene in itertools.product(origs, benes):  # All-to-all transaction edges
                 amount = RandomAmount(min_amount, max_amount).getAmount()
                 date = random.randrange(start_date, end_date + 1)
                 add_edge(orig, bene, amount, date)
 
         elif typology_name == "stack":  # stacked bipartite layers
+            ## First and second 1/3 of members: originator and intermediate accounts
+            #num_orig_accts = num_mid_accts = num_accounts // 3
+            ## Last 1/3 of members: beneficiary accounts
+            #num_bene_accts = num_accounts - num_orig_accts * 2
+            #
+            #if is_external:
+            #    if len(self.get_all_bank_ids()) >= 3:
+            #        [orig_bank_id, mid_bank_id, bene_bank_id] = random.sample(self.get_all_bank_ids(), 3)
+            #    else:
+            #        [orig_bank_id, mid_bank_id] = random.sample(self.get_all_bank_ids(), 2)
+            #        bene_bank_id = orig_bank_id
+            #    
+            #    bank_ids = self.get_all_bank_ids()
+            #    while bank_ids and len(self.bank_to_accts[orig_bank_id]) < num_orig_accts:
+            #        bank_ids.remove(orig_bank_id)
+            #        [orig_bank_id] = random.sample(bank_ids, 1)
+            #    bank_ids.remove(orig_bank_id)
+            #    while bank_ids and len(self.bank_to_accts[mid_bank_id]) < num_mid_accts:
+            #        bank_ids.remove(mid_bank_id)
+            #        [mid_bank_id] = random.sample(bank_ids, 1)
+            #    bank_ids.remove(mid_bank_id)
+            #    while bank_ids and len(self.bank_to_accts[bene_bank_id]) < num_bene_accts:
+            #        bank_ids.remove(bene_bank_id)
+            #        [bene_bank_id] = random.sample(bank_ids, 1)
+            #
+            #else:
+            #    orig_bank_id = mid_bank_id = bene_bank_id = random.sample(self.get_all_bank_ids(), 1)[0]
+            #
+            #orig_accts = random.sample(self.bank_to_accts[orig_bank_id], num_orig_accts)
+            #for n in orig_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, orig_bank_id)
+            #main_acct = orig_accts[0]
+            #mid_accts = random.sample(self.bank_to_accts[mid_bank_id], num_mid_accts)
+            #for n in mid_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, mid_bank_id)
+            #bene_accts = random.sample(self.bank_to_accts[bene_bank_id], num_bene_accts)
+            #for n in bene_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, bene_bank_id)
+            #
+            #for orig, bene in itertools.product(orig_accts, mid_accts):  # all-to-all transactions
+            #    amount = RandomAmount(min_amount, max_amount).getAmount()
+            #    date = random.randrange(start_date, end_date + 1)
+            #    add_edge(orig, bene, amount, date)
+            #
+            #for orig, bene in itertools.product(mid_accts, bene_accts):  # all-to-all transactions
+            #    amount = RandomAmount(min_amount, max_amount).getAmount()
+            #    date = random.randrange(start_date, end_date + 1)
+            #    add_edge(orig, bene, amount, date)
+            
             if is_external:
-                if len(self.get_all_bank_ids()) >= 3:
-                    [orig_bank_id, mid_bank_id, bene_bank_id] = random.sample(self.get_all_bank_ids(), 3)
-                else:
-                    [orig_bank_id, mid_bank_id] = random.sample(self.get_all_bank_ids(), 2)
-                    bene_bank_id = orig_bank_id
+                main_acct, members = self.get_typology_members(num_accounts)
             else:
-                orig_bank_id = mid_bank_id = bene_bank_id = random.sample(self.get_all_bank_ids(), 1)[0]
-
-            # First and second 1/3 of members: originator and intermediate accounts
-            num_orig_accts = num_mid_accts = num_accounts // 3
-            # Last 1/3 of members: beneficiary accounts
-            num_bene_accts = num_accounts - num_orig_accts * 2
-
-            orig_accts = random.sample(self.bank_to_accts[orig_bank_id], num_orig_accts)
-            for n in orig_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, orig_bank_id)
-            main_acct = orig_accts[0]
-
-            mid_accts = random.sample(self.bank_to_accts[mid_bank_id], num_mid_accts)
-            for n in mid_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, mid_bank_id)
-            bene_accts = random.sample(self.bank_to_accts[bene_bank_id], num_bene_accts)
-            for n in bene_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, bene_bank_id)
-
-            for orig, bene in itertools.product(orig_accts, mid_accts):  # all-to-all transactions
-                amount = RandomAmount(min_amount, max_amount).getAmount()
-                date = random.randrange(start_date, end_date + 1)
-                add_edge(orig, bene, amount, date)
-
-            for orig, bene in itertools.product(mid_accts, bene_accts):  # all-to-all transactions
-                amount = RandomAmount(min_amount, max_amount).getAmount()
-                date = random.randrange(start_date, end_date + 1)
-                add_edge(orig, bene, amount, date)
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
+            for member in members:
+                add_node(member, self.acct_to_bank[member])
+                self.remove_typology_candidate(member)
+            layer_sizes = []
+            num_accts_left = num_accounts
+            while num_accts_left > 0:
+                if len(layer_sizes) < 2:
+                    layer_size = random.randrange(1, num_accts_left // 3 + 1)
+                else:
+                    layer_size = random.randrange(1, num_accts_left + 1)
+                layer_sizes.append(layer_size)
+                num_accts_left -= layer_size
+            j = 0
+            for i in range(len(layer_sizes) - 1):
+                origs = members[j:j+layer_sizes[i]]
+                benes = members[j+layer_sizes[i]:j+layer_sizes[i]+layer_sizes[i+1]]
+                for orig, bene in itertools.product(origs, benes):
+                    amount = RandomAmount(min_amount, max_amount).getAmount()
+                    date = random.randrange(start_date, end_date + 1)
+                    add_edge(orig, bene, amount, date)
+                j += layer_sizes[i]
 
         elif typology_name == "random":  # Random transactions among members
-            amount = RandomAmount(min_amount, max_amount).getAmount()
-            date = random.randrange(start_date, end_date + 1)
-
+            #amount = RandomAmount(min_amount, max_amount).getAmount()
+            #date = random.randrange(start_date, end_date + 1)
+            #
+            #if is_external:
+            #    all_bank_ids = self.get_all_bank_ids()
+            #    bank_id_iter = itertools.cycle(all_bank_ids)
+            #    prev_acct = None
+            #    main_acct = None
+            #    for _ in range(num_accounts):
+            #        bank_id = next(bank_id_iter)
+            #        next_acct = random.sample(self.bank_to_accts[bank_id], 1)[0]
+            #        if prev_acct is None:
+            #            main_acct = next_acct
+            #        else:
+            #            add_edge(prev_acct, next_acct, amount, date)
+            #        self.remove_typology_candidate(next_acct)
+            #        add_node(next_acct, bank_id)
+            #        prev_acct = next_acct
+            #
+            #else:
+            #    main_acct, main_bank_id = add_main_acct()
+            #    sub_accts = random.sample(self.bank_to_accts[main_bank_id], num_accounts - 1)
+            #    for n in sub_accts:
+            #        self.remove_typology_candidate(n)
+            #        add_node(n, main_bank_id)
+            #    prev_acct = main_acct
+            #    for _ in range(num_accounts - 1):
+            #        next_acct = random.choice([n for n in sub_accts if n != prev_acct])
+            #        add_edge(prev_acct, next_acct, amount, date)
+            #        prev_acct = next_acct
+            
             if is_external:
-                all_bank_ids = self.get_all_bank_ids()
-                bank_id_iter = itertools.cycle(all_bank_ids)
-                prev_acct = None
-                main_acct = None
-                for _ in range(num_accounts):
-                    bank_id = next(bank_id_iter)
-                    next_acct = random.sample(self.bank_to_accts[bank_id], 1)[0]
-                    if prev_acct is None:
-                        main_acct = next_acct
-                    else:
-                        add_edge(prev_acct, next_acct, amount, date)
-                    self.remove_typology_candidate(next_acct)
-                    add_node(next_acct, bank_id)
-                    prev_acct = next_acct
-
+                main_acct, members = self.get_typology_members(num_accounts)
             else:
-                main_acct, main_bank_id = add_main_acct()
-                sub_accts = random.sample(self.bank_to_accts[main_bank_id], num_accounts - 1)
-                for n in sub_accts:
-                    self.remove_typology_candidate(n)
-                    add_node(n, main_bank_id)
-                prev_acct = main_acct
-                for _ in range(num_accounts - 1):
-                    next_acct = random.choice([n for n in sub_accts if n != prev_acct])
-                    add_edge(prev_acct, next_acct, amount, date)
-                    prev_acct = next_acct
-
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
+            for member in members:
+                add_node(member, self.acct_to_bank[member])
+                self.remove_typology_candidate(member)
+            members.remove(main_acct)
+            for member in members:
+                num_txs = random.randrange(1, num_accounts)
+                benes = random.sample(members, num_txs)
+                for bene in benes:
+                    amount = RandomAmount(min_amount, max_amount).getAmount()
+                    date = random.randrange(start_date, end_date + 1)
+                    add_edge(member, bene, amount, date)
+                
         elif typology_name == "cycle":  # Cycle transactions
+            #amount = RandomAmount(min_amount, max_amount).getAmount()
+            #dates = sorted([random.randrange(start_date, end_date + 1) for _ in range(num_accounts)])
+            #
+            #if is_external:
+            #    all_accts = list()
+            #    all_bank_ids = self.get_all_bank_ids()
+            #    remain_num = num_accounts
+            #
+            #    while all_bank_ids:
+            #        num_accts_per_bank = remain_num // len(all_bank_ids)
+            #        bank_id = all_bank_ids.pop()
+            #        while len(self.bank_to_accts[bank_id]) < num_accts_per_bank:
+            #            bank_id = all_bank_ids.pop()
+            #        new_members = random.sample(self.bank_to_accts[bank_id], num_accts_per_bank)
+            #        all_accts.extend(new_members)
+            #
+            #        remain_num -= len(new_members)
+            #        for n in new_members:
+            #            self.remove_typology_candidate(n)
+            #            add_node(n, bank_id)
+            #    main_acct = all_accts[0]
+            #else:
+            #    main_acct, main_bank_id = add_main_acct()
+            #    sub_accts = random.sample(self.bank_to_accts[main_bank_id], num_accounts - 1)
+            #    for n in sub_accts:
+            #        self.remove_typology_candidate(n)
+            #        add_node(n, main_bank_id)
+            #    all_accts = [main_acct] + sub_accts
+            #
+            #for i in range(num_accounts):
+            #    orig_i = i
+            #    bene_i = (i + 1) % num_accounts
+            #    orig_acct = all_accts[orig_i]
+            #    bene_acct = all_accts[bene_i]
+            #    date = dates[i]
+            #
+            #    add_edge(orig_acct, bene_acct, amount, date)
+            #    margin = amount * self.margin_ratio  # Margin the beneficiary account can gain
+            #    amount = amount - margin  # max(amount - margin, min_amount)
+            
+            if is_external:
+                main_acct, members = self.get_typology_members(num_accounts)
+            else:
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
             amount = RandomAmount(min_amount, max_amount).getAmount()
             dates = sorted([random.randrange(start_date, end_date + 1) for _ in range(num_accounts)])
-
-            if is_external:
-                all_accts = list()
-                all_bank_ids = self.get_all_bank_ids()
-                remain_num = num_accounts
-
-                while all_bank_ids:
-                    num_accts_per_bank = remain_num // len(all_bank_ids)
-                    bank_id = all_bank_ids.pop()
-                    new_members = random.sample(self.bank_to_accts[bank_id], num_accts_per_bank)
-                    all_accts.extend(new_members)
-
-                    remain_num -= len(new_members)
-                    for n in new_members:
-                        self.remove_typology_candidate(n)
-                        add_node(n, bank_id)
-                main_acct = all_accts[0]
-            else:
-                main_acct, main_bank_id = add_main_acct()
-                sub_accts = random.sample(self.bank_to_accts[main_bank_id], num_accounts - 1)
-                for n in sub_accts:
-                    self.remove_typology_candidate(n)
-                    add_node(n, main_bank_id)
-                all_accts = [main_acct] + sub_accts
-
-            for i in range(num_accounts):
-                orig_i = i
-                bene_i = (i + 1) % num_accounts
-                orig_acct = all_accts[orig_i]
-                bene_acct = all_accts[bene_i]
-                date = dates[i]
-
-                add_edge(orig_acct, bene_acct, amount, date)
-                margin = amount * self.margin_ratio  # Margin the beneficiary account can gain
-                amount = amount - margin  # max(amount - margin, min_amount)
+            orig = main_acct
+            members.remove(main_acct)
+            add_node(orig, self.acct_to_bank[orig])
+            self.remove_typology_candidate(orig)
+            for bene, date in zip(members, dates):
+                add_node(bene, self.acct_to_bank[bene])
+                self.remove_typology_candidate(bene)
+                add_edge(orig, bene, amount, date)
+                orig = bene
+                amount = amount - amount * self.margin_ratio
+            add_edge(orig, main_acct, amount, dates[-1])
 
         elif typology_name == "scatter_gather":  # Scatter-Gather (fan-out -> fan-in)
+            #if is_external:
+            #    if len(self.get_all_bank_ids()) >= 3:
+            #        [orig_bank_id, mid_bank_id, bene_bank_id] = random.sample(self.get_all_bank_ids(), 3)
+            #    else:
+            #        [orig_bank_id, mid_bank_id] = random.sample(self.get_all_bank_ids(), 2)
+            #        bene_bank_id = orig_bank_id
+            #    
+            #    bank_ids = self.get_all_bank_ids()
+            #    while bank_ids and len(self.bank_to_accts[orig_bank_id]) < 1:
+            #        bank_ids.remove(orig_bank_id)
+            #        [orig_bank_id] = random.sample(bank_ids, 1)
+            #    bank_ids.remove(orig_bank_id)
+            #    while bank_ids and len(self.bank_to_accts[mid_bank_id]) < num_accounts - 2:
+            #        bank_ids.remove(mid_bank_id)
+            #        [mid_bank_id] = random.sample(bank_ids, 1)
+            #    bank_ids.remove(mid_bank_id)
+            #    while bank_ids and len(self.bank_to_accts[bene_bank_id]) < 1:
+            #        bank_ids.remove(bene_bank_id)
+            #        [bene_bank_id] = random.sample(bank_ids, 1)
+            #    
+            #else:
+            #    orig_bank_id = mid_bank_id = bene_bank_id = random.sample(self.get_all_bank_ids(), 1)[0]
+            #
+            #
+            #main_acct = orig_acct = random.sample(self.bank_to_accts[orig_bank_id], 1)[0]
+            #self.remove_typology_candidate(orig_acct)
+            #add_node(orig_acct, orig_bank_id)
+            #mid_accts = random.sample(self.bank_to_accts[mid_bank_id], num_accounts - 2)
+            #for n in mid_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, mid_bank_id)
+            #bene_acct = random.sample(self.bank_to_accts[bene_bank_id], 1)[0]
+            #self.remove_typology_candidate(bene_acct)
+            #add_node(bene_acct, bene_bank_id)
+            #
+            ## The date of all scatter transactions must be performed before middle day
+            #mid_date = (start_date + end_date) // 2
+            #
+            #for i in range(len(mid_accts)):
+            #    mid_acct = mid_accts[i]
+            #    scatter_amount = RandomAmount(min_amount, max_amount).getAmount()
+            #    margin = scatter_amount * self.margin_ratio  # Margin of the intermediate account
+            #    amount = scatter_amount - margin
+            #    scatter_date = random.randrange(start_date, mid_date)
+            #    gather_date = random.randrange(mid_date, end_date + 1)
+            #
+            #    add_edge(orig_acct, mid_acct, scatter_amount, scatter_date)
+            #    add_edge(mid_acct, bene_acct, amount, gather_date)
+            
             if is_external:
-                if len(self.get_all_bank_ids()) >= 3:
-                    [orig_bank_id, mid_bank_id, bene_bank_id] = random.sample(self.get_all_bank_ids(), 3)
-                else:
-                    [orig_bank_id, mid_bank_id] = random.sample(self.get_all_bank_ids(), 2)
-                    bene_bank_id = orig_bank_id
+                main_acct, members = self.get_typology_members(num_accounts)
             else:
-                orig_bank_id = mid_bank_id = bene_bank_id = random.sample(self.get_all_bank_ids(), 1)[0]
-
-            main_acct = orig_acct = random.sample(self.bank_to_accts[orig_bank_id], 1)[0]
-            self.remove_typology_candidate(orig_acct)
-            add_node(orig_acct, orig_bank_id)
-            mid_accts = random.sample(self.bank_to_accts[mid_bank_id], num_accounts - 2)
-            for n in mid_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, mid_bank_id)
-            bene_acct = random.sample(self.bank_to_accts[bene_bank_id], 1)[0]
-            self.remove_typology_candidate(bene_acct)
-            add_node(bene_acct, bene_bank_id)
-
-            # The date of all scatter transactions must be performed before middle day
-            mid_date = (start_date + end_date) // 2
-
-            for i in range(len(mid_accts)):
-                mid_acct = mid_accts[i]
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
+            for member in members:
+                add_node(member, self.acct_to_bank[member])
+                self.remove_typology_candidate(member)
+            orig_acct = main_acct
+            members.remove(main_acct)
+            bene_acct = random.sample(members, 1)[0]
+            members.remove(bene_acct)
+            mid_accts = members
+            for mid_acct in mid_accts:
                 scatter_amount = RandomAmount(min_amount, max_amount).getAmount()
-                margin = scatter_amount * self.margin_ratio  # Margin of the intermediate account
-                amount = scatter_amount - margin
-                scatter_date = random.randrange(start_date, mid_date)
-                gather_date = random.randrange(mid_date, end_date + 1)
-
+                scatter_date = random.randrange(start_date, end_date + 1)
                 add_edge(orig_acct, mid_acct, scatter_amount, scatter_date)
-                add_edge(mid_acct, bene_acct, amount, gather_date)
+                gather_amount = scatter_amount - scatter_amount * self.margin_ratio
+                gather_date = random.randrange(scatter_date, end_date + 1)
+                add_edge(mid_acct, bene_acct, gather_amount, gather_date)
+
 
         elif typology_name == "gather_scatter":  # Gather-Scatter (fan-in -> fan-out)
+            
+            #num_orig_accts = num_bene_accts = (num_accounts - 1) // 2
+            #
+            #if is_external:
+            #    if len(self.get_all_bank_ids()) >= 3:
+            #        [orig_bank_id, mid_bank_id, bene_bank_id] = random.sample(self.get_all_bank_ids(), 3)
+            #    else:
+            #        [orig_bank_id, mid_bank_id] = random.sample(self.get_all_bank_ids(), 2)
+            #        bene_bank_id = orig_bank_id
+            #    
+            #    bank_ids = self.get_all_bank_ids()
+            #    while bank_ids and len(self.bank_to_accts[orig_bank_id]) < num_orig_accts:
+            #        bank_ids.remove(orig_bank_id)
+            #        [orig_bank_id] = random.sample(bank_ids, 1)
+            #    bank_ids.remove(orig_bank_id)
+            #    while bank_ids and len(self.bank_to_accts[mid_bank_id]) < 1:
+            #        bank_ids.remove(mid_bank_id)
+            #        [mid_bank_id] = random.sample(bank_ids, 1)
+            #    bank_ids.remove(mid_bank_id)
+            #    while bank_ids and len(self.bank_to_accts[bene_bank_id]) < num_bene_accts:
+            #        bank_ids.remove(bene_bank_id)
+            #        [bene_bank_id] = random.sample(bank_ids, 1)
+            #
+            #else:
+            #    orig_bank_id = mid_bank_id = bene_bank_id = random.sample(self.get_all_bank_ids(), 1)[0]
+            #
+            #orig_accts = random.sample(self.bank_to_accts[orig_bank_id], num_orig_accts)
+            #for n in orig_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, orig_bank_id)
+            #main_acct = mid_acct = random.sample(self.bank_to_accts[mid_bank_id], 1)[0]
+            #self.remove_typology_candidate(mid_acct)
+            #add_node(mid_acct, mid_bank_id)
+            #bene_accts = random.sample(self.bank_to_accts[bene_bank_id], num_bene_accts)
+            #for n in bene_accts:
+            #    self.remove_typology_candidate(n)
+            #    add_node(n, bene_bank_id)
+            #
+            #accumulated_amount = 0.0
+            #mid_date = (start_date + end_date) // 2
+            #amount = RandomAmount(min_amount, max_amount).getAmount()
+            #
+            #for i in range(num_orig_accts):
+            #    orig_acct = orig_accts[i]
+            #    date = random.randrange(start_date, mid_date)
+            #    add_edge(orig_acct, mid_acct, amount, date)
+            #    accumulated_amount += amount
+            #    # print(orig_acct, "->", date, "->", mid_acct)
+            #
+            #for i in range(num_bene_accts):
+            #    bene_acct = bene_accts[i]
+            #    date = random.randrange(mid_date, end_date + 1)
+            #    add_edge(mid_acct, bene_acct, amount, date)
+            #    # print(mid_acct, "->", date, "->", bene_acct)
+            ## print(orig_accts, mid_acct, bene_accts)
+            
             if is_external:
-                if len(self.get_all_bank_ids()) >= 3:
-                    [orig_bank_id, mid_bank_id, bene_bank_id] = random.sample(self.get_all_bank_ids(), 3)
-                else:
-                    [orig_bank_id, mid_bank_id] = random.sample(self.get_all_bank_ids(), 2)
-                    bene_bank_id = orig_bank_id
+                main_acct, members = self.get_typology_members(num_accounts)
             else:
-                orig_bank_id = mid_bank_id = bene_bank_id = random.sample(self.get_all_bank_ids(), 1)[0]
-
-            num_orig_accts = num_bene_accts = (num_accounts - 1) // 2
-
-            orig_accts = random.sample(self.bank_to_accts[orig_bank_id], num_orig_accts)
-            for n in orig_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, orig_bank_id)
-            main_acct = mid_acct = random.sample(self.bank_to_accts[mid_bank_id], 1)[0]
-            self.remove_typology_candidate(mid_acct)
-            add_node(mid_acct, mid_bank_id)
-            bene_accts = random.sample(self.bank_to_accts[bene_bank_id], num_bene_accts)
-            for n in bene_accts:
-                self.remove_typology_candidate(n)
-                add_node(n, bene_bank_id)
-
-            accumulated_amount = 0.0
-            mid_date = (start_date + end_date) // 2
-            amount = RandomAmount(min_amount, max_amount).getAmount()
-
-            for i in range(num_orig_accts):
-                orig_acct = orig_accts[i]
-                date = random.randrange(start_date, mid_date)
-                add_edge(orig_acct, mid_acct, amount, date)
-                accumulated_amount += amount
-                # print(orig_acct, "->", date, "->", mid_acct)
-
-            for i in range(num_bene_accts):
-                bene_acct = bene_accts[i]
-                date = random.randrange(mid_date, end_date + 1)
-                add_edge(mid_acct, bene_acct, amount, date)
-                # print(mid_acct, "->", date, "->", bene_acct)
-            # print(orig_accts, mid_acct, bene_accts)
+                main_acct, members = self.get_typology_members(num_accounts, bank_id)
+            for member in members:
+                add_node(member, self.acct_to_bank[member])
+                self.remove_typology_candidate(member)
+            mid_acct = main_acct
+            members.remove(main_acct)
+            if len(members) % 2 != 0:
+                members = members[:-1]
+            origs = members[:len(members)//2]
+            benes = members[len(members)//2:]
+            for orig, bene in zip(origs, benes):
+                scatter_amount = RandomAmount(min_amount, max_amount).getAmount()
+                scatter_date = random.randrange(start_date, end_date + 1)
+                add_edge(orig, mid_acct, scatter_amount, scatter_date)
+                gather_amount = scatter_amount - scatter_amount * self.margin_ratio
+                gather_date = random.randrange(scatter_date, end_date + 1)
+                add_edge(mid_acct, bene, gather_amount, gather_date)
 
         # TODO: Please add user-defined typology implementations here
 

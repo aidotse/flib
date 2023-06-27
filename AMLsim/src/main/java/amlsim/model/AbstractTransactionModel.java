@@ -149,6 +149,10 @@ public abstract class AbstractTransactionModel {
             // AMLSim.getLogger().warning("Warning: invalid transaction amount: " + amount);
             return;
         }
+        if (orig.getBalance() < 100) { // Insufficient balance
+            // AMLSim.getLogger().warning("Warning: insufficient balance: " + orig.getBalance());
+            return;
+        }
         String ttype = orig.getTxType(dest);
         if (isSAR) {
             AMLSim.getLogger().fine("Handle transaction: " + orig.getID() + " -> " + dest.getID());

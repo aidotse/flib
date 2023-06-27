@@ -185,7 +185,7 @@ public class StackTypology extends AMLTypology {
                 Account orig = members.get(origIdxs[i]);
                 Account bene = members.get(beneIdxs[i]);
                 transactionAmount = new TargetedTransactionAmount(orig.getBalance(), random, true);
-                makeTransaction(step, transactionAmount.doubleValue(), orig, bene, alert.isSAR(), alert.getAlertID(), AMLTypology.BIPARTITE);
+                makeTransaction(step, transactionAmount.doubleValue(), orig, bene, alert.isSAR(), alert.getAlertID(), AMLTypology.STACK);
             }
         }
     }

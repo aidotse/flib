@@ -87,7 +87,7 @@ public class FanOutTransactionModel extends AbstractTransactionModel {
         for (int i = 0; i < beneList.size(); i++) {
             if (steps[i] == step) {
                 Account bene = beneList.get(i);
-                this.transactionAmount = new TargetedTransactionAmount(bene.getBalance(), this.random, false);
+                this.transactionAmount = new TargetedTransactionAmount(account.getBalance(), this.random, false);
                 makeTransaction(step, this.transactionAmount.doubleValue(), account, bene,
                         AbstractTransactionModel.NORMAL_FAN_OUT);
             }
