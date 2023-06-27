@@ -3,14 +3,17 @@ from torch.utils.data import DataLoader
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.preprocessing import StandardScaler
 import numpy as np 
 import copy
 
 from utils.data import Dataset
 from modules.logisticregressor.data_transformer import DataTransformer
 
+from utils.criterions import ClassBalancedLoss
+
 class Client():
-    def __init__(self, name, state_dict, df_train, df_test, continuous_columns=(), discrete_columns=(), target_column=None, local_epochs=1):
+    def __init__(self, name, state_dict, df_train, df_test, Criterion, Optimizer, learning_rate, continuous_columns=(), discrete_columns=(), target_column=None, local_epochs=1, batch_size=100):
         self.name = name
         self.epochs = local_epochs
         self.state_dict = state_dict
@@ -35,11 +38,16 @@ class Client():
             y_test = y_test.replace(unique, i)
         '''
         
-        self.data_transformer = DataTransformer()
-        self.data_transformer.fit(X_train, continuous_columns, discrete_columns)
-        X_train = self.data_transformer.transform(X_train)
-        X_val = self.data_transformer.transform(X_val)
-        X_test = self.data_transformer.transform(X_test)
+        #self.data_transformer = DataTransformer()
+        #self.data_transformer.fit(X_train, continuous_columns, discrete_columns)
+        #X_train = self.data_transformer.transform(X_train)
+        #X_val = self.data_transformer.transform(X_val)
+        #X_test = self.data_transformer.transform(X_test)
+        
+        scaler = StandardScaler().fit(X_train)
+        X_train = scaler.transform(X_train)
+        X_val = scaler.transform(X_val)
+        X_test = scaler.transform(X_test)
         y_train = y_train.to_numpy()
         y_val = y_val.to_numpy()
         y_test = y_test.to_numpy()
@@ -47,9 +55,20 @@ class Client():
         trainset = Dataset(X_train, y_train)
         valset = Dataset(X_val, y_val)
         testset = Dataset(X_test, y_test)
-        self.train_loader = DataLoader(trainset, batch_size=10, shuffle=True)#, num_workers=1)
-        self.val_loader = DataLoader(valset, batch_size=10, shuffle=True)#, num_workers=1)
-        self.test_loader = DataLoader(testset, batch_size=10, shuffle=True)#, num_workers=1)
+        self.train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True)#, num_workers=1)
+        self.val_loader = DataLoader(valset, batch_size=batch_size, shuffle=True)#, num_workers=1)
+        self.test_loader = DataLoader(testset, batch_size=batch_size, shuffle=True)#, num_workers=1)
+
+        if Criterion == ClassBalancedLoss:
+            unique_classes, n_samples_per_classes = np.unique(y_train, return_counts=True)
+            if unique_classes[0] == 1.0:
+                print(unique_classes)
+                print(n_samples_per_classes)
+            self.criterion = Criterion(beta=0.99, n_samples_per_classes=n_samples_per_classes, loss_type='sigmoid')
+        else:
+            self.criterion = Criterion()
+        self.Optimizer = Optimizer
+        self.learning_rate = learning_rate
 
         self.log = {
             'training': {
@@ -75,10 +94,11 @@ class Client():
             }
         }
 
-    def train(self, model, criterion, optimizer, device):
+    def train(self, model, device):
         #print('state_dict id: %i' % id(self.state_dict))
         model.load_state_dict(self.state_dict)
         model.train()
+        optimizer = self.Optimizer(model.parameters(), lr=self.learning_rate)
         losses = []
         accuracies = []
         precisions = []
@@ -90,14 +110,12 @@ class Client():
                 y_true = y_true.to(device)
                 optimizer.zero_grad()
                 y_pred = torch.squeeze(model(X_train))
-                loss = criterion(y_pred, y_true)
+                loss = self.criterion(y_pred, y_true)
                 loss.backward()
                 optimizer.step()        
                 losses.append(loss.item())
-                #accuracies.append(np.sum(y_pred.round().detach().cpu().numpy() == y_true.detach().cpu().numpy())/y_true.size(0))
-                #accuracies.append(torch.div(torch.sum(y_pred.round() == y_true), y_true.shape[0]).item())
                 y_true = y_true.detach().cpu()
-                y_pred = y_pred.round().detach().cpu()
+                y_pred = y_pred.argmax(dim=1).detach().cpu()
                 accuracies.append(accuracy_score(y_true=y_true, y_pred=y_pred))
                 precisions.append(precision_score(y_true=y_true, y_pred=y_pred, zero_division=0))
                 recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))
@@ -115,7 +133,7 @@ class Client():
         self.log['training']['f1'].append(f1)
         return loss, accuracy
     
-    def validate(self, model, criterion, device):
+    def validate(self, model, device):
         model.load_state_dict(self.state_dict)
         model.eval()
         losses = []
@@ -127,12 +145,10 @@ class Client():
             X_val = X_val.to(device)
             y_true = y_true.to(device)
             y_pred = torch.squeeze(model(X_val))
-            loss = criterion(y_pred, y_true)
+            loss = self.criterion(y_pred, y_true)
             losses.append(loss.item())
-            #accuracies.append(np.sum(y_pred.round().detach().numpy() == y_true.detach().numpy())/y_true.size(0))
-            #accuracies.append(torch.div(torch.sum(y_pred.round() == y_true), y_true.shape[0]).item())
             y_true = y_true.detach().cpu()
-            y_pred = y_pred.round().detach().cpu()
+            y_pred = y_pred.argmax(dim=1).detach().cpu()
             accuracies.append(accuracy_score(y_true=y_true, y_pred=y_pred))
             precisions.append(precision_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))
@@ -149,7 +165,7 @@ class Client():
         self.log['validation']['f1'].append(f1)
         return loss, accuracy
 
-    def test(self, model, criterion, device):
+    def test(self, model, device):
         model.load_state_dict(self.state_dict)
         model.eval()
         losses = []
@@ -160,13 +176,11 @@ class Client():
         for X_test, y_true in self.test_loader:
             X_test = X_test.to(device)
             y_true = y_true.to(device)
-            y_pred = torch.squeeze(model(X_test))
-            loss = criterion(y_pred, y_true)
+            y_pred = torch.squeeze(model(X_test), 1)
+            loss = self.criterion(y_pred, y_true)
             losses.append(loss.item())
-            #accuracies.append(np.sum(y_pred.round().detach().numpy() == y_true.detach().numpy())/y_true.size(0))
-            #accuracies.append(torch.div(torch.sum(y_pred.round() == y_true), y_true.shape[0]).item())
             y_true = y_true.detach().cpu()
-            y_pred = y_pred.round().detach().cpu()
+            y_pred = y_pred.argmax(dim=1).detach().cpu()
             accuracies.append(accuracy_score(y_true=y_true, y_pred=y_pred))
             precisions.append(precision_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))

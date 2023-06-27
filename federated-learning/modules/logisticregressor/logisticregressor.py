@@ -1,16 +1,18 @@
+import torch
 from torch.nn import Module, Linear
-from torch import sigmoid
+from torch import cat, relu, sigmoid
 #import pandas as pd
 #from data_transformer import DataTransformer
 
 class LogisticRegressor(Module):
-    def __init__(self, input_dim=50, output_dim=1):
+    def __init__(self, input_dim=36, output_dim=1):
         super(LogisticRegressor, self).__init__()
         self.linear = Linear(input_dim, output_dim)
-    
+        
     def forward(self, x):
         x = self.linear(x)
-        outputs = sigmoid(x)
+        x = sigmoid(x)
+        outputs = cat((1.0 - x, x), dim=1)
         return outputs
 '''
 class LogisticRegressor():

@@ -11,28 +11,33 @@ from collections import OrderedDict
 import copy
 
 class Server():
-    def __init__(self, n_clients:int, n_rounds:int, n_workers:int, Model, df_train, df_test, continuous_columns, discrete_columns, target_column, n_no_aggregation_rounds, learning_rate, local_epochs, verbose, eval_every, devices):
+    def __init__(self, n_clients:int, n_rounds:int, n_workers:int, Model, Criterion, Optimizer, df_train, df_test, continuous_columns, discrete_columns, target_column, n_no_aggregation_rounds, learning_rate, local_epochs, batch_size, verbose, eval_every, devices):
         self.n_workers = n_workers
+        self.devices = devices
+        
         self.n_rounds = n_rounds
         self.n_clients = n_clients
         self.n_clients_per_worker = self.n_clients // self.n_workers
-        self.Criterion = BCELoss
-        self.Optimizer = SGD
-        self.learning_rate = learning_rate
+        self.eval_every = eval_every
+        self.n_no_aggregation_rounds = n_no_aggregation_rounds
+        
         self.df_train = df_train
         self.df_test = df_test
         self.continuous_columns = continuous_columns,
         self.discrete_columns = discrete_columns
         self.target_column = target_column
-        self.eval_every = eval_every
-        self.n_no_aggregation_rounds = n_no_aggregation_rounds
-        self.local_epochs = local_epochs
-        self.verbose = verbose
         self.dfs_train = latent_dirchlet_allocation(df=self.df_train, target=self.target_column, partition='homo', n=self.n_clients, alpha=100.0)
+        
         self.Model = Model
+        self.Criterion = Criterion
+        self.Optimizer = Optimizer
+        self.learning_rate = learning_rate
+        self.local_epochs = local_epochs
+        self.batch_size = batch_size
         model = self.Model()
         self.state_dict = model.state_dict()
-        self.devices = devices
+        
+        self.verbose = verbose
 
     def _averge_state_dicts(self, state_dicts:list):
         avg_state_dict = OrderedDict([(key, 0.0) for key in state_dicts[0].keys()])
@@ -45,21 +50,19 @@ class Server():
         # init model
         model = self.Model()
         model.to(device)
-        criterion = self.Criterion()
-        optimizer = self.Optimizer(model.parameters(), lr=self.learning_rate)
         
         for round in range(self.n_rounds):        
             # train clients
             clients = queue.get()
             for client in clients:
                 if round % self.eval_every == 0:
-                    train_loss, train_accuracy = client.train(model=model, criterion=criterion, optimizer=optimizer, device=device)
-                    val_loss, val_accuracy = client.validate(model=model, criterion=criterion, device=device)
-                    test_loss, test_accuracy = client.test(model=model, criterion=criterion, device=device)
+                    train_loss, train_accuracy = client.train(model=model, device=device)
+                    val_loss, val_accuracy = client.validate(model=model, device=device)
+                    test_loss, test_accuracy = client.test(model=model, device=device)
                     if self.verbose:
                         print('%s: train_loss = %.4f, train_accuracy = %.4f, val_loss = %.4f, val_accuracy = %.4f, test_loss = %.4f, test_accuracy = %.4f' % (client.name, train_loss, train_accuracy, val_loss, val_accuracy, test_loss, test_accuracy))
                 else:
-                    train_loss, train_accuracy = client.train(model=model, criterion=criterion, optimizer=optimizer, device=device)
+                    train_loss, train_accuracy = client.train(model=model, device=device)
                     #print('%s: train_loss = %.4f, train_accuracy = %.4f' % (client.name, train_loss, train_accuracy))
             queue.put(clients)
             worker_event.set()
@@ -93,11 +96,15 @@ class Server():
                 name = 'client_%i' % i,
                 state_dict = copy.deepcopy(self.state_dict), 
                 df_train = df_train, 
-                df_test = self.df_test, 
+                df_test = self.df_test,
+                Criterion = self.Criterion,
+                Optimizer = self.Optimizer, 
+                learning_rate = self.learning_rate,
                 continuous_columns = self.continuous_columns,
                 discrete_columns = self.discrete_columns, 
                 target_column = self.target_column,
-                local_epochs = self.local_epochs
+                local_epochs = self.local_epochs,
+                batch_size = self.batch_size
             ) 
             for i, df_train in enumerate(self.dfs_train)
         ]
