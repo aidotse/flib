@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 import numpy as np 
 import copy
@@ -76,21 +76,24 @@ class Client():
                 'accuracy': [],
                 'precision': [],
                 'recall': [],
-                'f1': []
+                'f1': [],
+                'confusion_matrix': []
             },
             'validation': {
                 'loss': [],
                 'accuracy': [],
                 'precision': [],
                 'recall': [],
-                'f1': []
+                'f1': [],
+                'confusion_matrix': []
             },
             'test': {
                 'loss': [],
                 'accuracy': [],
                 'precision': [],
                 'recall': [],
-                'f1': []
+                'f1': [],
+                'confusion_matrix': []
             }
         }
 
@@ -104,6 +107,7 @@ class Client():
         precisions = []
         recalls = []
         f1s = []
+        confusions = []
         for _ in range(self.epochs):
             for X_train, y_true in self.train_loader:
                 X_train = X_train.to(device)
@@ -120,17 +124,20 @@ class Client():
                 precisions.append(precision_score(y_true=y_true, y_pred=y_pred, zero_division=0))
                 recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))
                 f1s.append(f1_score(y_true=y_true, y_pred=y_pred, zero_division=0))
+                confusions.append(confusion_matrix(y_true=y_true, y_pred=y_pred))
         self.state_dict = copy.deepcopy(model.state_dict())
         loss = sum(losses)/len(losses) 
         accuracy = sum(accuracies)/len(accuracies)
         precision = sum(precisions)/len(precisions)
         recall = sum(recalls)/len(recalls)
         f1 = sum(f1s)/len(f1s)
+        confusion = sum(confusions)
         self.log['training']['loss'].append(loss)
         self.log['training']['accuracy'].append(accuracy)
         self.log['training']['precision'].append(precision)
         self.log['training']['recall'].append(recall)
         self.log['training']['f1'].append(f1)
+        self.log['training']['confusion_matrix'].append(confusion)
         return loss, accuracy
     
     def validate(self, model, device):
@@ -141,6 +148,7 @@ class Client():
         precisions = []
         recalls = []
         f1s = []
+        confusions = []
         for X_val, y_true in self.val_loader:
             X_val = X_val.to(device)
             y_true = y_true.to(device)
@@ -153,16 +161,19 @@ class Client():
             precisions.append(precision_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             f1s.append(f1_score(y_true=y_true, y_pred=y_pred, zero_division=0))
+            confusions.append(confusion_matrix(y_true=y_true, y_pred=y_pred))
         loss = sum(losses)/len(losses) 
         accuracy = sum(accuracies)/len(accuracies)
         precision = sum(precisions)/len(precisions)
         recall = sum(recalls)/len(recalls)
         f1 = sum(f1s)/len(f1s)
+        confusion = sum(confusions)
         self.log['validation']['loss'].append(loss)
         self.log['validation']['accuracy'].append(accuracy)
         self.log['validation']['precision'].append(precision)
         self.log['validation']['recall'].append(recall)
         self.log['validation']['f1'].append(f1)
+        self.log['validation']['confusion_matrix'].append(confusion)
         return loss, accuracy
 
     def test(self, model, device):
@@ -173,6 +184,7 @@ class Client():
         precisions = []
         recalls = []
         f1s = []
+        confusions = []
         for X_test, y_true in self.test_loader:
             X_test = X_test.to(device)
             y_true = y_true.to(device)
@@ -185,16 +197,19 @@ class Client():
             precisions.append(precision_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             f1s.append(f1_score(y_true=y_true, y_pred=y_pred, zero_division=0))
+            confusions.append(confusion_matrix(y_true=y_true, y_pred=y_pred))
         loss = sum(losses)/len(losses) 
         accuracy = sum(accuracies)/len(accuracies)
         precision = sum(precisions)/len(precisions)
         recall = sum(recalls)/len(recalls)
         f1 = sum(f1s)/len(f1s)
+        confusion = sum(confusions)
         self.log['test']['loss'].append(loss)
         self.log['test']['accuracy'].append(accuracy)
         self.log['test']['precision'].append(precision)
         self.log['test']['recall'].append(recall)
         self.log['test']['f1'].append(f1)
+        self.log['test']['confusion_matrix'].append(confusion)
         return loss, accuracy
         
 

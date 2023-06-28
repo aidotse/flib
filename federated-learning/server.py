@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from time import sleep
 from client import Client
-from utils.data import latent_dirchlet_allocation
 import torch
 from torch.nn import BCELoss
 from torch.optim import SGD
@@ -11,7 +10,7 @@ from collections import OrderedDict
 import copy
 
 class Server():
-    def __init__(self, n_clients:int, n_rounds:int, n_workers:int, Model, Criterion, Optimizer, df_train, df_test, continuous_columns, discrete_columns, target_column, n_no_aggregation_rounds, learning_rate, local_epochs, batch_size, verbose, eval_every, devices):
+    def __init__(self, n_clients:int, n_rounds:int, n_workers:int, Model, Criterion, Optimizer, dfs_train, df_test, continuous_columns, discrete_columns, target_column, n_no_aggregation_rounds, learning_rate, local_epochs, batch_size, verbose, eval_every, devices):
         self.n_workers = n_workers
         self.devices = devices
         
@@ -21,12 +20,11 @@ class Server():
         self.eval_every = eval_every
         self.n_no_aggregation_rounds = n_no_aggregation_rounds
         
-        self.df_train = df_train
+        self.dfs_train = dfs_train
         self.df_test = df_test
         self.continuous_columns = continuous_columns,
         self.discrete_columns = discrete_columns
         self.target_column = target_column
-        self.dfs_train = latent_dirchlet_allocation(df=self.df_train, target=self.target_column, partition='homo', n=self.n_clients, alpha=100.0)
         
         self.Model = Model
         self.Criterion = Criterion
@@ -55,7 +53,11 @@ class Server():
             # train clients
             clients = queue.get()
             for client in clients:
-                if round % self.eval_every == 0:
+                if round == 0:
+                    test_loss, test_accuracy = client.test(model=model, device=device)
+                    if self.verbose:
+                        print('%s: test_loss = %.4f, test_accuracy = %.4f' % (client.name, test_loss, test_accuracy))
+                elif round % self.eval_every == 0:
                     train_loss, train_accuracy = client.train(model=model, device=device)
                     val_loss, val_accuracy = client.validate(model=model, device=device)
                     test_loss, test_accuracy = client.test(model=model, device=device)
