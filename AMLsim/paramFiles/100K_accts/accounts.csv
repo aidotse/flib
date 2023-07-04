@@ -1,0 +1,13 @@
+count,min_balance,max_balance,country,business_type,bank_id
+27700,10000,50000,SWE,I,swedbank
+13480,10000,50000,SWE,I,handelsbanken
+3720,10000,50000,SWE,I,seb
+26950,10000,50000,SWE,I,nodrea
+1050,10000,50000,SWE,I,danske
+4600,10000,50000,SWE,I,länsförsäkringar
+7490,10000,50000,SWE,I,ica
+3630,10000,50000,SWE,I,spabanken
+110,10000,50000,SWE,I,ålandsbanken
+2250,10000,50000,SWE,I,marginalen
+6260,10000,50000,SWE,I,svea
+2760,10000,50000,SWE,I,skandia

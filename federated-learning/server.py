@@ -8,11 +8,26 @@ from torch.nn import BCELoss
 from torch.optim import SGD
 from collections import OrderedDict
 import copy
+import random
+import os
+
+def set_random_seed(seed:int=1):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    ## NOTE: If you want every run to be exactly the same each time
+    ##       uncomment the following lines
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 
 class Server():
-    def __init__(self, n_clients:int, n_rounds:int, n_workers:int, Model, Criterion, Optimizer, dfs_train, df_test, continuous_columns, discrete_columns, target_column, n_no_aggregation_rounds, learning_rate, local_epochs, batch_size, verbose, eval_every, devices):
+    def __init__(self, n_clients:int, n_rounds:int, n_workers:int, Model, Criterion, Optimizer, dfs_train, df_test, continuous_columns, discrete_columns, target_column, n_no_aggregation_rounds, learning_rate, local_epochs, batch_size, verbose, eval_every, devices, seed, criterion_params=None, optimizer_params=None):
         self.n_workers = n_workers
         self.devices = devices
+        self.seed = seed
         
         self.n_rounds = n_rounds
         self.n_clients = n_clients
@@ -28,7 +43,9 @@ class Server():
         
         self.Model = Model
         self.Criterion = Criterion
+        self.criterion_params = criterion_params
         self.Optimizer = Optimizer
+        self.optimizer_params = optimizer_params
         self.learning_rate = learning_rate
         self.local_epochs = local_epochs
         self.batch_size = batch_size
@@ -37,11 +54,13 @@ class Server():
         
         self.verbose = verbose
 
-    def _averge_state_dicts(self, state_dicts:list):
+    def _averge_state_dicts(self, state_dicts:list, weights:list=None):
+        if weights == None:
+            weights = [1.0 for _ in range(0, len(state_dicts))]
         avg_state_dict = OrderedDict([(key, 0.0) for key in state_dicts[0].keys()])
         for key in state_dicts[0].keys():
             for i in range(0, len(state_dicts)):
-                avg_state_dict[key] += torch.div(state_dicts[i][key].cpu(), len(state_dicts)) 
+                avg_state_dict[key] += torch.mul(weights[i], torch.div(state_dicts[i][key].cpu(), len(state_dicts)))
         return avg_state_dict
 
     def _train_clients(self, queue, main_event, worker_event, device):
@@ -53,6 +72,7 @@ class Server():
             # train clients
             clients = queue.get()
             for client in clients:
+                set_random_seed(seed=self.seed+round)
                 if round == 0:
                     test_loss, test_accuracy = client.test(model=model, device=device)
                     if self.verbose:
@@ -90,7 +110,9 @@ class Server():
         if self.verbose:
             print('round %i' % 0)
         else:
-            print(' round %i' % 0, end='\r')
+            #print(' round %i' % 0, end='\r')
+            print(' progress: [%s%s] ' % ('#' * (0 * 40 // self.n_rounds), ' ' * (40 - 0 * 40 // self.n_rounds)), end='\r')
+
         
         # server working
         clients = [
@@ -106,7 +128,10 @@ class Server():
                 discrete_columns = self.discrete_columns, 
                 target_column = self.target_column,
                 local_epochs = self.local_epochs,
-                batch_size = self.batch_size
+                batch_size = self.batch_size,
+                criterion_params = self.criterion_params,
+                optimizer_params = self.optimizer_params,
+                device=self.devices[i % len(self.devices)],
             ) 
             for i, df_train in enumerate(self.dfs_train)
         ]
@@ -128,13 +153,13 @@ class Server():
             
             if self.verbose:
                 if round % self.eval_every == 0:
-                    #print('         ')
                     print('round %i ' % round)
                 else:
                     print(' round %i' % round, end='\r')
             else:
-                print(' round %i' % round, end='\r')
-
+                #print(' round %i' % round, end='\r')
+                print(' progress: [%s%s] ' % ('#' * (round * 40 // self.n_rounds), ' ' * (40 - round * 40 // self.n_rounds)), end='\r')
+                
             # server working
             if round < self.n_no_aggregation_rounds:
                 clients = [client for queue in queues for client in queue.get()]
@@ -146,7 +171,9 @@ class Server():
             else:
                 clients = [client for queue in queues for client in queue.get()]
                 state_dicts = [client.state_dict for client in clients]
-                avg_state_dict = self._averge_state_dicts(state_dicts=state_dicts)
+                trainset_sizes = [client.trainset_size for client in clients]
+                weights = [trainset_size / sum(trainset_sizes) for trainset_size in trainset_sizes]
+                avg_state_dict = self._averge_state_dicts(state_dicts=state_dicts, weights=weights)
                 for client in clients:
                     client.state_dict = copy.deepcopy(avg_state_dict)
                 clientss = [clients[x:x+self.n_clients_per_worker] for x in range(0, self.n_clients, self.n_clients_per_worker)]

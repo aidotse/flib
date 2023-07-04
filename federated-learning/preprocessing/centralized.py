@@ -125,8 +125,9 @@ def is_sar(df, account):
 
 
 def main():
-    DATASET = '10K_accts'
+    DATASET = '100K_accts'
     df = pd.read_csv(f'/home/edvin/Desktop/flib/AMLsim/outputs/{DATASET}/tx_log.csv')
+    #df = df.sample(n=100).reset_index(drop=True)
     min_step = df['step'].min()
     max_step = df['step'].max()
     ranges = [[min_step, max_step], [max_step // 2, max_step], [2 * max_step // 3, max_step]]
@@ -149,8 +150,9 @@ def main():
         'freq_bank_changes_1', 'freq_bank_changes_2', 'freq_bank_changes_3',
         'is_sar'
     ])
-    for account in accounts:
-        processed_df = processed_df.append({
+    print('Processing accounts...')
+    for i, account in enumerate(accounts):
+        processed_df.loc[i] = {
             'account': account, 
             'num_outgoing_txs_1': num_txs(df, account, ranges[0]), 'num_outgoing_txs_2': num_txs(df, account, ranges[1]), 'num_outgoing_txs_3': num_txs(df, account, ranges[2]),
             'sum_outgoing_txs_1': sum_txs(df, account, ranges[0]), 'sum_outgoing_txs_2': sum_txs(df, account, ranges[1]), 'sum_outgoing_txs_3': sum_txs(df, account, ranges[2]),
@@ -165,9 +167,28 @@ def main():
             'num_bank_changes_1': num_bank_changes(df, account, ranges[0]), 'num_bank_changes_2': num_bank_changes(df, account, ranges[1]), 'num_bank_changes_3': num_bank_changes(df, account, ranges[2]),
             'freq_bank_changes_1': freq_bank_changes(df, account, ranges[0]), 'freq_bank_changes_2': freq_bank_changes(df, account, ranges[1]), 'freq_bank_changes_3': freq_bank_changes(df, account, ranges[2]),
             'is_sar': is_sar(df, account)
-        }, ignore_index=True)
+        }
+        print(' progress: ' + str(i+1) + '/' + str(len(accounts)), end='\r')
+        #processed_df = processed_df.append({
+        #    'account': account, 
+        #    'num_outgoing_txs_1': num_txs(df, account, ranges[0]), 'num_outgoing_txs_2': num_txs(df, account, ranges[1]), 'num_outgoing_txs_3': num_txs(df, account, ranges[2]),
+        #    'sum_outgoing_txs_1': sum_txs(df, account, ranges[0]), 'sum_outgoing_txs_2': sum_txs(df, account, ranges[1]), 'sum_outgoing_txs_3': sum_txs(df, account, ranges[2]),
+        #    'freq_outgoing_txs_1': freq_txs(df, account, ranges[0]), 'freq_outgoing_txs_2': freq_txs(df, account, ranges[1]), 'freq_outgoing_txs_3': freq_txs(df, account, ranges[2]),
+        #    'num_txs_1': num_txs(df, account, ranges[0]), 'num_txs_2': num_txs(df, account, ranges[1]), 'num_txs_3': num_txs(df, account, ranges[2]),
+        #    'sum_txs_1': sum_txs(df, account, ranges[0]), 'sum_txs_2': sum_txs(df, account, ranges[1]), 'sum_txs_3': sum_txs(df, account, ranges[2]),
+        #    'freq_txs_1': freq_txs(df, account, ranges[0]), 'freq_txs_2': freq_txs(df, account, ranges[1]), 'freq_txs_3': freq_txs(df, account, ranges[2]),
+        #    'num_unique_counterparties_1': num_unique_counterparties(df, account, ranges[0]), 'num_unique_counterparties_2': num_unique_counterparties(df, account, ranges[1]), 'num_unique_counterparties_3': num_unique_counterparties(df, account, ranges[2]),
+        #    'freq_unique_counterparties_1': freq_unique_counterparties(df, account, ranges[0]), 'freq_unique_counterparties_2': freq_unique_counterparties(df, account, ranges[1]), 'freq_unique_counterparties_3': freq_unique_counterparties(df, account, ranges[2]),
+        #    'num_phone_changes_1': num_phone_changes(df, account, ranges[0]), 'num_phone_changes_2': num_phone_changes(df, account, ranges[1]), 'num_phone_changes_3': num_phone_changes(df, account, ranges[2]),
+        #    'freq_phone_changes_1': freq_phone_changes(df, account, ranges[0]), 'freq_phone_changes_2': freq_phone_changes(df, account, ranges[1]), 'freq_phone_changes_3': freq_phone_changes(df, account, ranges[2]),
+        #    'num_bank_changes_1': num_bank_changes(df, account, ranges[0]), 'num_bank_changes_2': num_bank_changes(df, account, ranges[1]), 'num_bank_changes_3': num_bank_changes(df, account, ranges[2]),
+        #    'freq_bank_changes_1': freq_bank_changes(df, account, ranges[0]), 'freq_bank_changes_2': freq_bank_changes(df, account, ranges[1]), 'freq_bank_changes_3': freq_bank_changes(df, account, ranges[2]),
+        #    'is_sar': is_sar(df, account)
+        #}, ignore_index=True)
+    
+    print('\ndone')
     os.makedirs(f'/home/edvin/Desktop/flib/federated-learning/datasets/{DATASET}', exist_ok=True)
-    processed_df.to_csv(f'/home/edvin/Desktop/flib/federated-learning/datasets/{DATASET}/data.csv', index=False)
+    processed_df.to_csv(f'/home/edvin/Desktop/flib/federated-learning/datasets/{DATASET}/all.csv', index=False)
     
 if __name__ == '__main__':
     main()

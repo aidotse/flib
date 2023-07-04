@@ -12,8 +12,8 @@ class Dataset(Dataset):
         self.y = y
     
     def __getitem__(self, idx):
-        X = self.X[0][idx].astype('float32') 
-        y = self.y[idx].astype('float32')
+        X = self.X[0][idx]#.astype('float32') 
+        y = self.y[idx]#.astype('float32')
         return X, y
     
     def __len__(self):

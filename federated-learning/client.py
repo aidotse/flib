@@ -12,12 +12,14 @@ from modules.logisticregressor.data_transformer import DataTransformer
 
 from utils.criterions import ClassBalancedLoss
 
+import time
+
 class Client():
-    def __init__(self, name, state_dict, df_train, df_test, Criterion, Optimizer, learning_rate, continuous_columns=(), discrete_columns=(), target_column=None, local_epochs=1, batch_size=100):
+    def __init__(self, name, state_dict, df_train, df_test, Criterion, criterion_params, Optimizer, optimizer_params, learning_rate, continuous_columns=(), discrete_columns=(), target_column=None, local_epochs=1, batch_size=100, device=torch.device('cpu')):
         self.name = name
         self.epochs = local_epochs
         self.state_dict = state_dict
-        
+        self.trainset_size = len(df_train)
         df_train, df_val = train_test_split(df_train, test_size=0.2)
         df_train = df_train.reset_index(drop=True)
         df_val = df_val.reset_index(drop=True)
@@ -46,28 +48,34 @@ class Client():
         
         scaler = StandardScaler().fit(X_train)
         X_train = scaler.transform(X_train)
+        X_train = torch.from_numpy(X_train).type(torch.float32)
         X_val = scaler.transform(X_val)
+        X_val = torch.from_numpy(X_val).type(torch.float32)
         X_test = scaler.transform(X_test)
+        X_test = torch.from_numpy(X_test).type(torch.float32)
         y_train = y_train.to_numpy()
+        y_train = torch.from_numpy(y_train).type(torch.float32)
         y_val = y_val.to_numpy()
+        y_val = torch.from_numpy(y_val).type(torch.float32)
         y_test = y_test.to_numpy()
+        y_test = torch.from_numpy(y_test).type(torch.float32)
 
         trainset = Dataset(X_train, y_train)
         valset = Dataset(X_val, y_val)
         testset = Dataset(X_test, y_test)
-        self.train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True)#, num_workers=1)
-        self.val_loader = DataLoader(valset, batch_size=batch_size, shuffle=True)#, num_workers=1)
-        self.test_loader = DataLoader(testset, batch_size=batch_size, shuffle=True)#, num_workers=1)
+        self.train_loader = DataLoader(
+            dataset=trainset, batch_size=batch_size, shuffle=True, 
+            num_workers=0, pin_memory=False, prefetch_factor=None, persistent_workers=False)
+        self.val_loader = DataLoader(valset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=False, prefetch_factor=None)
+        self.test_loader = DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=False, prefetch_factor=None)
 
         if Criterion == ClassBalancedLoss:
-            unique_classes, n_samples_per_classes = np.unique(y_train, return_counts=True)
-            if unique_classes[0] == 1.0:
-                print(unique_classes)
-                print(n_samples_per_classes)
-            self.criterion = Criterion(beta=0.99, n_samples_per_classes=n_samples_per_classes, loss_type='sigmoid')
+            n_samples_per_classes = [sum(y_train == 0).detach().cpu().numpy(), sum(y_train == 1).detach().cpu().numpy()]
+            self.criterion = Criterion(beta=criterion_params['beta'], n_samples_per_classes=n_samples_per_classes, loss_type='sigmoid')
         else:
             self.criterion = Criterion()
         self.Optimizer = Optimizer
+        self.optimizer_params = optimizer_params
         self.learning_rate = learning_rate
 
         self.log = {
@@ -98,25 +106,46 @@ class Client():
         }
 
     def train(self, model, device):
-        #print('state_dict id: %i' % id(self.state_dict))
         model.load_state_dict(self.state_dict)
         model.train()
-        optimizer = self.Optimizer(model.parameters(), lr=self.learning_rate)
+        optimizer = self.Optimizer(
+            params=model.parameters(), 
+            lr=self.learning_rate, 
+            momentum=self.optimizer_params['momentum'], 
+            weight_decay=self.optimizer_params['weight_decay'],
+            dampening=self.optimizer_params['dampening']
+        )
         losses = []
         accuracies = []
         precisions = []
         recalls = []
         f1s = []
         confusions = []
+        #load_times = []
+        #forwprop_times = []
+        #calcloss_times = []
+        #backprop_times = []
         for _ in range(self.epochs):
+            #start_load_time = time.time()
             for X_train, y_true in self.train_loader:
+                #end_load_time = time.time()
+                #load_times.append(end_load_time - start_load_time)
                 X_train = X_train.to(device)
                 y_true = y_true.to(device)
                 optimizer.zero_grad()
+                #start_forwprop_time = time.time()
                 y_pred = torch.squeeze(model(X_train))
+                #end_forwprop_time = time.time()
+                #forwprop_times.append(end_forwprop_time - start_forwprop_time)
+                #start_calcloss_time = time.time()
                 loss = self.criterion(y_pred, y_true)
+                #end_calcloss_time = time.time()
+                #calcloss_times.append(end_calcloss_time - start_calcloss_time)
+                #start_backprop_time = time.time()
                 loss.backward()
-                optimizer.step()        
+                optimizer.step()
+                #end_backprop_time = time.time()
+                #backprop_times.append(end_backprop_time - start_backprop_time)
                 losses.append(loss.item())
                 y_true = y_true.detach().cpu()
                 y_pred = y_pred.argmax(dim=1).detach().cpu()
@@ -125,6 +154,8 @@ class Client():
                 recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))
                 f1s.append(f1_score(y_true=y_true, y_pred=y_pred, zero_division=0))
                 confusions.append(confusion_matrix(y_true=y_true, y_pred=y_pred))
+                #start_load_time = time.time()
+        #print('%s: load time: %.6f, forwprop time: %.6f, calcloss time: %.6f, backprop time: %.6f' % (self.name, sum(load_times)/len(load_times), sum(forwprop_times)/len(forwprop_times), sum(calcloss_times)/len(calcloss_times), sum(backprop_times)/len(backprop_times)))
         self.state_dict = copy.deepcopy(model.state_dict())
         loss = sum(losses)/len(losses) 
         accuracy = sum(accuracies)/len(accuracies)
@@ -197,7 +228,7 @@ class Client():
             precisions.append(precision_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             recalls.append(recall_score(y_true=y_true, y_pred=y_pred, zero_division=0))
             f1s.append(f1_score(y_true=y_true, y_pred=y_pred, zero_division=0))
-            confusions.append(confusion_matrix(y_true=y_true, y_pred=y_pred))
+            confusions.append(confusion_matrix(y_true=y_true, y_pred=y_pred, labels=[0,1]))
         loss = sum(losses)/len(losses) 
         accuracy = sum(accuracies)/len(accuracies)
         precision = sum(precisions)/len(precisions)
