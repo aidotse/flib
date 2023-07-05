@@ -107,16 +107,31 @@ def directed_configuration_model(_in_deg, _out_deg, seed=0):
         out_tmp_list.extend(_out_deg[n] * [n])
     random.shuffle(in_tmp_list)
     random.shuffle(out_tmp_list)
-
+    
     num_edges = len(in_tmp_list)
+    
+    edge_dict = dict()
+    
     for i in range(num_edges):
         _src = out_tmp_list[i]
         _dst = in_tmp_list[i]
-        if _src == _dst:  # ID conflict causes self-loop
+        
+        if _src not in edge_dict:
+            edge_dict[_src] = list()
+        edge_exist = _dst in edge_dict[_src]
+        
+        # prevent self loops and adjust if edge already exists
+        if _src == _dst or edge_exist:
             for j in range(i + 1, num_edges):
-                if _src != in_tmp_list[j]:
+                edge_exist = in_tmp_list[j] in edge_dict[_src]
+                if _src != in_tmp_list[j] and not edge_exist:
                     in_tmp_list[i], in_tmp_list[j] = in_tmp_list[j], in_tmp_list[i]  # Swap ID
-                    break
+                    edge_dict[_src].append(in_tmp_list[j])
+                    break    
+            
+        else: # Shuffle if edge already exists
+            edge_dict[_src].append(_dst)
+       
 
     _g.add_edges_from(zip(out_tmp_list, in_tmp_list))
     for idx, (_src, _dst) in enumerate(_g.edges()):
@@ -637,6 +652,7 @@ class TransactionGenerator:
 
             self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period)
 
+        self.nominator.get_fan_out_candidates()
 
     def build_normal_models(self):
         """ Go through the accounts and attach normal models to them
@@ -684,6 +700,8 @@ class TransactionGenerator:
 
         normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_in_index]
+        
+        # TODO: This seems very risky. We are removing nodes from a normal model!
         for nm in normal_models:
             nm.remove_node_ids(candidates)
             
@@ -712,10 +730,12 @@ class TransactionGenerator:
 
         normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_out_index]
+        
+        # TODO: This seems very risky. We are removing nodes from a normal model!
         for nm in normal_models:
             nm.remove_node_ids(candidates)
 
-        result_ids = candidates | { node_id }
+        result_ids = candidates | { node_id } # all nodes in the fan-out relationship
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:

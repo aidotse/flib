@@ -1,4 +1,5 @@
 import networkx as nx
+import random
 
 class Nominator:
     """Class responsible for nominating nodes for transactions.
@@ -10,7 +11,8 @@ class Nominator:
         self.used_count_dict = dict()
         self.model_params_dict = dict()
         self.fan_in_candidates = self.get_fan_in_candidates()
-        self.fan_out_candidates = self.get_fan_out_candidates()
+        self.fan_out_candidates = []
+        # self.fan_out_candidates = self.get_fan_out_candidates()
         self.alt_fan_in_candidates = []
         self.alt_fan_out_candidates = []
         self.forward_candidates = self.get_forward_candidates()
@@ -41,7 +43,7 @@ class Nominator:
         if type in self.remaining_count_dict:
             self.remaining_count_dict[type] += count
             param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
-            self.model_params_dict[type] = param_list.append(param_list)
+            self.model_params_dict[type].extend(param_list)
         else:
             self.remaining_count_dict[type] = count
             param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
@@ -66,10 +68,17 @@ class Nominator:
         Returns:
             list: list of node ids that have at least degree_threshold outgoing edges
         """        
-        return sorted(
-            (n for n in self.g.nodes() if self.is_fan_out_candidate(n)),
-            key=lambda n: self.g.in_degree(n)
-        )
+        
+        min_thresholds = set([x[1] for x in self.model_params_dict['fan_out']]) # get all different minimum thresholds
+        
+        # create a list of candidates for each minimum threshold value
+        for i in range(max(min_thresholds)+1):
+            if i in min_thresholds:
+                candidates = sorted((n for n in self.g.nodes() if self.is_fan_out_candidate(n, i)),key=lambda n: self.g.in_degree(n))
+            else:
+                candidates=[]
+            self.fan_out_candidates.append(candidates)
+        return self.fan_out_candidates
 
     def is_fan_in_candidate(self, node_id):
         """Returns True if node_id has at least degree_threshold incoming edges.
@@ -82,7 +91,7 @@ class Nominator:
         """        
         return self.g.in_degree(node_id) >= self.degree_threshold
 
-    def is_fan_out_candidate(self, node_id):
+    def is_fan_out_candidate(self, node_id, degree_threshold):
         """Returns True if node_id has at least degree_threshold outgoing edges.
 
         Args:
@@ -91,7 +100,7 @@ class Nominator:
         Returns:
             bool: True if node_id has at least degree_threshold outgoing edges
         """        
-        return self.g.out_degree(node_id) >= self.degree_threshold
+        return self.g.out_degree(node_id) >= degree_threshold
 
     def number_unused(self):
         """Returns the number of unused nodes in the graph.
@@ -224,10 +233,11 @@ class Nominator:
         
         return node_id
 
-
     def next_fan_out(self, type):
-        self.fan_out_index, node_id = self.next_node_id(self.fan_out_index, self.fan_out_candidates)
-        if node_id is None:
+        
+        min_threshold = self.model_params_dict[type][self.fan_out_index][1]
+        self.fan_out_index, node_id = self.next_node_id(self.fan_out_index, self.fan_out_candidates[min_threshold]) # only send the candidates matching the threshold
+        if node_id is None: # if no nodes matched threshold criteria
             return self.next_alt_fan_out(type)
 
         try: 
@@ -331,10 +341,11 @@ class Nominator:
 
 
     def post_fan_out(self, node_id, type):
-        if not self.fan_out_candidates:
-            return self.post_alt_fan_out(node_id, type)
+        min_threshold = self.model_params_dict[type][self.fan_out_index][1]
+        if not self.fan_out_candidates[min_threshold]: # check if there are candidates left
+            return self.post_alt_fan_out(node_id, type) 
 
-        if self.is_done(node_id, type):
+        if self.is_done(node_id, type): # check if there are nodes that are not assigned fan-out
             candidate = self.fan_out_candidates.pop(self.fan_out_index) # remove from fan out candidates
             if not self.is_done(node_id, 'fan_in'): # check in the other direction
                 self.alt_fan_in_candidates.append(candidate) # add to alt fan in candidates
@@ -445,7 +456,9 @@ class Nominator:
         num_not = fan_out_or_not_list.count(False) # count the number of successors that do not have a fan_out relationship
         num_fan_out = fan_out_or_not_list.count(True) # count the number of successors that do have a fan_out relationship
 
-        num_to_work_with = (num_fan_out % self.degree_threshold) + num_not
+        min_degree_threshold = self.model_params_dict[type][self.fan_out_index][1]
+        num_to_work_with = (num_fan_out % min_degree_threshold) + num_not
+        
         return num_to_work_with < self.degree_threshold
         
 
@@ -513,10 +526,9 @@ class Nominator:
             list: A list of normal models where main_id is the main_id and the node_ids are a subset of the node_ids in the normal model.
         """        
         node_ids = set(node_ids)
-        normal_models = self.g.node[main_id]['normal_models'] # get the transaction models associated with main_id
-        filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id) # filter out the normal models that are of the type and have the main_id
-        return [filtered for filtered in filtereds if node_ids.issubset(filtered.node_ids)] # return True if any of the filtered normal models contain the node_ids
-
+        normal_models = self.g.node[main_id]['normal_models'] # get the normal models associated with main_id
+        filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id) # get the normal models where main_id is main and type is type
+        return [filtered for filtered in filtereds if node_ids.issubset(filtered.node_ids)] # return normal models where node_ids is a subset of the nodes in the normal model
 
     def fan_clumps(self, type, node_id):
         """Return a list of sets of node_ids that are in a fan relationship with the node_id.
@@ -529,8 +541,8 @@ class Nominator:
             list: A list of sets of node_ids that are in a fan relationship with the node_id.
         """        
         normal_models = self.g.node[node_id]['normal_models'] # get the transaction models associated with node_id
-        filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == node_id) # filter out the normal models that are of the type and have the node_id as the main_id
-        return (filtered.node_ids_without_main() for filtered in filtereds) # return the node_ids without the main_id
+        filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == node_id) # pick all normal models of type where node_id is the main_id
+        return (filtered.node_ids_without_main() for filtered in filtereds) # return the node_ids that are not main_id
 
 
     def fan_in_breakdown(self, type, node_id):
@@ -577,13 +589,21 @@ class Nominator:
         """        
         candidates = set()
 
-        fan_clumps = self.fan_clumps(type_, node_id) # get the node_ids that are in a fan relationship with the node_id
+        fan_clumps_nodes = self.fan_clumps(type_, node_id) # get the node_ids that are in a fan relationship where node_id is the main_id
         fan_nodes = set()
-        for fan_clump in fan_clumps:
-            fan_nodes = fan_nodes | fan_clump # get the union of the fan_clumps
+        for fan_clump in fan_clumps_nodes:
+            fan_nodes = fan_nodes | fan_clump # get all the nodes already in type relationship with node_id
 
-        candidates = neighbor_ids - fan_nodes # get the set difference between the neighbors and the fan_nodes
-        if len(candidates) >= self.degree_threshold: 
+        candidates = neighbor_ids - fan_nodes # get the set of nodes available for type
+        
+        min_degree_threshold = self.model_params_dict[type_][self.fan_out_index][1]
+        max_degree_threshold = self.model_params_dict[type_][self.fan_out_index][2]
+        
+        # TODO: handle the case when nodes are too many or too few
+        if len(candidates) >= min_degree_threshold and len(candidates) <= max_degree_threshold: 
+            return candidates
+        elif len(candidates) > max_degree_threshold:
+            candidates = set(random.sample(candidates, max_degree_threshold)) # randomly sample max_degree_threshold nodes from candidates
             return candidates
         else:
             # if there are not enough candidates, then we need to add some from the fan_clumps
