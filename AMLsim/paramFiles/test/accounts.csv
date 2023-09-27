@@ -1,1 +1,2 @@
-count,min_balance,max_balance,start_day,end_day,country,business_type,model,bank_id
+count,min_balance,max_balance,start_day,end_day,country,business_type,bank_id
+10,100,1000,1,367,swe,I,bank

@@ -61,10 +61,9 @@ def get_aggregated_confusion_matrices(log:dict, stages=['training', 'validation'
     return aggregated_confusion_matrices
 
 def train_tree(dfs_train_decentralized, df_test_decentralized, target_column):
-    print('\ntraning isolated decision trees started\n')
     log = {}
     for i, df in enumerate(dfs_train_decentralized):
-        df_train, df_val = train_test_split(df_train, test_size=0.2)
+        df_train, df_val = train_test_split(df, test_size=0.2)
         df_train = df_train.reset_index(drop=True)
         df_val = df_val.reset_index(drop=True)
         if target_column == None:
@@ -109,10 +108,9 @@ def train_tree(dfs_train_decentralized, df_test_decentralized, target_column):
         f1 = f1_score(y_true=y_test, y_pred=y_pred, zero_division=0)
         confusion = confusion_matrix(y_true=y_test, y_pred=y_pred)
         log['client_%i' % i]['test'] = {'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1], 'confusion_matrix': [confusion]}
-    print('traning isolated decision trees done\n')
     return log
 
-def plot_logs(logs, labels, n_rounds=201, eval_every=20):
+def plot_logs(logs, log4, labels, n_rounds=201, eval_every=20):
     rounds = [round for round in range(0, n_rounds, eval_every)]
     colors = ['C0', 'C1', 'C2']
     fig, axs = plt.subplots(2, 2, figsize=(12, 9))
@@ -127,24 +125,24 @@ def plot_logs(logs, labels, n_rounds=201, eval_every=20):
         axs[1, 1].plot(rounds, means['test']['f1'], color=color, label=label)
         axs[1, 1].fill_between(rounds, means['test']['f1'] - stds['test']['f1'], means['test']['f1'] + stds['test']['f1'], color=color, alpha=0.2)
     
-    # means, stds = get_means_and_stds(log4, metrics=['accuracy', 'precision', 'recall', 'f1'])
-    # x = np.array([rounds[0], rounds[-1]])
-    # y = np.array([means['test']['accuracy'][0], means['test']['accuracy'][0]])
-    # d = np.array([stds['test']['accuracy'][0], stds['test']['accuracy'][0]])
-    # axs[0, 0].plot(x, y, color='black', label='baseline')
-    # axs[0, 0].fill_between(x, y - d, y + d, color='black', alpha=0.2)
-    # y = np.array([means['test']['precision'][0], means['test']['precision'][0]])
-    # d = np.array([stds['test']['precision'][0], stds['test']['precision'][0]])
-    # axs[0, 1].plot(x, y, color='black', label='baseline')
-    # axs[0, 1].fill_between(x, y - d, y + d, color='black', alpha=0.2)
-    # y = np.array([means['test']['recall'][0], means['test']['recall'][0]])
-    # d = np.array([stds['test']['recall'][0], stds['test']['recall'][0]])
-    # axs[1, 0].plot(x, y, color='black', label='baseline')
-    # axs[1, 0].fill_between(x, y - d, y + d, color='black', alpha=0.2)
-    # y = np.array([means['test']['f1'][0], means['test']['f1'][0]])
-    # d = np.array([stds['test']['f1'][0], stds['test']['f1'][0]])
-    # axs[1, 1].plot(x, y, color='black', label='baseline')
-    # axs[1, 1].fill_between(x, y - d, y + d, color='black', alpha=0.2)
+    means, stds = get_means_and_stds(log4, metrics=['accuracy', 'precision', 'recall', 'f1'])
+    x = np.array([rounds[0], rounds[-1]])
+    y = np.array([means['test']['accuracy'][0], means['test']['accuracy'][0]])
+    d = np.array([stds['test']['accuracy'][0], stds['test']['accuracy'][0]])
+    axs[0, 0].plot(x, y, color='black', label='baseline')
+    axs[0, 0].fill_between(x, y - d, y + d, color='black', alpha=0.2)
+    y = np.array([means['test']['precision'][0], means['test']['precision'][0]])
+    d = np.array([stds['test']['precision'][0], stds['test']['precision'][0]])
+    axs[0, 1].plot(x, y, color='black', label='baseline')
+    axs[0, 1].fill_between(x, y - d, y + d, color='black', alpha=0.2)
+    y = np.array([means['test']['recall'][0], means['test']['recall'][0]])
+    d = np.array([stds['test']['recall'][0], stds['test']['recall'][0]])
+    axs[1, 0].plot(x, y, color='black', label='baseline')
+    axs[1, 0].fill_between(x, y - d, y + d, color='black', alpha=0.2)
+    y = np.array([means['test']['f1'][0], means['test']['f1'][0]])
+    d = np.array([stds['test']['f1'][0], stds['test']['f1'][0]])
+    axs[1, 1].plot(x, y, color='black', label='baseline')
+    axs[1, 1].fill_between(x, y - d, y + d, color='black', alpha=0.2)
 
     metrics = ['accuracy', 'precision', 'recall', 'f1']
     for ax, metric in zip(axs.flat, metrics):
@@ -155,25 +153,25 @@ def plot_logs(logs, labels, n_rounds=201, eval_every=20):
     
     plt.savefig('metrics.png')
 
-    #fig, axs = plt.subplots(1, 4, figsize=(16, 5))
-    #confusion_matrices = get_aggregated_confusion_matrices(log1)
-    #sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[0], fmt='g', cmap='Blues', cbar=False)
-    #axs[0].set_title('centralized', fontsize=18)
-    #confusion_matrices = get_aggregated_confusion_matrices(log2)
-    #sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[1], fmt='g', cmap='Oranges', cbar=False)
-    #axs[1].set_title('isolated', fontsize=18)
-    #confusion_matrices = get_aggregated_confusion_matrices(log3)
-    #sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[2], fmt='g', cmap='Greens', cbar=False)
-    #axs[2].set_title('federated', fontsize=18)
-    #confusion_matrices = get_aggregated_confusion_matrices(log4)
-    #sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[3], fmt='g', cmap='Greys', cbar=False)
-    #axs[3].set_title('baseline', fontsize=18)
-    #for ax in axs:
-    #    ax.set_xlabel('prediction', fontsize=16)
-    #    ax.set_ylabel('label', fontsize=16)
-    #fig.tight_layout(pad=2.0)
-    #
-    #plt.savefig('confusion_matrices.png')
+    fig, axs = plt.subplots(1, 4, figsize=(16, 5))
+    confusion_matrices = get_aggregated_confusion_matrices(logs[0])
+    sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[0], fmt='g', cmap='Blues', cbar=False)
+    axs[0].set_title('centralized', fontsize=18)
+    confusion_matrices = get_aggregated_confusion_matrices(logs[1])
+    sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[1], fmt='g', cmap='Oranges', cbar=False)
+    axs[1].set_title('isolated', fontsize=18)
+    confusion_matrices = get_aggregated_confusion_matrices(logs[2])
+    sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[2], fmt='g', cmap='Greens', cbar=False)
+    axs[2].set_title('federated', fontsize=18)
+    confusion_matrices = get_aggregated_confusion_matrices(log4)
+    sns.heatmap(confusion_matrices['test'][-1], annot=True, annot_kws={"size": 16}, ax=axs[3], fmt='g', cmap='Greys', cbar=False)
+    axs[3].set_title('baseline', fontsize=18)
+    for ax in axs:
+        ax.set_xlabel('prediction', fontsize=16)
+        ax.set_ylabel('label', fontsize=16)
+    fig.tight_layout(pad=2.0)
+    
+    plt.savefig('confusion_matrices.png')
 
 def run_experiment(args):
     curr_proc=mp.current_process()
@@ -215,9 +213,14 @@ def run_experiment(args):
     )
 
     log = server.run()
-    means, _ = get_means_and_stds(log=log, stages=['test'], metrics=['recall'])
+    means, _ = get_means_and_stds(log=log, stages=['test'], metrics=['loss', 'accuracy', 'precision', 'recall', 'f1'])
+    loss = means['test']['loss'][-1]
+    accuracy = means['test']['accuracy'][-1]
+    precision = means['test']['precision'][-1]
     recall = means['test']['recall'][-1]
-    print('type: %s, beta: %f - recall: %.4f     ' % (args.type, args.beta, recall))
+    f1 = means['test']['f1'][-1]
+    with open('param_sweep_cen.csv', 'a') as f:
+        f.write('%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n' % (args.beta, args.momentum, args.weight_decay, args.dampening, args.learning_rate, loss, accuracy, precision, recall, f1))
     
     return
 
@@ -234,49 +237,42 @@ def main():
     set_random_seed(seed=seed)
 
     # AML dataset
-    DATASET = '100K_accts'
-    continuous_columns=[
-        'num_outgoing_txs_1', 'num_outgoing_txs_2', 'num_outgoing_txs_3',
-        'sum_outgoing_txs_1', 'sum_outgoing_txs_2', 'sum_outgoing_txs_3',
-        'freq_outgoing_txs_1', 'freq_outgoing_txs_2', 'freq_outgoing_txs_3',
-        'num_txs_1', 'num_txs_2', 'num_txs_3',
-        'sum_txs_1', 'sum_txs_2', 'sum_txs_3',
-        'freq_txs_1', 'freq_txs_2', 'freq_txs_3',
-        'num_unique_counterparties_1', 'num_unique_counterparties_2', 'num_unique_counterparties_3',
-        'freq_unique_counterparties_1', 'freq_unique_counterparties_2', 'freq_unique_counterparties_3',
-        'num_phone_changes_1', 'num_phone_changes_2', 'num_phone_changes_3',
-        'freq_phone_changes_1', 'freq_phone_changes_2', 'freq_phone_changes_3',
-        'num_bank_changes_1', 'num_bank_changes_2', 'num_bank_changes_3',
-        'freq_bank_changes_1', 'freq_bank_changes_2', 'freq_bank_changes_3',
-    ]
+    DATASET = '10K_accts_super_easy_prepro2'
+    #continuous_columns=[
+    #    'num_outgoing_txs_1', 'num_outgoing_txs_2', 'num_outgoing_txs_3',
+    #    'sum_outgoing_txs_1', 'sum_outgoing_txs_2', 'sum_outgoing_txs_3',
+    #    'freq_outgoing_txs_1', 'freq_outgoing_txs_2', 'freq_outgoing_txs_3',
+    #    'num_txs_1', 'num_txs_2', 'num_txs_3',
+    #    'sum_txs_1', 'sum_txs_2', 'sum_txs_3',
+    #    'freq_txs_1', 'freq_txs_2', 'freq_txs_3',
+    #    'num_unique_counterparties_1', 'num_unique_counterparties_2', 'num_unique_counterparties_3',
+    #    'freq_unique_counterparties_1', 'freq_unique_counterparties_2', 'freq_unique_counterparties_3',
+    #    'num_phone_changes_1', 'num_phone_changes_2', 'num_phone_changes_3',
+    #    'freq_phone_changes_1', 'freq_phone_changes_2', 'freq_phone_changes_3',
+    #    'num_bank_changes_1', 'num_bank_changes_2', 'num_bank_changes_3',
+    #    'freq_bank_changes_1', 'freq_bank_changes_2', 'freq_bank_changes_3',
+    #]
     target_column = 'is_sar'
     banks = [
         'swedbank',
         'handelsbanken',
         'seb',
-        'nodrea',
+        'nordea',
         'danske',
         'länsförsäkringar',
         'ica',
-        'spabanken',
+        'sparbanken',
         'ålandsbanken',
         'marginalen',
         'svea',
         'skandia',
     ]
 
-    #df_centralized = pd.read_csv(f'/home/edvin/Desktop/flib/federated-learning/datasets/{DATASET}/all.csv')
-    #df_train_centralized, df_test_centralized = train_test_split(df_centralized, test_size=0.2, random_state=seed)
-    #df_train_centralized = df_train_centralized.sample(frac=1, random_state=seed).reset_index(drop=True)
-    #df_test_centralized = df_test_centralized.sample(frac=1, random_state=seed).reset_index(drop=True)
-    #test_accounts = df_test_centralized['account'].to_list()
-    #df_train_centralized = df_train_centralized.drop(columns='account')
-    #df_test_centralized = df_test_centralized.drop(columns='account')
-    
     trainsets = []
     testsets = []
     for bank in banks:
         dataset = pd.read_csv(f'/home/edvin/Desktop/flib/federated-learning/datasets/{DATASET}/{bank}.csv')
+        continuous_columns = dataset.columns[1:-1]
         trainset, testset = train_test_split(dataset, test_size=0.2, random_state=seed)
         trainset = trainset.drop(columns='account')
         testset = testset.drop(columns='account')
@@ -285,71 +281,180 @@ def main():
         trainsets.append(trainset)
         testsets.append(testset)
     testset = pd.concat(testsets, axis=0)
+    trainset = pd.concat(trainsets, axis=0)
     
-    #print('centralized trainset imbalance:\n', df_train_centralized[target_column].value_counts())
-    #print('centralized testset imbalance:\n', df_test_centralized[target_column].value_counts())
-    #print('decentralized trainset imbalance:\n', df_test_decentralized[target_column].value_counts())
-    
-    # Hyperparameters federated
-    #n_workers = 6 # same numbers as cpus (8) is fastest
-    #n_clients = 12
-    #n_rounds = 101
-    #eval_every = 10
-    #n_no_aggregation_rounds = 0
-    #Model = LogisticRegressor
-    #Criterion = ClassBalancedLoss
-    #Optimizer = SGD
-    #local_epochs = 1
+    #param_grid = ParameterGrid({
+    #    'devices': [devices],
+    #    'n_workers': [1],
+    #    'n_clients': [1],
+    #    'trainsets': [[trainset]],
+    #    'testsets': [testset],
+    #    'continuous_columns': [continuous_columns],
+    #    'discrete_columns': [()],
+    #    'target_column': [target_column],
+    #    'type': ['federated'],
+    #    'n_rounds': [101],
+    #    'eval_every': [10],
+    #    'n_no_aggregation_rounds': [101],
+    #    'Model': [LogisticRegressor],
+    #    'Criterion': [ClassBalancedLoss],
+    #    'Optimizer': [SGD],
+    #    'local_epochs': [1],
+    #    'beta': [0.9, 0.933333, 0.966666, 0.999999],
+    #    'momentum': [0.1, 0.3, 0.6, 0.9],
+    #    'weight_decay': [0.0001, 0.001, 0.01, 0.1],
+    #    'dampening': [0.0001, 0.001, 0.01, 0.1],
+    #    'learning_rate': [0.0001, 0.001, 0.01, 0.1],
+    #    'batch_size': [2048],
+    #    'seed': [seed],
+    #    'verbose': [False],
+    #})
+    #
+    #args_list = []
+    #df = pd.read_csv('param_sweep_cen.csv')
+    #for i, params in enumerate(param_grid):
+    #    if df[(df['beta']==params['beta']) & (df['momentum']==params['momentum']) & (df['weight_decay']==params['weight_decay']) & (df['dampening']==params['dampening']) & (df['learning_rate']==params['learning_rate'])].empty:
+    #        parser = argparse.ArgumentParser()
+    #        for key, value in params.items():
+    #            parser.add_argument(f'--{key}', type=type(value), default=value, help=f'enter {key}')
+    #        args = parser.parse_args()
+    #        args_list.append(args)
+    #
+    #print('number of experiments:', len(args_list))
+    #
+    #with open('param_sweep_cen.csv', 'a') as f:
+    #    f.write('beta,momentum,weight_decay,dampening,learning_rate,loss,accuracy,precision,recall,f1\n')
+    #
+    #start_time = time.time()
+    #with mp.Pool(20) as p:
+    #    p.map(run_experiment, args_list)
+    #end_time = time.time()
+    #print(f'elapsed time: {end_time - start_time}')
+    #print()
 
-    param_grid = ParameterGrid({
-        'devices': [devices],
-        'n_workers': [6],
-        'n_clients': [12],
-        'trainsets': [trainsets],
-        'testsets': [testset],
-        'continuous_columns': [continuous_columns],
-        'discrete_columns': [()],
-        'target_column': [target_column],
-        'type': ['federated'],
-        'n_rounds': [101],
-        'eval_every': [10],
-        'n_no_aggregation_rounds': [0],
-        'Model': [LogisticRegressor],
-        'Criterion': [ClassBalancedLoss],
-        'Optimizer': [SGD],
-        'local_epochs': [1],
-        'beta': [0.99999, 0.99999, 0.99999],
-        'momentum': [0.07],
-        'weight_decay': [0.0],
-        'dampening': [0.0],
-        'learning_rate': [0.0001],
-        'batch_size': [2048],
-        'seed': [seed],
-        'verbose': [False],
-    })
+    N_ROUNDS = 101
+    EVAL_EVERY = 20
 
-    args_list = []
-    for i, params in enumerate(param_grid):
-        parser = argparse.ArgumentParser()
-        for key, value in params.items():
-            parser.add_argument(f'--{key}', type=type(value), default=value, help=f'enter {key}')
-        args = parser.parse_args()
-        args_list.append(args)
-    
-    start_time = time.time()
-    with mp.Pool(3) as p:
-        p.map(run_experiment, args_list)
-    end_time = time.time()
-    print(f'elapsed time: {end_time - start_time}')
+    print('traning centralized')
+    set_random_seed(seed)
+    criterion_params = {
+        'beta': 0.5
+    }
+    optimizer_params = {
+        'momentum': 0.6,
+        'weight_decay': 0.1,
+        'dampening': 0.1
+    }
+    server = Server(
+        devices=devices,
+        n_workers=1,
+        n_clients=1,
+        dfs_train=[trainset],
+        df_test=testset,
+        continuous_columns=continuous_columns,
+        discrete_columns=(),
+        target_column=target_column,
+        n_rounds=N_ROUNDS,
+        eval_every=EVAL_EVERY,
+        n_no_aggregation_rounds=N_ROUNDS,
+        Model=LogisticRegressor,
+        Criterion=ClassBalancedLoss,
+        criterion_params=criterion_params,
+        Optimizer=SGD,
+        optimizer_params=optimizer_params,
+        local_epochs=1,
+        learning_rate=10.0,
+        batch_size=2048,
+        seed=seed,
+        verbose=False,
+    )
+    log_cen = server.run()
     print()
-
-    start_time = time.time()
-    with mp.Pool(3) as p:
-        p.map(run_experiment, args_list)
-    end_time = time.time()
-    print(f'elapsed time: {end_time - start_time}')
+    
+    print('traning isolated')
+    set_random_seed(seed)
+    criterion_params = {
+        'beta': 0.5
+    }
+    optimizer_params = {
+        'momentum': 0.6,
+        'weight_decay': 0.1,
+        'dampening': 0.1,
+    }
+    server = Server(
+        devices=devices,
+        n_workers=6,
+        n_clients=12,
+        dfs_train=trainsets,
+        df_test=testset,
+        continuous_columns=continuous_columns,
+        discrete_columns=(),
+        target_column=target_column,
+        n_rounds=N_ROUNDS,
+        eval_every=EVAL_EVERY,
+        n_no_aggregation_rounds=N_ROUNDS,
+        Model=LogisticRegressor,
+        Criterion=ClassBalancedLoss,
+        criterion_params=criterion_params,
+        Optimizer=SGD,
+        optimizer_params=optimizer_params,
+        local_epochs=1,
+        learning_rate=10.0,
+        batch_size=2048,
+        seed=seed,
+        verbose=False,
+    )
+    log_iso = server.run()
     print()
-    start_time = time.time()
+    
+    print('traning federated')
+    set_random_seed(seed)
+    criterion_params = {
+        'beta': 0.5
+    }
+    optimizer_params = {
+        'momentum': 0.6,
+        'weight_decay': 0.1,
+        'dampening': 0.1,
+    }
+    server = Server(
+        devices=devices,
+        n_workers=6,
+        n_clients=12,
+        dfs_train=trainsets,
+        df_test=testset,
+        continuous_columns=continuous_columns,
+        discrete_columns=(),
+        target_column=target_column,
+        n_rounds=N_ROUNDS,
+        eval_every=EVAL_EVERY,
+        n_no_aggregation_rounds=0,
+        Model=LogisticRegressor,
+        Criterion=ClassBalancedLoss,
+        criterion_params=criterion_params,
+        Optimizer=SGD,
+        optimizer_params=optimizer_params,
+        local_epochs=1,
+        learning_rate=10.0,
+        batch_size=2048,
+        seed=seed,
+        verbose=False,
+    )
+    #start_time = time.time()
+    log_fed = server.run()
+    #end_time = time.time()
+    print()
+    #print('elapsed time:', end_time - start_time)
+    #print(log_fed['client_0']['test']['accuracy'][-1])
+
+    print('traning tree')
+    set_random_seed(seed)
+    log4 = train_tree(dfs_train_decentralized=trainsets, df_test_decentralized=testset, target_column=target_column)
+    print(' done')
+    
+    logs = [log_cen, log_iso, log_fed]
+    labels = ['centralized', 'isolation', 'federated']
+    plot_logs(logs, log4, labels, n_rounds=N_ROUNDS, eval_every=EVAL_EVERY)
     
     return
 

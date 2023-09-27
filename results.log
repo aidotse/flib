@@ -1,0 +1,13 @@
+INFO:root:round 0
+INFO:root:client_0: loss=1.4308773875236511
+INFO:root:client_1: loss=1.4339808225631714
+INFO:root:client_2: loss=1.4365360021591187
+INFO:root:client_3: loss=1.444945216178894
+INFO:root:client_4: loss=1.4348310828208923
+INFO:root:client_5: loss=1.4307003418604534
+INFO:root:client_6: loss=1.432729630470276
+INFO:root:client_7: loss=1.438356101512909
+INFO:root:client_8: loss=1.4417508244514465
+INFO:root:client_9: loss=1.4360835075378418
+INFO:root:client_10: loss=1.4323242704073589
+INFO:root:client_11: loss=1.4679327011108398

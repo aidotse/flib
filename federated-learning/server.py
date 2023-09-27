@@ -10,6 +10,7 @@ from collections import OrderedDict
 import copy
 import random
 import os
+from multiprocessing import Pool
 
 def set_random_seed(seed:int=1):
     random.seed(seed)
@@ -111,7 +112,7 @@ class Server():
             print('round %i' % 0)
         else:
             #print(' round %i' % 0, end='\r')
-            print(' progress: [%s%s] ' % ('#' * (0 * 40 // self.n_rounds), ' ' * (40 - 0 * 40 // self.n_rounds)), end='\r')
+            print(' progress: [%s%s] ' % ('#' * (0 * 100 // self.n_rounds), '.' * (100 - 0 * 100 // self.n_rounds - 1)), end='\r')
 
         
         # server working
@@ -158,7 +159,7 @@ class Server():
                     print(' round %i' % round, end='\r')
             else:
                 #print(' round %i' % round, end='\r')
-                print(' progress: [%s%s] ' % ('#' * (round * 40 // self.n_rounds), ' ' * (40 - round * 40 // self.n_rounds)), end='\r')
+                print(' progress: [%s%s] ' % ('#' * (round * 100 // self.n_rounds), '.' * (100 - round * 100 // self.n_rounds - 1)), end='\r')
                 
             # server working
             if round < self.n_no_aggregation_rounds:
@@ -198,3 +199,73 @@ class Server():
             worker.terminate()
         
         return {client.name: client.log for client in clients}
+    
+    '''
+    def _train_clients2(self, args):
+        clients, model, device = args
+        model.to(device)
+        for client in clients:
+            client.train(model, device)
+        return clients
+    
+    def _val_clients2(self, args):
+        clients, model, device = args
+        model.to(device)
+        for client in clients:
+            client.validate(model, device)
+        return clients
+    
+    def _test_clients2(self, args):
+        clients, model, device = args
+        model.to(device)
+        for client in clients:
+            client.test(model, device)
+        return clients
+    
+    def run2(self):
+        clients = [
+            Client(
+                name = 'client_%i' % i,
+                state_dict = copy.deepcopy(self.state_dict), 
+                df_train = df_train, 
+                df_test = self.df_test,
+                Criterion = self.Criterion,
+                Optimizer = self.Optimizer, 
+                learning_rate = self.learning_rate,
+                continuous_columns = self.continuous_columns,
+                discrete_columns = self.discrete_columns, 
+                target_column = self.target_column,
+                local_epochs = self.local_epochs,
+                batch_size = self.batch_size,
+                criterion_params = self.criterion_params,
+                optimizer_params = self.optimizer_params,
+                device=self.devices[i % len(self.devices)],
+            ) 
+            for i, df_train in enumerate(self.dfs_train)
+        ]
+        cs = np.array_split(clients, self.n_workers)
+        ms = [self.Model() for i in range(self.n_workers)]
+        ds = [self.devices[i % len(self.devices)] for i in range(self.n_workers)]
+        iterable = [(cs[i], ms[i], ds[i]) for i in range(self.n_workers)]
+        with Pool(self.n_workers) as p:
+            for round in range(self.n_rounds):
+                if round == 0:
+                    p.map(self._test_clients2, iterable)
+                elif round % self.eval_every == 0:
+                    p.map(self._train_clients2, iterable)
+                    p.map(self._val_clients2, iterable)
+                    p.map(self._test_clients2, iterable)
+                else:
+                    p.map(self._train_clients2, iterable)
+                
+                if round > self.n_no_aggregation_rounds:
+                    state_dicts = [client.state_dict for client in clients]
+                    trainset_sizes = [client.trainset_size for client in clients]
+                    weights = [trainset_size / sum(trainset_sizes) for trainset_size in trainset_sizes]
+                    avg_state_dict = self._averge_state_dicts(state_dicts=state_dicts, weights=weights)
+                    for client in clients:
+                        client.state_dict = copy.deepcopy(avg_state_dict)
+        
+        return {client.name: client.log for client in clients}
+
+    '''

@@ -212,6 +212,9 @@ public abstract class AMLTypology extends AbstractTransactionModel {
             throw new IllegalArgumentException("The start and end steps are unordered");
         }
         long range = end - start;
+        if (range < 1) { // TODO: bug fix, the python script shouldn't generate such a case
+            range = 1;
+        }
         return alert.getSimulator().random.nextLong(range) + start;
     }
 

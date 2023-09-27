@@ -243,6 +243,23 @@ class Client():
         self.log['test']['confusion_matrix'].append(confusion)
         return loss, accuracy
         
+class Client2():
+    def __init__(self, name, device, trainset, valset, testset, model, criterion, optimizer, args):
+        self.name = name
+        self.device = device
+        
+        self.trainset = trainset
+        self.valset = valset
+        self.testset = testset
+        self.train_loader = DataLoader(self.trainset, batch_size=args.batch_size, shuffle=True)
+        self.val_loader = DataLoader(self.valset, batch_size=args.batch_size, shuffle=True)
+        self.test_loader = DataLoader(self.testset, batch_size=args.batch_size, shuffle=True)
+        
+        self.model = model
+        self.criterion = criterion
+        self.optimizer = optimizer
+
+
 
 '''
 from modules.logisticregressor.logisticregressor import LogisticRegressor

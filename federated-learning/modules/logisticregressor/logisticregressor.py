@@ -5,7 +5,7 @@ from torch import cat, relu, sigmoid
 #from data_transformer import DataTransformer
 
 class LogisticRegressor(Module):
-    def __init__(self, input_dim=36, output_dim=1):
+    def __init__(self, input_dim=23, output_dim=1):
         super(LogisticRegressor, self).__init__()
         self.linear = Linear(input_dim, output_dim)
         
