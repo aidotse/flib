@@ -59,10 +59,10 @@ class Client:
                 loss = self.criterion(y_pred, y_batch)
                 loss.backward()
                 self.optimizer.step()
+                y_batch = y_batch.detach().cpu()
+                y_pred = y_pred.argmax(dim=1).detach().cpu()
                 if return_metrics:
                     losses.append(loss.item())
-                    y_batch = y_batch.detach().cpu()
-                    y_pred = y_pred.argmax(dim=1).detach().cpu()
                     accuracies.append(accuracy_score(y_true=y_batch, y_pred=y_pred))
                     precisions.append(precision_score(y_true=y_batch, y_pred=y_pred, zero_division=0, average='macro'))
                     recalls.append(recall_score(y_true=y_batch, y_pred=y_pred, zero_division=0, average='macro'))
@@ -70,19 +70,17 @@ class Client:
                     cf_matrices.append(confusion_matrix(y_true=y_batch, y_pred=y_pred, labels=[0, 1]))
                 else:
                     losses.append(loss.item())
+                    accuracies.append(accuracy_score(y_true=y_batch, y_pred=y_pred))
+        loss = sum(losses)/len(losses) 
+        accuracy = sum(accuracies)/len(accuracies)
         if return_metrics:
-            model = self.module.state_dict()
-            loss = sum(losses)/len(losses) 
-            accuracy = sum(accuracies)/len(accuracies)
             precision = sum(precisions)/len(precisions)
             recall = sum(recalls)/len(recalls)
             f1 = sum(f1s)/len(f1s)
             cf_matrix = sum(cf_matrices)
             return loss, accuracy, precision, recall, f1, cf_matrix
         else:
-            model = self.module.state_dict()
-            loss = sum(losses)/len(losses) 
-            return loss
+            return loss, accuracy
 
     def validate(self, model=None, return_metrics=False):
         if model:
@@ -97,17 +95,17 @@ class Client:
         with torch.no_grad():
             y_pred = self.module(self.x_val)
             loss = self.criterion(y_pred, self.y_val)
+            y_val = self.y_val.detach().cpu()
+            y_pred = y_pred.argmax(dim=1).detach().cpu()
+            losses.append(loss.item())
+            accuracies.append(accuracy_score(y_true=y_val, y_pred=y_pred))
             if return_metrics:
-                losses.append(loss.item())
-                self.y_val = self.y_val.detach().cpu()
-                y_pred = y_pred.argmax(dim=1).detach().cpu()
-                accuracies.append(accuracy_score(y_true=self.y_val, y_pred=y_pred))
-                precisions.append(precision_score(y_true=self.y_val, y_pred=y_pred, zero_division=0, average='macro'))
-                recalls.append(recall_score(y_true=self.y_val, y_pred=y_pred, zero_division=0, average='macro'))
-                f1s.append(f1_score(y_true=self.y_val, y_pred=y_pred, zero_division=0, average='macro'))
-                cf_matrices.append(confusion_matrix(y_true=self.y_val, y_pred=y_pred, labels=[0, 1]))
-            else:
-                losses.append(loss.item())
+                precisions.append(precision_score(y_true=y_val, y_pred=y_pred, zero_division=0, average='macro'))
+                recalls.append(recall_score(y_true=y_val, y_pred=y_pred, zero_division=0, average='macro'))
+                f1s.append(f1_score(y_true=y_val, y_pred=y_pred, zero_division=0, average='macro'))
+                cf_matrices.append(confusion_matrix(y_true=y_val, y_pred=y_pred, labels=[0, 1]))
+        loss = sum(losses)/len(losses) 
+        accuracy = sum(accuracies)/len(accuracies)
         if return_metrics:
             loss = sum(losses)/len(losses) 
             accuracy = sum(accuracies)/len(accuracies)
@@ -117,8 +115,7 @@ class Client:
             cf_matrix = sum(cf_matrices)
             return loss, accuracy, precision, recall, f1, cf_matrix
         else:
-            loss = sum(losses)/len(losses) 
-            return loss
+            return loss, accuracy
 
     def test(self, model=None, return_metrics=False):
         if model:
@@ -133,28 +130,25 @@ class Client:
         with torch.no_grad():
             y_pred = self.module(self.x_test)
             loss = self.criterion(y_pred, self.y_test)
+            y_test = self.y_test.detach().cpu()
+            y_pred = y_pred.argmax(dim=1).detach().cpu()
+            losses.append(loss.item())
+            accuracies.append(accuracy_score(y_true=y_test, y_pred=y_pred))
             if return_metrics:
-                losses.append(loss.item())
-                self.y_test = self.y_test.detach().cpu()
-                y_pred = y_pred.argmax(dim=1).detach().cpu()
-                accuracies.append(accuracy_score(y_true=self.y_test, y_pred=y_pred))
-                precisions.append(precision_score(y_true=self.y_test, y_pred=y_pred, zero_division=0, average='macro'))
-                recalls.append(recall_score(y_true=self.y_test, y_pred=y_pred, zero_division=0, average='macro'))
-                f1s.append(f1_score(y_true=self.y_test, y_pred=y_pred, zero_division=0, average='macro'))
-                cf_matrices.append(confusion_matrix(y_true=self.y_test, y_pred=y_pred, labels=[0, 1]))
-            else:
-                losses.append(loss.item())
+                precisions.append(precision_score(y_true=y_test, y_pred=y_pred, zero_division=0, average='macro'))
+                recalls.append(recall_score(y_true=y_test, y_pred=y_pred, zero_division=0, average='macro'))
+                f1s.append(f1_score(y_true=y_test, y_pred=y_pred, zero_division=0, average='macro'))
+                cf_matrices.append(confusion_matrix(y_true=y_test, y_pred=y_pred, labels=[0, 1]))
+        loss = sum(losses)/len(losses) 
+        accuracy = sum(accuracies)/len(accuracies)
         if return_metrics:
-            loss = sum(losses)/len(losses) 
-            accuracy = sum(accuracies)/len(accuracies)
             precision = sum(precisions)/len(precisions)
             recall = sum(recalls)/len(recalls)
             f1 = sum(f1s)/len(f1s)
             cf_matrix = sum(cf_matrices)
             return loss, accuracy, precision, recall, f1, cf_matrix
         else:
-            loss = sum(losses)/len(losses) 
-            return loss
+            return loss, accuracy
 
     def load_model(self, model):
         for key, value in model.items():

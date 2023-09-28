@@ -15,9 +15,8 @@ class Server():
     def _train_clients(self, clients):
         models = []
         for client in clients:
-            loss = client.train(return_metrics=False)
-            #logging.info(f'{client.name}: train_loss={loss}')
-            #logging.info(f'{client.name}: train_loss={loss}, train_accuracy={accuracy}, train_precision={precision}, train_recall={recall}, train_f1={f1}, train_cf_matrix={cf_matrix}')
+            train_loss, train_accuracy = client.train(return_metrics=False)
+            logging.info(f'{client.name}: train_loss={train_loss}, train_accuracy={train_accuracy}')
             model = client.model()
             models.append(model)
         return models
@@ -43,7 +42,7 @@ class Server():
                 avg_models[key] += torch.mul(model[key], weight) 
         return avg_models
 
-    def run(self, n_rounds=30, eval_every=10):
+    def run(self, n_rounds=30, eval_every=10, n_rounds_no_aggregation=0):
 
         mp.set_start_method('spawn')
 
@@ -63,10 +62,11 @@ class Server():
                 models = p.map(self._train_clients, client_splits)
                 models = [model for sublist in models for model in sublist]
 
-                self.model = self._average_models(models)
+                if round < n_rounds_no_aggregation:
+                    self.model = self._average_models(models)
                 
-                for client in self.clients:
-                    client.load_model(copy.deepcopy(self.model))
+                    for client in self.clients:
+                        client.load_model(copy.deepcopy(self.model))
                 
                 if round % eval_every == 0:
                     p.map(self._test_clients, client_splits)
