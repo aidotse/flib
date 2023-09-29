@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY federated-learning-v2/ .
 
-CMD ["python", "main.py"]
+# CMD ["python", "main.py"]
