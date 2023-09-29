@@ -52,7 +52,7 @@ def main():
     Module = LogisticRegressor 
     Optimizer = torch.optim.SGD
     Criterion = torch.nn.CrossEntropyLoss
-    lr = 0.02
+    lr = 0.01
     n_epochs = 1 
     batch_size = 64
     n_workers = 1
