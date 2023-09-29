@@ -1,0 +1,1577 @@
+INFO:root:round 0
+INFO:root:client_0: train_loss=1.3720094060897827, train_accuracy=0.33375
+INFO:root:client_1: train_loss=1.380526140332222, train_accuracy=0.3936298076923077
+INFO:root:client_2: train_loss=1.3809529542922974, train_accuracy=0.26136363636363635
+INFO:root:client_3: train_loss=1.378975749015808, train_accuracy=0.27222222222222225
+INFO:root:client_4: train_loss=1.3896564245224, train_accuracy=0.21052631578947367
+INFO:root:client_5: train_loss=1.3810646533966064, train_accuracy=0.3088984929078014
+INFO:root:client_6: train_loss=1.373267948627472, train_accuracy=0.30228365384615385
+INFO:root:client_7: train_loss=1.3724018186330795, train_accuracy=0.20602101293103448
+INFO:root:client_8: train_loss=1.378536081314087, train_accuracy=0.15328947368421053
+INFO:root:client_9: train_loss=1.3836194276809692, train_accuracy=0.23068181818181818
+INFO:root:client_10: train_loss=1.3775932490825653, train_accuracy=0.18619791666666666
+INFO:root:client_11: train_loss=1.3789621829986571, train_accuracy=0.45163043478260867
+INFO:root:client_0: test_loss=1.3873087167739868, test_accuracy=0.330026455026455, test_precision=0.2579365079365079, test_recall=0.12483198924731181, test_f1=0.13814422592032274, test_cf_matrix=[[495 122]
+ [  0   4]]
+INFO:root:client_1: test_loss=1.3429276943206787, test_accuracy=0.4887566137566138, test_precision=0.2574626865671642, test_recall=0.16515456989247312, test_f1=0.1779753668494508, test_cf_matrix=[[735 130]
+ [  0   4]]
+INFO:root:client_2: test_loss=1.308984637260437, test_accuracy=0.37367724867724866, test_precision=0.251425855513308, test_recall=0.1256720430107527, test_f1=0.13980044345898004, test_cf_matrix=[[562 523]
+ [  0   3]]
+INFO:root:client_3: test_loss=1.3151804208755493, test_accuracy=0.38293650793650796, test_precision=0.25219298245614036, test_recall=0.1280241935483871, test_f1=0.14363324437666794, test_cf_matrix=[[576 339]
+ [  0   3]]
+INFO:root:client_4: test_loss=1.283875584602356, test_accuracy=0.5165343915343915, test_precision=0.24904336734693877, test_recall=0.13121639784946237, test_f1=0.17187500000000003, test_cf_matrix=[[781 416]
+ [  3   0]]
+INFO:root:client_5: test_loss=1.3491549491882324, test_accuracy=0.4193121693121693, test_precision=0.26171875, test_recall=0.16801075268817206, test_f1=0.1681300368122575, test_cf_matrix=[[628 122]
+ [  0   6]]
+INFO:root:client_6: test_loss=1.394943118095398, test_accuracy=0.24735449735449735, test_precision=0.2549670547336082, test_recall=0.09358198924731183, test_f1=0.10928532292308746, test_cf_matrix=[[371 130]
+ [  1   3]]
+INFO:root:client_7: test_loss=1.375040054321289, test_accuracy=0.22486772486772486, test_precision=0.25095298602287164, test_recall=0.08786962365591397, test_f1=0.09417833555731972, test_cf_matrix=[[337 784]
+ [  0   3]]
+INFO:root:client_8: test_loss=1.4220980405807495, test_accuracy=0.13161375661375663, test_precision=0.2527881040892193, test_recall=0.06418010752688172, test_f1=0.06331422827170802, test_cf_matrix=[[196 266]
+ [  0   3]]
+INFO:root:client_9: test_loss=1.3314529657363892, test_accuracy=0.31415343915343913, test_precision=0.25735294117647056, test_recall=0.1310483870967742, test_f1=0.1329070269473374, test_cf_matrix=[[470 165]
+ [  0   5]]
+INFO:root:client_10: test_loss=1.3299496173858643, test_accuracy=0.2830687830687831, test_precision=0.2521306818181818, test_recall=0.10265456989247312, test_f1=0.11507143174917418, test_cf_matrix=[[425 349]
+ [  0   3]]
+INFO:root:client_11: test_loss=1.3688303232192993, test_accuracy=0.4947089947089947, test_precision=0.2552083333333333, test_recall=0.15641801075268819, test_f1=0.1757445141065831, test_cf_matrix=[[745 141]
+ [  0   3]]
+INFO:root:round 1
+INFO:root:client_0: train_loss=1.3668370962142944, train_accuracy=0.350625
+INFO:root:client_1: train_loss=1.3753854483366013, train_accuracy=0.48677884615384615
+INFO:root:client_2: train_loss=1.3758292198181152, train_accuracy=0.28409090909090906
+INFO:root:client_3: train_loss=1.3738032341003419, train_accuracy=0.3788194444444445
+INFO:root:client_4: train_loss=1.3842664957046509, train_accuracy=0.2631578947368421
+INFO:root:client_5: train_loss=1.3759150107701619, train_accuracy=0.368074024822695
+INFO:root:client_6: train_loss=1.3679473996162415, train_accuracy=0.32752403846153844
+INFO:root:client_7: train_loss=1.3673078368107479, train_accuracy=0.25004489942528735
+INFO:root:client_8: train_loss=1.373392367362976, train_accuracy=0.17828947368421053
+INFO:root:client_9: train_loss=1.378533919652303, train_accuracy=0.3209280303030303
+INFO:root:client_10: train_loss=1.372443974018097, train_accuracy=0.22682291666666665
+INFO:root:client_11: train_loss=1.3737747430801392, train_accuracy=0.5141304347826087
+INFO:root:round 2
+INFO:root:client_0: train_loss=1.3617058753967286, train_accuracy=0.38881944444444444
+INFO:root:client_1: train_loss=1.3702844083309174, train_accuracy=0.5438701923076923
+INFO:root:client_2: train_loss=1.3707391023635864, train_accuracy=0.3295454545454546
+INFO:root:client_3: train_loss=1.3686681747436524, train_accuracy=0.5204861111111111
+INFO:root:client_4: train_loss=1.378930687904358, train_accuracy=0.47368421052631576
+INFO:root:client_5: train_loss=1.370801289876302, train_accuracy=0.4438164893617021
+INFO:root:client_6: train_loss=1.3626664876937866, train_accuracy=0.3371394230769231
+INFO:root:client_7: train_loss=1.3622593581676483, train_accuracy=0.31880836925287354
+INFO:root:client_8: train_loss=1.368291187286377, train_accuracy=0.23042763157894736
+INFO:root:client_9: train_loss=1.3734862407048543, train_accuracy=0.4466856060606061
+INFO:root:client_10: train_loss=1.3673341572284698, train_accuracy=0.365625
+INFO:root:client_11: train_loss=1.3686251640319824, train_accuracy=0.5759510869565218
+INFO:root:round 3
+INFO:root:client_0: train_loss=1.356617865562439, train_accuracy=0.4404166666666666
+INFO:root:client_1: train_loss=1.365224912762642, train_accuracy=0.5994591346153846
+INFO:root:client_2: train_loss=1.3656851053237915, train_accuracy=0.3295454545454546
+INFO:root:client_3: train_loss=1.3635728120803834, train_accuracy=0.6184027777777777
+INFO:root:client_4: train_loss=1.3736518621444702, train_accuracy=0.631578947368421
+INFO:root:client_5: train_loss=1.3657255967458088, train_accuracy=0.5058178191489362
+INFO:root:client_6: train_loss=1.357427716255188, train_accuracy=0.3449519230769231
+INFO:root:client_7: train_loss=1.3572583893934886, train_accuracy=0.3940822557471264
+INFO:root:client_8: train_loss=1.363234543800354, train_accuracy=0.3153782894736842
+INFO:root:client_9: train_loss=1.368478536605835, train_accuracy=0.4961174242424242
+INFO:root:client_10: train_loss=1.3622660040855408, train_accuracy=0.5088541666666666
+INFO:root:client_11: train_loss=1.3635156512260438, train_accuracy=0.6224864130434782
+INFO:root:round 4
+INFO:root:client_0: train_loss=1.3515751838684082, train_accuracy=0.4954166666666666
+INFO:root:client_1: train_loss=1.3602089881896973, train_accuracy=0.6487379807692307
+INFO:root:client_2: train_loss=1.3606699109077454, train_accuracy=0.3522727272727273
+INFO:root:client_3: train_loss=1.3585191726684571, train_accuracy=0.6809027777777777
+INFO:root:client_4: train_loss=1.368431568145752, train_accuracy=0.7368421052631579
+INFO:root:client_5: train_loss=1.36068989833196, train_accuracy=0.5633311170212766
+INFO:root:client_6: train_loss=1.3522329330444336, train_accuracy=0.48617788461538464
+INFO:root:client_7: train_loss=1.3523066639900208, train_accuracy=0.4968345905172414
+INFO:root:client_8: train_loss=1.358224105834961, train_accuracy=0.3893914473684211
+INFO:root:client_9: train_loss=1.3635128736495972, train_accuracy=0.543844696969697
+INFO:root:client_10: train_loss=1.357241451740265, train_accuracy=0.5606770833333333
+INFO:root:client_11: train_loss=1.3584481358528138, train_accuracy=0.6580842391304348
+INFO:root:round 5
+INFO:root:client_0: train_loss=1.3465796518325805, train_accuracy=0.5541666666666667
+INFO:root:client_1: train_loss=1.3552381843328476, train_accuracy=0.6780348557692307
+INFO:root:client_2: train_loss=1.3556958436965942, train_accuracy=0.3828125
+INFO:root:client_3: train_loss=1.353509283065796, train_accuracy=0.7052083333333333
+INFO:root:client_4: train_loss=1.3632720708847046, train_accuracy=0.7368421052631579
+INFO:root:client_5: train_loss=1.3556962211926777, train_accuracy=0.6097074468085106
+INFO:root:client_6: train_loss=1.3470842242240906, train_accuracy=0.5036057692307692
+INFO:root:client_7: train_loss=1.3474058310190837, train_accuracy=0.6082974137931034
+INFO:root:client_8: train_loss=1.3532616257667542, train_accuracy=0.44564144736842104
+INFO:root:client_9: train_loss=1.3585913181304932, train_accuracy=0.5707386363636363
+INFO:root:client_10: train_loss=1.352262556552887, train_accuracy=0.60859375
+INFO:root:client_11: train_loss=1.353424608707428, train_accuracy=0.6980298913043479
+INFO:root:round 6
+INFO:root:client_0: train_loss=1.3416330862045287, train_accuracy=0.5913888888888889
+INFO:root:client_1: train_loss=1.3503144830465317, train_accuracy=0.7286658653846154
+INFO:root:client_2: train_loss=1.3507652878761292, train_accuracy=0.390625
+INFO:root:client_3: train_loss=1.348544955253601, train_accuracy=0.7295138888888889
+INFO:root:client_4: train_loss=1.358175277709961, train_accuracy=0.7368421052631579
+INFO:root:client_5: train_loss=1.3507461945215862, train_accuracy=0.638353280141844
+INFO:root:client_6: train_loss=1.3419835567474365, train_accuracy=0.5384615384615384
+INFO:root:client_7: train_loss=1.3425574799378712, train_accuracy=0.7176724137931035
+INFO:root:client_8: train_loss=1.3483486294746398, train_accuracy=0.46282894736842106
+INFO:root:client_9: train_loss=1.3537155389785767, train_accuracy=0.6201704545454545
+INFO:root:client_10: train_loss=1.3473308980464935, train_accuracy=0.6359375
+INFO:root:client_11: train_loss=1.3484468460083008, train_accuracy=0.7226902173913043
+INFO:root:round 7
+INFO:root:client_0: train_loss=1.3367370557785034, train_accuracy=0.6345138888888888
+INFO:root:client_1: train_loss=1.3454391807317734, train_accuracy=0.7427884615384616
+INFO:root:client_2: train_loss=1.3458803296089172, train_accuracy=0.3984375
+INFO:root:client_3: train_loss=1.343627643585205, train_accuracy=0.7506944444444444
+INFO:root:client_4: train_loss=1.3531423807144165, train_accuracy=0.7368421052631579
+INFO:root:client_5: train_loss=1.345841606458028, train_accuracy=0.6698249113475176
+INFO:root:client_6: train_loss=1.3369324803352356, train_accuracy=0.5637019230769231
+INFO:root:client_7: train_loss=1.337762822707494, train_accuracy=0.7717088721264368
+INFO:root:client_8: train_loss=1.3434865713119506, train_accuracy=0.4858552631578947
+INFO:root:client_9: train_loss=1.348887324333191, train_accuracy=0.6739583333333333
+INFO:root:client_10: train_loss=1.3424482643604279, train_accuracy=0.64375
+INFO:root:client_11: train_loss=1.3435166120529174, train_accuracy=0.7445652173913043
+INFO:root:round 8
+INFO:root:client_0: train_loss=1.3318929815292357, train_accuracy=0.6861111111111111
+INFO:root:client_1: train_loss=1.3406136482954025, train_accuracy=0.7608173076923077
+INFO:root:client_2: train_loss=1.3410428166389465, train_accuracy=0.4836647727272727
+INFO:root:client_3: train_loss=1.3387592077255248, train_accuracy=0.7774305555555555
+INFO:root:client_4: train_loss=1.3481749296188354, train_accuracy=0.7368421052631579
+INFO:root:client_5: train_loss=1.340984006722768, train_accuracy=0.6899379432624113
+INFO:root:client_6: train_loss=1.331932783126831, train_accuracy=0.5715144230769231
+INFO:root:client_7: train_loss=1.3330230712890625, train_accuracy=0.7926769037356322
+INFO:root:client_8: train_loss=1.3386764883995057, train_accuracy=0.5114309210526315
+INFO:root:client_9: train_loss=1.3441083431243896, train_accuracy=0.7129734848484848
+INFO:root:client_10: train_loss=1.3376161456108093, train_accuracy=0.6721354166666667
+INFO:root:client_11: train_loss=1.338635551929474, train_accuracy=0.7570652173913043
+INFO:root:round 9
+INFO:root:client_0: train_loss=1.3271021699905396, train_accuracy=0.7202083333333333
+INFO:root:client_1: train_loss=1.3358391672372818, train_accuracy=0.7666766826923077
+INFO:root:client_2: train_loss=1.3362547159194946, train_accuracy=0.6683238636363636
+INFO:root:client_3: train_loss=1.3339407205581666, train_accuracy=0.7923611111111111
+INFO:root:client_4: train_loss=1.3432743549346924, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.336174984773, train_accuracy=0.7029587765957447
+INFO:root:client_6: train_loss=1.3269855380058289, train_accuracy=0.5949519230769231
+INFO:root:client_7: train_loss=1.3283391892910004, train_accuracy=0.8084366020114943
+INFO:root:client_8: train_loss=1.3339197039604187, train_accuracy=0.5254934210526316
+INFO:root:client_9: train_loss=1.3393797079722087, train_accuracy=0.7181818181818181
+INFO:root:client_10: train_loss=1.3328357338905334, train_accuracy=0.69609375
+INFO:root:client_11: train_loss=1.3338051795959474, train_accuracy=0.7801630434782608
+INFO:root:round 10
+INFO:root:client_0: train_loss=1.3223658227920532, train_accuracy=0.7458333333333332
+INFO:root:client_1: train_loss=1.3311168253421783, train_accuracy=0.7788461538461539
+INFO:root:client_2: train_loss=1.3315175771713257, train_accuracy=0.7308238636363636
+INFO:root:client_3: train_loss=1.3291735649108887, train_accuracy=0.8166666666666667
+INFO:root:client_4: train_loss=1.3384411334991455, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.3314157923062642, train_accuracy=0.7263962765957447
+INFO:root:client_6: train_loss=1.3220921158790588, train_accuracy=0.6394230769230769
+INFO:root:client_7: train_loss=1.323712150255839, train_accuracy=0.817034841954023
+INFO:root:client_8: train_loss=1.3292171239852906, train_accuracy=0.5651315789473684
+INFO:root:client_9: train_loss=1.3347030878067017, train_accuracy=0.7233901515151514
+INFO:root:client_10: train_loss=1.3281084299087524, train_accuracy=0.7278645833333334
+INFO:root:client_11: train_loss=1.329026961326599, train_accuracy=0.7879755434782608
+INFO:root:client_0: test_loss=1.3421183824539185, test_accuracy=0.6838624338624338, test_precision=0.27325581395348836, test_recall=0.21471774193548387, test_f1=0.23437814896921272, test_cf_matrix=[[1030   39]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.3028860092163086, test_accuracy=0.716931216931217, test_precision=0.26052631578947366, test_recall=0.22311827956989247, test_f1=0.22708709652085132, test_cf_matrix=[[1080   91]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.2717136144638062, test_accuracy=0.6779100529100529, test_precision=0.25493421052631576, test_recall=0.20295698924731181, test_f1=0.2121083846432452, test_cf_matrix=[[1022  149]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.2787816524505615, test_accuracy=0.705026455026455, test_precision=0.255859375, test_recall=0.20984543010752688, test_f1=0.21821808784996596, test_cf_matrix=[[1063  125]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.2383772134780884, test_accuracy=0.783068783068783, test_precision=0.2493681550126369, test_recall=0.1989247311827957, test_f1=0.22130841121495323, test_cf_matrix=[[1184   78]
+ [   3    0]]
+INFO:root:client_5: test_loss=1.3096829652786255, test_accuracy=0.6871693121693122, test_precision=0.26262626262626265, test_recall=0.22580645161290325, test_f1=0.22532123814497465, test_cf_matrix=[[1034   94]
+ [   0    5]]
+INFO:root:client_6: test_loss=1.3535442352294922, test_accuracy=0.375, test_precision=0.2777777777777778, test_recall=0.13625672043010753, test_f1=0.17058345522509344, test_cf_matrix=[[563  32]
+ [  0   4]]
+INFO:root:client_7: test_loss=1.3211946487426758, test_accuracy=0.8941798941798942, test_precision=0.40625, test_recall=0.27839381720430106, test_f1=0.31569113756613754, test_cf_matrix=[[1347    3]
+ [   0    5]]
+INFO:root:client_8: test_loss=1.3731671571731567, test_accuracy=0.44246031746031744, test_precision=0.2875, test_recall=0.14314516129032256, test_f1=0.18868700936946062, test_cf_matrix=[[666  17]
+ [  0   3]]
+INFO:root:client_9: test_loss=1.3030681610107422, test_accuracy=0.6078042328042328, test_precision=0.25886524822695034, test_recall=0.2056451612903226, test_f1=0.20540963338631948, test_cf_matrix=[[914 136]
+ [  0   5]]
+INFO:root:client_10: test_loss=1.303072214126587, test_accuracy=0.6078042328042328, test_precision=0.2556818181818182, test_recall=0.1851478494623656, test_f1=0.20013119160373735, test_cf_matrix=[[916 129]
+ [  0   3]]
+INFO:root:client_11: test_loss=1.325518012046814, test_accuracy=0.7195767195767195, test_precision=0.25914634146341464, test_recall=0.21354166666666666, test_f1=0.22499431689020233, test_cf_matrix=[[1085   79]
+ [   0    3]]
+INFO:root:round 11
+INFO:root:client_0: train_loss=1.3176848936080932, train_accuracy=0.7652083333333333
+INFO:root:client_1: train_loss=1.3264474868774414, train_accuracy=0.791015625
+INFO:root:client_2: train_loss=1.326832890510559, train_accuracy=0.7464488636363636
+INFO:root:client_3: train_loss=1.3244588851928711, train_accuracy=0.8291666666666666
+INFO:root:client_4: train_loss=1.3336763381958008, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.3267078399658203, train_accuracy=0.7403590425531915
+INFO:root:client_6: train_loss=1.3172539472579956, train_accuracy=0.6802884615384616
+INFO:root:client_7: train_loss=1.319142575065295, train_accuracy=0.822894216954023
+INFO:root:client_8: train_loss=1.3245694637298584, train_accuracy=0.5963815789473684
+INFO:root:client_9: train_loss=1.3300793170928955, train_accuracy=0.734659090909091
+INFO:root:client_10: train_loss=1.3234353959560394, train_accuracy=0.7278645833333334
+INFO:root:client_11: train_loss=1.324302363395691, train_accuracy=0.8095108695652173
+INFO:root:round 12
+INFO:root:client_0: train_loss=1.3130603122711182, train_accuracy=0.7845833333333333
+INFO:root:client_1: train_loss=1.3218320608139038, train_accuracy=0.8060396634615384
+INFO:root:client_2: train_loss=1.3222020864486694, train_accuracy=0.7542613636363636
+INFO:root:client_3: train_loss=1.3197977542877197, train_accuracy=0.8354166666666666
+INFO:root:client_4: train_loss=1.328980565071106, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.322052280108134, train_accuracy=0.7533798758865249
+INFO:root:client_6: train_loss=1.3124716877937317, train_accuracy=0.6899038461538461
+INFO:root:client_7: train_loss=1.314631129304568, train_accuracy=0.8261494252873564
+INFO:root:client_8: train_loss=1.3199775099754334, train_accuracy=0.6291940789473685
+INFO:root:client_9: train_loss=1.3255095879236858, train_accuracy=0.7398674242424242
+INFO:root:client_10: train_loss=1.318817526102066, train_accuracy=0.7356770833333334
+INFO:root:client_11: train_loss=1.3196325898170471, train_accuracy=0.8279211956521738
+INFO:root:round 13
+INFO:root:client_0: train_loss=1.3084928894042969, train_accuracy=0.8014583333333333
+INFO:root:client_1: train_loss=1.3172712326049805, train_accuracy=0.8206129807692307
+INFO:root:client_2: train_loss=1.317626178264618, train_accuracy=0.7620738636363636
+INFO:root:client_3: train_loss=1.3151909589767456, train_accuracy=0.8472222222222221
+INFO:root:client_4: train_loss=1.3243545293807983, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.317450265089671, train_accuracy=0.7751551418439716
+INFO:root:client_6: train_loss=1.3077463507652283, train_accuracy=0.7091346153846154
+INFO:root:client_7: train_loss=1.3101782699426014, train_accuracy=0.8313577586206896
+INFO:root:client_8: train_loss=1.3154417991638183, train_accuracy=0.6526315789473685
+INFO:root:client_9: train_loss=1.3209949334462483, train_accuracy=0.7554924242424242
+INFO:root:client_10: train_loss=1.3142555952072144, train_accuracy=0.7434895833333334
+INFO:root:client_11: train_loss=1.3150188207626343, train_accuracy=0.8478940217391304
+INFO:root:round 14
+INFO:root:client_0: train_loss=1.303983211517334, train_accuracy=0.8264583333333333
+INFO:root:client_1: train_loss=1.3127655684947968, train_accuracy=0.8327824519230769
+INFO:root:client_2: train_loss=1.3131065368652344, train_accuracy=0.7620738636363636
+INFO:root:client_3: train_loss=1.310639238357544, train_accuracy=0.8527777777777779
+INFO:root:client_4: train_loss=1.319798469543457, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.3129027287165325, train_accuracy=0.795988475177305
+INFO:root:client_6: train_loss=1.303078532218933, train_accuracy=0.7265625
+INFO:root:client_7: train_loss=1.3057843546072643, train_accuracy=0.8359150502873564
+INFO:root:client_8: train_loss=1.3109629273414611, train_accuracy=0.6902960526315789
+INFO:root:client_9: train_loss=1.3165358304977417, train_accuracy=0.7615530303030303
+INFO:root:client_10: train_loss=1.3097504675388336, train_accuracy=0.7473958333333334
+INFO:root:client_11: train_loss=1.3104621648788453, train_accuracy=0.8619565217391305
+INFO:root:round 15
+INFO:root:client_0: train_loss=1.2995318698883056, train_accuracy=0.8395833333333332
+INFO:root:client_1: train_loss=1.3083155006170273, train_accuracy=0.8425480769230769
+INFO:root:client_2: train_loss=1.3086438179016113, train_accuracy=0.7698863636363636
+INFO:root:client_3: train_loss=1.3061432600021363, train_accuracy=0.8527777777777779
+INFO:root:client_4: train_loss=1.3153122663497925, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.3084108233451843, train_accuracy=0.8161015070921986
+INFO:root:client_6: train_loss=1.2984691262245178, train_accuracy=0.734375
+INFO:root:client_7: train_loss=1.3014496167500813, train_accuracy=0.8411233836206896
+INFO:root:client_8: train_loss=1.306541121006012, train_accuracy=0.710608552631579
+INFO:root:client_9: train_loss=1.3121332327524822, train_accuracy=0.771969696969697
+INFO:root:client_10: train_loss=1.3053027391433716, train_accuracy=0.7591145833333334
+INFO:root:client_11: train_loss=1.3059635639190674, train_accuracy=0.8666440217391305
+INFO:root:round 16
+INFO:root:client_0: train_loss=1.2951393508911133, train_accuracy=0.8508333333333333
+INFO:root:client_1: train_loss=1.303921490907669, train_accuracy=0.8464543269230769
+INFO:root:client_2: train_loss=1.3042388558387756, train_accuracy=0.7698863636363636
+INFO:root:client_3: train_loss=1.3017036199569703, train_accuracy=0.8559027777777779
+INFO:root:client_4: train_loss=1.3108965158462524, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.3039751450220745, train_accuracy=0.829122340425532
+INFO:root:client_6: train_loss=1.2939185500144958, train_accuracy=0.7421875
+INFO:root:client_7: train_loss=1.29717418551445, train_accuracy=0.8430765086206896
+INFO:root:client_8: train_loss=1.3021767616271973, train_accuracy=0.7215460526315789
+INFO:root:client_9: train_loss=1.3077876567840576, train_accuracy=0.7884469696969697
+INFO:root:client_10: train_loss=1.3009127080440521, train_accuracy=0.7752604166666667
+INFO:root:client_11: train_loss=1.3015239357948303, train_accuracy=0.8713315217391304
+INFO:root:round 17
+INFO:root:client_0: train_loss=1.290805983543396, train_accuracy=0.8570833333333333
+INFO:root:client_1: train_loss=1.2995838224887848, train_accuracy=0.8659855769230769
+INFO:root:client_2: train_loss=1.299892544746399, train_accuracy=0.7698863636363636
+INFO:root:client_3: train_loss=1.2973206758499145, train_accuracy=0.8590277777777778
+INFO:root:client_4: train_loss=1.3065510988235474, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2995966871579487, train_accuracy=0.8395390070921986
+INFO:root:client_6: train_loss=1.2894272804260254, train_accuracy=0.7518028846153846
+INFO:root:client_7: train_loss=1.2929581105709076, train_accuracy=0.8469827586206896
+INFO:root:client_8: train_loss=1.2978699326515197, train_accuracy=0.7402960526315789
+INFO:root:client_9: train_loss=1.3034993410110474, train_accuracy=0.8118371212121213
+INFO:root:client_10: train_loss=1.296580970287323, train_accuracy=0.7830729166666667
+INFO:root:client_11: train_loss=1.2971439123153687, train_accuracy=0.8744565217391305
+INFO:root:round 18
+INFO:root:client_0: train_loss=1.2865320444107056, train_accuracy=0.8636805555555556
+INFO:root:client_1: train_loss=1.295302540063858, train_accuracy=0.8659855769230769
+INFO:root:client_2: train_loss=1.2956053018569946, train_accuracy=0.7698863636363636
+INFO:root:client_3: train_loss=1.292994737625122, train_accuracy=0.8652777777777778
+INFO:root:client_4: train_loss=1.3022757768630981, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2952759861946106, train_accuracy=0.8473515070921986
+INFO:root:client_6: train_loss=1.2849957346916199, train_accuracy=0.7596153846153846
+INFO:root:client_7: train_loss=1.288801332314809, train_accuracy=0.8508890086206896
+INFO:root:client_8: train_loss=1.293620777130127, train_accuracy=0.7543585526315789
+INFO:root:client_9: train_loss=1.2992688417434692, train_accuracy=0.8118371212121213
+INFO:root:client_10: train_loss=1.292307734489441, train_accuracy=0.80703125
+INFO:root:client_11: train_loss=1.2928240656852723, train_accuracy=0.8760190217391305
+INFO:root:round 19
+INFO:root:client_0: train_loss=1.2823177766799927, train_accuracy=0.8702777777777777
+INFO:root:client_1: train_loss=1.2910778671503067, train_accuracy=0.8703425480769231
+INFO:root:client_2: train_loss=1.291377305984497, train_accuracy=0.7698863636363636
+INFO:root:client_3: train_loss=1.2887261152267455, train_accuracy=0.8652777777777778
+INFO:root:client_4: train_loss=1.2980705499649048, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.291013518969218, train_accuracy=0.852559840425532
+INFO:root:client_6: train_loss=1.280623972415924, train_accuracy=0.7596153846153846
+INFO:root:client_7: train_loss=1.2847035725911458, train_accuracy=0.8515400502873564
+INFO:root:client_8: train_loss=1.28942928314209, train_accuracy=0.7715460526315789
+INFO:root:client_9: train_loss=1.2950964371363323, train_accuracy=0.8291666666666666
+INFO:root:client_10: train_loss=1.2880932092666626, train_accuracy=0.81484375
+INFO:root:client_11: train_loss=1.2885649919509887, train_accuracy=0.8775815217391305
+INFO:root:round 20
+INFO:root:client_0: train_loss=1.278163194656372, train_accuracy=0.8759027777777777
+INFO:root:client_1: train_loss=1.2869098782539368, train_accuracy=0.8786057692307693
+INFO:root:client_2: train_loss=1.287209153175354, train_accuracy=0.7933238636363636
+INFO:root:client_3: train_loss=1.284514832496643, train_accuracy=0.8652777777777778
+INFO:root:client_4: train_loss=1.2939348220825195, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2868098815282185, train_accuracy=0.852559840425532
+INFO:root:client_6: train_loss=1.2763122916221619, train_accuracy=0.7674278846153846
+INFO:root:client_7: train_loss=1.2806647022565205, train_accuracy=0.8554463002873564
+INFO:root:client_8: train_loss=1.2852953910827636, train_accuracy=0.7840460526315789
+INFO:root:client_9: train_loss=1.2909822066624959, train_accuracy=0.8473484848484848
+INFO:root:client_10: train_loss=1.2839374244213104, train_accuracy=0.8265625
+INFO:root:client_11: train_loss=1.2843668937683106, train_accuracy=0.8807065217391304
+INFO:root:client_0: test_loss=1.3010013103485107, test_accuracy=0.7890211640211641, test_precision=0.375, test_recall=0.24143145161290322, test_f1=0.28457695181172954, test_cf_matrix=[[1189    4]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.2662732601165771, test_accuracy=0.7876984126984127, test_precision=0.2934782608695652, test_recall=0.24109543010752688, test_f1=0.2644223503678664, test_cf_matrix=[[1187   19]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.2381194829940796, test_accuracy=0.7334656084656085, test_precision=0.25872093023255816, test_recall=0.21706989247311828, test_f1=0.2268206350318918, test_cf_matrix=[[1106   83]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.2453503608703613, test_accuracy=0.7665343915343915, test_precision=0.26, test_recall=0.22547043010752688, test_f1=0.23375968459175722, test_cf_matrix=[[1156   72]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.1992403268814087, test_accuracy=0.8617724867724867, test_precision=0.24942572741194488, test_recall=0.21891801075268819, test_f1=0.23317823908375093, test_cf_matrix=[[1303   20]
+ [   3    0]]
+INFO:root:client_5: test_loss=1.2735038995742798, test_accuracy=0.781084656084656, test_precision=0.28378378378378377, test_recall=0.24966397849462366, test_f1=0.2617043272780978, test_cf_matrix=[[1176   32]
+ [   0    5]]
+INFO:root:client_6: test_loss=1.3138248920440674, test_accuracy=0.7017195767195767, test_precision=0.45, test_recall=0.2192540322580645, test_f1=0.27662759975611406, test_cf_matrix=[[1057    1]
+ [   0    4]]
+INFO:root:client_7: test_loss=1.2744684219360352, test_accuracy=0.9206349206349206, test_precision=0.4285714285714286, test_recall=0.28511424731182794, test_f1=0.3218625525946704, test_cf_matrix=[[1387    2]
+ [   0    5]]
+INFO:root:client_8: test_loss=1.328710675239563, test_accuracy=0.7308201058201058, test_precision=0.4, test_recall=0.2163978494623656, test_f1=0.2644654506723472, test_cf_matrix=[[1102    2]
+ [   0    3]]
+INFO:root:client_9: test_loss=1.2771002054214478, test_accuracy=0.716931216931217, test_precision=0.2689393939393939, test_recall=0.23336693548387097, test_f1=0.2379452884906722, test_cf_matrix=[[1079   61]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.2789480686187744, test_accuracy=0.7156084656084656, test_precision=0.2647058823529412, test_recall=0.21253360215053763, test_f1=0.2301675107128944, test_cf_matrix=[[1079   48]
+ [   0    3]]
+INFO:root:client_11: test_loss=1.2861202955245972, test_accuracy=0.7943121693121693, test_precision=0.3, test_recall=0.2325268817204301, test_f1=0.2614697290795578, test_cf_matrix=[[1198   12]
+ [   0    3]]
+INFO:root:round 21
+INFO:root:client_0: train_loss=1.2740684604644776, train_accuracy=0.8796527777777777
+INFO:root:client_1: train_loss=1.2827984988689423, train_accuracy=0.8786057692307693
+INFO:root:client_2: train_loss=1.2831011414527893, train_accuracy=0.7933238636363636
+INFO:root:client_3: train_loss=1.2803611278533935, train_accuracy=0.8652777777777778
+INFO:root:client_4: train_loss=1.2898681163787842, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2826653122901917, train_accuracy=0.8639184397163121
+INFO:root:client_6: train_loss=1.2720608115196228, train_accuracy=0.7770432692307692
+INFO:root:client_7: train_loss=1.2766844034194946, train_accuracy=0.8607893318965517
+INFO:root:client_8: train_loss=1.281218934059143, train_accuracy=0.7949835526315789
+INFO:root:client_9: train_loss=1.28692626953125, train_accuracy=0.8586174242424242
+INFO:root:client_10: train_loss=1.2798404097557068, train_accuracy=0.8744791666666667
+INFO:root:client_11: train_loss=1.2802300333976746, train_accuracy=0.8807065217391304
+INFO:root:round 22
+INFO:root:client_0: train_loss=1.2700334119796752, train_accuracy=0.8827777777777777
+INFO:root:client_1: train_loss=1.2787436246871948, train_accuracy=0.8883713942307693
+INFO:root:client_2: train_loss=1.2790533304214478, train_accuracy=0.7933238636363636
+INFO:root:client_3: train_loss=1.2762647867202759, train_accuracy=0.8840277777777779
+INFO:root:client_4: train_loss=1.2858703136444092, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2785800298055012, train_accuracy=0.8665226063829787
+INFO:root:client_6: train_loss=1.2678696513175964, train_accuracy=0.7770432692307692
+INFO:root:client_7: train_loss=1.2727622240781784, train_accuracy=0.8620914152298851
+INFO:root:client_8: train_loss=1.2771996855735779, train_accuracy=0.8027960526315789
+INFO:root:client_9: train_loss=1.282928427060445, train_accuracy=0.8638257575757575
+INFO:root:client_10: train_loss=1.2758022248744965, train_accuracy=0.8744791666666667
+INFO:root:client_11: train_loss=1.2761544346809388, train_accuracy=0.8822690217391305
+INFO:root:round 23
+INFO:root:client_0: train_loss=1.2660579919815063, train_accuracy=0.8846527777777777
+INFO:root:client_1: train_loss=1.2747451663017273, train_accuracy=0.8922776442307693
+INFO:root:client_2: train_loss=1.2750658988952637, train_accuracy=0.7933238636363636
+INFO:root:client_3: train_loss=1.27222580909729, train_accuracy=0.8840277777777779
+INFO:root:client_4: train_loss=1.281940221786499, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2745542526245117, train_accuracy=0.8700687056737588
+INFO:root:client_6: train_loss=1.2637383937835693, train_accuracy=0.7848557692307692
+INFO:root:client_7: train_loss=1.2688976675271988, train_accuracy=0.8640445402298851
+INFO:root:client_8: train_loss=1.27323739528656, train_accuracy=0.804358552631579
+INFO:root:client_9: train_loss=1.2789888779322307, train_accuracy=0.8638257575757575
+INFO:root:client_10: train_loss=1.2718224227428436, train_accuracy=0.8822916666666667
+INFO:root:client_11: train_loss=1.2721400260925293, train_accuracy=0.8869565217391304
+INFO:root:round 24
+INFO:root:client_0: train_loss=1.26214195728302, train_accuracy=0.8877777777777777
+INFO:root:client_1: train_loss=1.2708028703927994, train_accuracy=0.8922776442307693
+INFO:root:client_2: train_loss=1.2711384892463684, train_accuracy=0.8011363636363636
+INFO:root:client_3: train_loss=1.2682441473007202, train_accuracy=0.8934027777777779
+INFO:root:client_4: train_loss=1.2780778408050537, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.270587941010793, train_accuracy=0.8762189716312058
+INFO:root:client_6: train_loss=1.2596673965454102, train_accuracy=0.7848557692307692
+INFO:root:client_7: train_loss=1.2650902718305588, train_accuracy=0.8666487068965517
+INFO:root:client_8: train_loss=1.2693317770957946, train_accuracy=0.8189967105263157
+INFO:root:client_9: train_loss=1.2751071850458782, train_accuracy=0.8638257575757575
+INFO:root:client_10: train_loss=1.2679011821746826, train_accuracy=0.8901041666666667
+INFO:root:client_11: train_loss=1.2681867122650146, train_accuracy=0.8885190217391304
+INFO:root:round 25
+INFO:root:client_0: train_loss=1.2582851314544679, train_accuracy=0.8896527777777777
+INFO:root:client_1: train_loss=1.266916647553444, train_accuracy=0.8966346153846154
+INFO:root:client_2: train_loss=1.2672712802886963, train_accuracy=0.8011363636363636
+INFO:root:client_3: train_loss=1.2643194913864135, train_accuracy=0.8934027777777779
+INFO:root:client_4: train_loss=1.2742820978164673, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2666810552279155, train_accuracy=0.881427304964539
+INFO:root:client_6: train_loss=1.2556560635566711, train_accuracy=0.7848557692307692
+INFO:root:client_7: train_loss=1.261339435974757, train_accuracy=0.8679507902298851
+INFO:root:client_8: train_loss=1.2654824376106262, train_accuracy=0.8205592105263158
+INFO:root:client_9: train_loss=1.2712833484013875, train_accuracy=0.8690340909090909
+INFO:root:client_10: train_loss=1.2640378177165985, train_accuracy=0.8901041666666667
+INFO:root:client_11: train_loss=1.2642942190170288, train_accuracy=0.8900815217391305
+INFO:root:round 26
+INFO:root:client_0: train_loss=1.254487051963806, train_accuracy=0.8915277777777777
+INFO:root:client_1: train_loss=1.2630862444639206, train_accuracy=0.8985877403846154
+INFO:root:client_2: train_loss=1.2634639143943787, train_accuracy=0.8238636363636364
+INFO:root:client_3: train_loss=1.2604516267776489, train_accuracy=0.8965277777777778
+INFO:root:client_4: train_loss=1.2705520391464233, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.262833297252655, train_accuracy=0.8840314716312058
+INFO:root:client_6: train_loss=1.2517041563987732, train_accuracy=0.7926682692307692
+INFO:root:client_7: train_loss=1.2576444447040558, train_accuracy=0.8712059985632185
+INFO:root:client_8: train_loss=1.2616889238357545, train_accuracy=0.8221217105263158
+INFO:root:client_9: train_loss=1.2675170103708904, train_accuracy=0.8794507575757575
+INFO:root:client_10: train_loss=1.2602321803569794, train_accuracy=0.8901041666666667
+INFO:root:client_11: train_loss=1.2604621767997741, train_accuracy=0.8932065217391305
+INFO:root:round 27
+INFO:root:client_0: train_loss=1.2507473754882812, train_accuracy=0.8927777777777777
+INFO:root:client_1: train_loss=1.2593112736940384, train_accuracy=0.9024939903846154
+INFO:root:client_2: train_loss=1.259716272354126, train_accuracy=0.8238636363636364
+INFO:root:client_3: train_loss=1.2566402196884154, train_accuracy=0.8996527777777779
+INFO:root:client_4: train_loss=1.266886830329895, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2590445280075073, train_accuracy=0.8840314716312058
+INFO:root:client_6: train_loss=1.247811496257782, train_accuracy=0.8022836538461539
+INFO:root:client_7: train_loss=1.254004677136739, train_accuracy=0.8725080818965517
+INFO:root:client_8: train_loss=1.257950735092163, train_accuracy=0.8283717105263158
+INFO:root:client_9: train_loss=1.2638076543807983, train_accuracy=0.8794507575757575
+INFO:root:client_10: train_loss=1.256483793258667, train_accuracy=0.8901041666666667
+INFO:root:client_11: train_loss=1.2566900610923768, train_accuracy=0.8932065217391305
+INFO:root:round 28
+INFO:root:client_0: train_loss=1.2470655727386475, train_accuracy=0.8934027777777778
+INFO:root:client_1: train_loss=1.2555914372205734, train_accuracy=0.9064002403846154
+INFO:root:client_2: train_loss=1.2560279369354248, train_accuracy=0.8238636363636364
+INFO:root:client_3: train_loss=1.252884840965271, train_accuracy=0.8996527777777779
+INFO:root:client_4: train_loss=1.2632856369018555, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2553142507870991, train_accuracy=0.8840314716312058
+INFO:root:client_6: train_loss=1.243977665901184, train_accuracy=0.8022836538461539
+INFO:root:client_7: train_loss=1.2504192888736725, train_accuracy=0.8751122485632185
+INFO:root:client_8: train_loss=1.2542673349380493, train_accuracy=0.8314967105263158
+INFO:root:client_9: train_loss=1.2601549625396729, train_accuracy=0.8794507575757575
+INFO:root:client_10: train_loss=1.2527923285961151, train_accuracy=0.8979166666666667
+INFO:root:client_11: train_loss=1.252977454662323, train_accuracy=0.8932065217391305
+INFO:root:round 29
+INFO:root:client_0: train_loss=1.2434411811828614, train_accuracy=0.8946527777777777
+INFO:root:client_1: train_loss=1.2519265413284302, train_accuracy=0.9064002403846154
+INFO:root:client_2: train_loss=1.252398669719696, train_accuracy=0.8238636363636364
+INFO:root:client_3: train_loss=1.2491852998733521, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.2597473859786987, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2516420880953472, train_accuracy=0.8875775709219859
+INFO:root:client_6: train_loss=1.2402023077011108, train_accuracy=0.8100961538461539
+INFO:root:client_7: train_loss=1.246887594461441, train_accuracy=0.8770653735632185
+INFO:root:client_8: train_loss=1.2506382465362549, train_accuracy=0.8330592105263157
+INFO:root:client_9: train_loss=1.256558616956075, train_accuracy=0.8794507575757575
+INFO:root:client_10: train_loss=1.2491571307182312, train_accuracy=0.8979166666666667
+INFO:root:client_11: train_loss=1.2493237614631654, train_accuracy=0.8932065217391305
+INFO:root:round 30
+INFO:root:client_0: train_loss=1.2398736143112183, train_accuracy=0.8965277777777777
+INFO:root:client_1: train_loss=1.2483160644769669, train_accuracy=0.9064002403846154
+INFO:root:client_2: train_loss=1.2488279342651367, train_accuracy=0.8238636363636364
+INFO:root:client_3: train_loss=1.245540976524353, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.2562711238861084, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2480276226997375, train_accuracy=0.8901817375886525
+INFO:root:client_6: train_loss=1.236484706401825, train_accuracy=0.8100961538461539
+INFO:root:client_7: train_loss=1.2434088240067165, train_accuracy=0.8803205818965517
+INFO:root:client_8: train_loss=1.2470629334449768, train_accuracy=0.8346217105263157
+INFO:root:client_9: train_loss=1.2530179818471272, train_accuracy=0.8794507575757575
+INFO:root:client_10: train_loss=1.24557763338089, train_accuracy=0.9018229166666667
+INFO:root:client_11: train_loss=1.2457282781600951, train_accuracy=0.8932065217391305
+INFO:root:client_0: test_loss=1.2644448280334473, test_accuracy=0.8088624338624338, test_precision=0.39285714285714285, test_recall=0.24647177419354838, test_f1=0.28967312940167067, test_cf_matrix=[[1219    3]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.2335773706436157, test_accuracy=0.8015873015873016, test_precision=0.3269230769230769, test_recall=0.24462365591397847, test_f1=0.2780896623626594, test_cf_matrix=[[1208    9]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.2083369493484497, test_accuracy=0.7804232804232805, test_precision=0.28125, test_recall=0.2289986559139785, test_f1=0.25207551594746713, test_cf_matrix=[[1177   21]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.2148534059524536, test_accuracy=0.8022486772486772, test_precision=0.27884615384615385, test_recall=0.23454301075268819, test_f1=0.25424017790956266, test_cf_matrix=[[1210   23]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.166791558265686, test_accuracy=0.8915343915343915, test_precision=0.24944485566247224, test_recall=0.2264784946236559, test_f1=0.23740753786544558, test_cf_matrix=[[1348   11]
+ [   3    0]]
+INFO:root:client_5: test_loss=1.2409864664077759, test_accuracy=0.8035714285714286, test_precision=0.3020833333333333, test_recall=0.2553763440860215, test_f1=0.276323511242896, test_cf_matrix=[[1210   19]
+ [   0    5]]
+INFO:root:client_6: test_loss=1.276628017425537, test_accuracy=0.781084656084656, test_precision=0.5, test_recall=0.23941532258064516, test_f1=0.2922540873760386, test_cf_matrix=[[1177    0]
+ [   0    4]]
+INFO:root:client_7: test_loss=1.2349337339401245, test_accuracy=0.9358465608465608, test_precision=0.3888888888888889, test_recall=0.28897849462365593, test_f1=0.3190287972896669, test_cf_matrix=[[1410    4]
+ [   0    5]]
+INFO:root:client_8: test_loss=1.289107084274292, test_accuracy=0.7936507936507936, test_precision=0.4375, test_recall=0.23235887096774194, test_f1=0.27647645650438946, test_cf_matrix=[[1197    1]
+ [   0    3]]
+INFO:root:client_9: test_loss=1.2531211376190186, test_accuracy=0.7473544973544973, test_precision=0.28125, test_recall=0.2410954301075269, test_f1=0.2543323048220436, test_cf_matrix=[[1125   35]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.255656123161316, test_accuracy=0.7493386243386243, test_precision=0.2934782608695652, test_recall=0.2313508064516129, test_f1=0.2582581972211156, test_cf_matrix=[[1129   19]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.2511552572250366, test_accuracy=0.8062169312169312, test_precision=0.3181818181818182, test_recall=0.23555107526881722, test_f1=0.26770921386306, test_cf_matrix=[[1216    8]
+ [   0    3]]
+INFO:root:round 31
+INFO:root:client_0: train_loss=1.2363622188568115, train_accuracy=0.8971527777777777
+INFO:root:client_1: train_loss=1.2447597980499268, train_accuracy=0.9083533653846154
+INFO:root:client_2: train_loss=1.2453151941299438, train_accuracy=0.8238636363636364
+INFO:root:client_3: train_loss=1.2419515609741212, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.252855658531189, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2444700797398884, train_accuracy=0.8927859042553191
+INFO:root:client_6: train_loss=1.232824683189392, train_accuracy=0.8179086538461539
+INFO:root:client_7: train_loss=1.2399819592634838, train_accuracy=0.8822737068965517
+INFO:root:client_8: train_loss=1.243540644645691, train_accuracy=0.8393092105263158
+INFO:root:client_9: train_loss=1.2495324611663818, train_accuracy=0.8846590909090909
+INFO:root:client_10: train_loss=1.2420532405376434, train_accuracy=0.9135416666666667
+INFO:root:client_11: train_loss=1.2421904444694518, train_accuracy=0.8947690217391304
+INFO:root:round 32
+INFO:root:client_0: train_loss=1.2329063463211059, train_accuracy=0.8996527777777777
+INFO:root:client_1: train_loss=1.2412571907043457, train_accuracy=0.9103064903846154
+INFO:root:client_2: train_loss=1.2418601512908936, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2384165525436401, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.249500036239624, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2409689625104268, train_accuracy=0.8953900709219859
+INFO:root:client_6: train_loss=1.2292213439941406, train_accuracy=0.8179086538461539
+INFO:root:client_7: train_loss=1.2366063098112743, train_accuracy=0.8848778735632185
+INFO:root:client_8: train_loss=1.2400707960128785, train_accuracy=0.8408717105263157
+INFO:root:client_9: train_loss=1.2461015383402507, train_accuracy=0.8846590909090909
+INFO:root:client_10: train_loss=1.2385834455490112, train_accuracy=0.9174479166666667
+INFO:root:client_11: train_loss=1.2387094378471375, train_accuracy=0.8963315217391304
+INFO:root:round 33
+INFO:root:client_0: train_loss=1.229505352973938, train_accuracy=0.9009027777777777
+INFO:root:client_1: train_loss=1.2378078550100327, train_accuracy=0.9122596153846154
+INFO:root:client_2: train_loss=1.2384620308876038, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.234935426712036, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.2462029457092285, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2375236948331196, train_accuracy=0.8953900709219859
+INFO:root:client_6: train_loss=1.225674331188202, train_accuracy=0.8257211538461539
+INFO:root:client_7: train_loss=1.233280897140503, train_accuracy=0.8868309985632185
+INFO:root:client_8: train_loss=1.2366527915000916, train_accuracy=0.8424342105263157
+INFO:root:client_9: train_loss=1.2427245775858562, train_accuracy=0.8846590909090909
+INFO:root:client_10: train_loss=1.235167682170868, train_accuracy=0.9174479166666667
+INFO:root:client_11: train_loss=1.2352845191955566, train_accuracy=0.8963315217391304
+INFO:root:round 34
+INFO:root:client_0: train_loss=1.2261584568023682, train_accuracy=0.9027777777777777
+INFO:root:client_1: train_loss=1.234411284327507, train_accuracy=0.9142127403846154
+INFO:root:client_2: train_loss=1.2351202964782715, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.231507658958435, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.2429633140563965, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2341333429018657, train_accuracy=0.8953900709219859
+INFO:root:client_6: train_loss=1.2221830487251282, train_accuracy=0.8431490384615384
+INFO:root:client_7: train_loss=1.230004921555519, train_accuracy=0.8887841235632185
+INFO:root:client_8: train_loss=1.2332858920097352, train_accuracy=0.8424342105263157
+INFO:root:client_9: train_loss=1.2394009033838909, train_accuracy=0.8898674242424242
+INFO:root:client_10: train_loss=1.2318050265312195, train_accuracy=0.9174479166666667
+INFO:root:client_11: train_loss=1.23191499710083, train_accuracy=0.8978940217391305
+INFO:root:round 35
+INFO:root:client_0: train_loss=1.222864933013916, train_accuracy=0.9040277777777778
+INFO:root:client_1: train_loss=1.231067106127739, train_accuracy=0.9161658653846154
+INFO:root:client_2: train_loss=1.2318344712257385, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2281327486038207, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.239780068397522, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.230797251065572, train_accuracy=0.8953900709219859
+INFO:root:client_6: train_loss=1.2187466621398926, train_accuracy=0.8431490384615384
+INFO:root:client_7: train_loss=1.2267773151397705, train_accuracy=0.8907372485632185
+INFO:root:client_8: train_loss=1.2299694776535035, train_accuracy=0.8424342105263157
+INFO:root:client_9: train_loss=1.2361298402150471, train_accuracy=0.8959280303030303
+INFO:root:client_10: train_loss=1.2284948825836182, train_accuracy=0.9213541666666667
+INFO:root:client_11: train_loss=1.2286000013351441, train_accuracy=0.8994565217391305
+INFO:root:round 36
+INFO:root:client_0: train_loss=1.2196240472793578, train_accuracy=0.9059027777777777
+INFO:root:client_1: train_loss=1.2277747094631195, train_accuracy=0.9161658653846154
+INFO:root:client_2: train_loss=1.228603482246399, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.224810290336609, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.2366520166397095, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2275147040685017, train_accuracy=0.8953900709219859
+INFO:root:client_6: train_loss=1.2153648138046265, train_accuracy=0.8431490384615384
+INFO:root:client_7: train_loss=1.2235973527034123, train_accuracy=0.8939924568965517
+INFO:root:client_8: train_loss=1.2267027974128724, train_accuracy=0.8424342105263157
+INFO:root:client_9: train_loss=1.2329107522964478, train_accuracy=0.8959280303030303
+INFO:root:client_10: train_loss=1.2252366542816162, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.2253387570381165, train_accuracy=0.8994565217391305
+INFO:root:round 37
+INFO:root:client_0: train_loss=1.2164349842071533, train_accuracy=0.9084027777777777
+INFO:root:client_1: train_loss=1.2245334684848785, train_accuracy=0.9161658653846154
+INFO:root:client_2: train_loss=1.2254270911216736, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2215397596359252, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.233578085899353, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2242848078409831, train_accuracy=0.8979942375886525
+INFO:root:client_6: train_loss=1.2120364904403687, train_accuracy=0.8431490384615384
+INFO:root:client_7: train_loss=1.2204640060663223, train_accuracy=0.8973823635057472
+INFO:root:client_8: train_loss=1.2234851002693177, train_accuracy=0.8439967105263158
+INFO:root:client_9: train_loss=1.2297428448994954, train_accuracy=0.9011363636363635
+INFO:root:client_10: train_loss=1.2220293581485748, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.2221303462982178, train_accuracy=0.8994565217391305
+INFO:root:round 38
+INFO:root:client_0: train_loss=1.2132970380783081, train_accuracy=0.9090277777777778
+INFO:root:client_1: train_loss=1.2213430404663086, train_accuracy=0.9200721153846154
+INFO:root:client_2: train_loss=1.2223045229911804, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2183204650878907, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.230556845664978, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2211068471272786, train_accuracy=0.9015403368794326
+INFO:root:client_6: train_loss=1.2087615728378296, train_accuracy=0.8509615384615384
+INFO:root:client_7: train_loss=1.2173765003681183, train_accuracy=0.8986844468390806
+INFO:root:client_8: train_loss=1.2203157782554626, train_accuracy=0.8439967105263158
+INFO:root:client_9: train_loss=1.2266254425048828, train_accuracy=0.9063446969696969
+INFO:root:client_10: train_loss=1.2188724875450134, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.2189740061759948, train_accuracy=0.9025815217391304
+INFO:root:round 39
+INFO:root:client_0: train_loss=1.2102093982696533, train_accuracy=0.9096527777777778
+INFO:root:client_1: train_loss=1.2182026356458664, train_accuracy=0.9220252403846154
+INFO:root:client_2: train_loss=1.2192349433898926, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2151519536972046, train_accuracy=0.9083333333333334
+INFO:root:client_4: train_loss=1.2275874614715576, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2179797689119976, train_accuracy=0.906748670212766
+INFO:root:client_6: train_loss=1.2055386900901794, train_accuracy=0.8509615384615384
+INFO:root:client_7: train_loss=1.214333747824033, train_accuracy=0.9006375718390806
+INFO:root:client_8: train_loss=1.2171940088272095, train_accuracy=0.8424342105263157
+INFO:root:client_9: train_loss=1.2235576311747234, train_accuracy=0.9063446969696969
+INFO:root:client_10: train_loss=1.21576526761055, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.2158689618110656, train_accuracy=0.9057065217391305
+INFO:root:round 40
+INFO:root:client_0: train_loss=1.2071713018417358, train_accuracy=0.9109027777777777
+INFO:root:client_1: train_loss=1.2151117324829102, train_accuracy=0.9239783653846154
+INFO:root:client_2: train_loss=1.2162175178527832, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2120337724685668, train_accuracy=0.9145833333333334
+INFO:root:client_4: train_loss=1.2246688604354858, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2149030566215515, train_accuracy=0.9093528368794326
+INFO:root:client_6: train_loss=1.2023676037788391, train_accuracy=0.8509615384615384
+INFO:root:client_7: train_loss=1.2113350182771683, train_accuracy=0.9019396551724138
+INFO:root:client_8: train_loss=1.2141191601753234, train_accuracy=0.8439967105263158
+INFO:root:client_9: train_loss=1.2205389340718586, train_accuracy=0.9063446969696969
+INFO:root:client_10: train_loss=1.2127068042755127, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.212814247608185, train_accuracy=0.9057065217391305
+INFO:root:client_0: test_loss=1.2322746515274048, test_accuracy=0.8220899470899471, test_precision=0.39285714285714285, test_recall=0.24983198924731181, test_f1=0.2916888463039853, test_cf_matrix=[[1239    3]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.2044719457626343, test_accuracy=0.8161375661375662, test_precision=0.3611111111111111, test_recall=0.24831989247311828, test_f1=0.2868753762793498, test_cf_matrix=[[1230    5]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.1821262836456299, test_accuracy=0.7976190476190477, test_precision=0.3181818181818182, test_recall=0.23336693548387097, test_f1=0.2663799968147794, test_cf_matrix=[[1203    8]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.1874533891677856, test_accuracy=0.8141534391534392, test_precision=0.2894736842105263, test_recall=0.23756720430107528, test_f1=0.260951467616536, test_cf_matrix=[[1228   16]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.1403172016143799, test_accuracy=0.9087301587301587, test_precision=0.24909354604786077, test_recall=0.23084677419354838, test_f1=0.2396232996163237, test_cf_matrix=[[1374    6]
+ [   5    0]]
+INFO:root:client_5: test_loss=1.2120885848999023, test_accuracy=0.8161375661375662, test_precision=0.3157894736842105, test_recall=0.25856854838709675, test_f1=0.28430810315755234, test_cf_matrix=[[1229   14]
+ [   0    5]]
+INFO:root:client_6: test_loss=1.2421400547027588, test_accuracy=0.8187830687830688, test_precision=0.5, test_recall=0.24899193548387097, test_f1=0.2981001364542878, test_cf_matrix=[[1234    0]
+ [   0    4]]
+INFO:root:client_7: test_loss=1.2017488479614258, test_accuracy=0.9464285714285714, test_precision=0.3888888888888889, test_recall=0.2916666666666667, test_f1=0.32043842682140555, test_cf_matrix=[[1426    4]
+ [   0    5]]
+INFO:root:client_8: test_loss=1.2541999816894531, test_accuracy=0.8128306878306878, test_precision=0.41666666666666663, test_recall=0.2474798387096774, test_f1=0.29243150264160217, test_cf_matrix=[[1225    2]
+ [   0    4]]
+INFO:root:client_9: test_loss=1.23078191280365, test_accuracy=0.7632275132275133, test_precision=0.2878787878787879, test_recall=0.24512768817204303, test_f1=0.26172085503862047, test_cf_matrix=[[1149   28]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.234148621559143, test_accuracy=0.7665343915343915, test_precision=0.2934782608695652, test_recall=0.23571908602150538, test_f1=0.26105489410003135, test_cf_matrix=[[1155   19]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.2204948663711548, test_accuracy=0.8201058201058201, test_precision=0.35714285714285715, test_recall=0.2390793010752688, test_f1=0.27535957383841375, test_cf_matrix=[[1237    4]
+ [   0    3]]
+INFO:root:round 41
+INFO:root:client_0: train_loss=1.2041818857192994, train_accuracy=0.9127777777777777
+INFO:root:client_1: train_loss=1.212069571018219, train_accuracy=0.9239783653846154
+INFO:root:client_2: train_loss=1.2132517099380493, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2089652299880982, train_accuracy=0.9145833333333334
+INFO:root:client_4: train_loss=1.2217994928359985, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2118756175041199, train_accuracy=0.9093528368794326
+INFO:root:client_6: train_loss=1.1992475986480713, train_accuracy=0.8605769230769231
+INFO:root:client_7: train_loss=1.208379328250885, train_accuracy=0.9032417385057472
+INFO:root:client_8: train_loss=1.2110904932022095, train_accuracy=0.8439967105263158
+INFO:root:client_9: train_loss=1.2175683577855427, train_accuracy=0.9063446969696969
+INFO:root:client_10: train_loss=1.2096964120864868, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.2098091006278993, train_accuracy=0.9057065217391305
+INFO:root:round 42
+INFO:root:client_0: train_loss=1.2012404012680054, train_accuracy=0.9134027777777777
+INFO:root:client_1: train_loss=1.2090755701065063, train_accuracy=0.9263822115384616
+INFO:root:client_2: train_loss=1.2103367447853088, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2059459686279297, train_accuracy=0.9145833333333334
+INFO:root:client_4: train_loss=1.218978762626648, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2088966568311055, train_accuracy=0.9093528368794326
+INFO:root:client_6: train_loss=1.1961777806282043, train_accuracy=0.8780048076923077
+INFO:root:client_7: train_loss=1.2054658631483715, train_accuracy=0.9051948635057472
+INFO:root:client_8: train_loss=1.2081071972846984, train_accuracy=0.8455592105263158
+INFO:root:client_9: train_loss=1.2146451473236084, train_accuracy=0.9063446969696969
+INFO:root:client_10: train_loss=1.206733375787735, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.2068525910377503, train_accuracy=0.9057065217391305
+INFO:root:round 43
+INFO:root:client_0: train_loss=1.198346061706543, train_accuracy=0.9134027777777777
+INFO:root:client_1: train_loss=1.2061289846897125, train_accuracy=0.9263822115384616
+INFO:root:client_2: train_loss=1.2074716687202454, train_accuracy=0.8465909090909092
+INFO:root:client_3: train_loss=1.2029752731323242, train_accuracy=0.9145833333333334
+INFO:root:client_4: train_loss=1.21620512008667, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2059653401374817, train_accuracy=0.9093528368794326
+INFO:root:client_6: train_loss=1.1931577920913696, train_accuracy=0.8876201923076923
+INFO:root:client_7: train_loss=1.2025937537352245, train_accuracy=0.9071479885057472
+INFO:root:client_8: train_loss=1.205168604850769, train_accuracy=0.8455592105263158
+INFO:root:client_9: train_loss=1.211768666903178, train_accuracy=0.9063446969696969
+INFO:root:client_10: train_loss=1.2038167715072632, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.2039438724517821, train_accuracy=0.9057065217391305
+INFO:root:round 44
+INFO:root:client_0: train_loss=1.1954980707168579, train_accuracy=0.9140277777777777
+INFO:root:client_1: train_loss=1.2032291442155838, train_accuracy=0.9263822115384616
+INFO:root:client_2: train_loss=1.2046560645103455, train_accuracy=0.8544034090909092
+INFO:root:client_3: train_loss=1.2000528573989868, train_accuracy=0.9145833333333334
+INFO:root:client_4: train_loss=1.2134780883789062, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.2030808726946514, train_accuracy=0.9119570035460992
+INFO:root:client_6: train_loss=1.1901864409446716, train_accuracy=0.8876201923076923
+INFO:root:client_7: train_loss=1.1997622201840084, train_accuracy=0.9091011135057472
+INFO:root:client_8: train_loss=1.2022740602493287, train_accuracy=0.8471217105263158
+INFO:root:client_9: train_loss=1.2089378833770752, train_accuracy=0.9063446969696969
+INFO:root:client_10: train_loss=1.2009458541870117, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.201082170009613, train_accuracy=0.9072690217391305
+INFO:root:round 45
+INFO:root:client_0: train_loss=1.1926957178115845, train_accuracy=0.9152777777777777
+INFO:root:client_1: train_loss=1.2003753185272217, train_accuracy=0.9263822115384616
+INFO:root:client_2: train_loss=1.2018888592720032, train_accuracy=0.8622159090909092
+INFO:root:client_3: train_loss=1.1971779584884643, train_accuracy=0.920138888888889
+INFO:root:client_4: train_loss=1.2107958793640137, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.200242320696513, train_accuracy=0.9119570035460992
+INFO:root:client_6: train_loss=1.1872636675834656, train_accuracy=0.8876201923076923
+INFO:root:client_7: train_loss=1.1969703833262126, train_accuracy=0.9117052801724138
+INFO:root:client_8: train_loss=1.1994226932525636, train_accuracy=0.8580592105263157
+INFO:root:client_9: train_loss=1.2061521609624226, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1981200873851776, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.1982666492462157, train_accuracy=0.9088315217391305
+INFO:root:round 46
+INFO:root:client_0: train_loss=1.1899381685256958, train_accuracy=0.9171527777777777
+INFO:root:client_1: train_loss=1.1975667178630829, train_accuracy=0.9283353365384616
+INFO:root:client_2: train_loss=1.1991692781448364, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1943500518798829, train_accuracy=0.920138888888889
+INFO:root:client_4: train_loss=1.208158254623413, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1974488496780396, train_accuracy=0.9119570035460992
+INFO:root:client_6: train_loss=1.1843882203102112, train_accuracy=0.8954326923076923
+INFO:root:client_7: train_loss=1.1942175179719925, train_accuracy=0.9136584051724138
+INFO:root:client_8: train_loss=1.1966139316558837, train_accuracy=0.8664473684210525
+INFO:root:client_9: train_loss=1.2034107049306233, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.195338398218155, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.195496380329132, train_accuracy=0.9088315217391305
+INFO:root:round 47
+INFO:root:client_0: train_loss=1.1872246646881104, train_accuracy=0.9184027777777777
+INFO:root:client_1: train_loss=1.194802537560463, train_accuracy=0.9302884615384616
+INFO:root:client_2: train_loss=1.1964966654777527, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1915687084198, train_accuracy=0.920138888888889
+INFO:root:client_4: train_loss=1.2055636644363403, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1946996649106343, train_accuracy=0.914561170212766
+INFO:root:client_6: train_loss=1.1815598607063293, train_accuracy=0.8954326923076923
+INFO:root:client_7: train_loss=1.1915028095245361, train_accuracy=0.9156115301724138
+INFO:root:client_8: train_loss=1.1938470244407653, train_accuracy=0.8726973684210526
+INFO:root:client_9: train_loss=1.20071280002594, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1926003992557526, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.1927706360816956, train_accuracy=0.9147418478260869
+INFO:root:round 48
+INFO:root:client_0: train_loss=1.1845544624328612, train_accuracy=0.9221527777777777
+INFO:root:client_1: train_loss=1.1920821517705917, train_accuracy=0.9322415865384616
+INFO:root:client_2: train_loss=1.1938704252243042, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.188833236694336, train_accuracy=0.920138888888889
+INFO:root:client_4: train_loss=1.2030115127563477, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1919938524564107, train_accuracy=0.914561170212766
+INFO:root:client_6: train_loss=1.1787776350975037, train_accuracy=0.8954326923076923
+INFO:root:client_7: train_loss=1.1888255725304286, train_accuracy=0.9175646551724138
+INFO:root:client_8: train_loss=1.1911212921142578, train_accuracy=0.8742598684210525
+INFO:root:client_9: train_loss=1.1980574131011963, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1899049282073975, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.1900885343551635, train_accuracy=0.917866847826087
+INFO:root:round 49
+INFO:root:client_0: train_loss=1.1819268035888673, train_accuracy=0.9227777777777777
+INFO:root:client_1: train_loss=1.1894046515226364, train_accuracy=0.9322415865384616
+INFO:root:client_2: train_loss=1.1912893652915955, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1861431121826171, train_accuracy=0.920138888888889
+INFO:root:client_4: train_loss=1.20050048828125, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.189330776532491, train_accuracy=0.9171653368794326
+INFO:root:client_6: train_loss=1.1760409474372864, train_accuracy=0.8954326923076923
+INFO:root:client_7: train_loss=1.1861850321292877, train_accuracy=0.9188667385057472
+INFO:root:client_8: train_loss=1.1884360790252686, train_accuracy=0.8789473684210526
+INFO:root:client_9: train_loss=1.1954440673192341, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1872514486312866, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.187449324131012, train_accuracy=0.917866847826087
+INFO:root:round 50
+INFO:root:client_0: train_loss=1.1793408870697022, train_accuracy=0.9246527777777778
+INFO:root:client_1: train_loss=1.186769351363182, train_accuracy=0.9341947115384616
+INFO:root:client_2: train_loss=1.1887529492378235, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.183497714996338, train_accuracy=0.9232638888888889
+INFO:root:client_4: train_loss=1.19802987575531, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1867093046506245, train_accuracy=0.9197695035460992
+INFO:root:client_6: train_loss=1.1733490824699402, train_accuracy=0.8954326923076923
+INFO:root:client_7: train_loss=1.1835805823405583, train_accuracy=0.9201688218390806
+INFO:root:client_8: train_loss=1.1857905745506288, train_accuracy=0.8789473684210526
+INFO:root:client_9: train_loss=1.1928715705871582, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1846392750740051, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.1848520636558533, train_accuracy=0.917866847826087
+INFO:root:client_0: test_loss=1.2040172815322876, test_accuracy=0.8485449735449735, test_precision=0.41666666666666663, test_recall=0.2565524193548387, test_f1=0.2977833995904108, test_cf_matrix=[[1279    2]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.1786681413650513, test_accuracy=0.8452380952380952, test_precision=0.35, test_recall=0.25571236559139787, test_f1=0.28945350768837586, test_cf_matrix=[[1274    6]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.1590229272842407, test_accuracy=0.8194444444444444, test_precision=0.3333333333333333, test_recall=0.23891129032258066, test_f1=0.2723267921505807, test_cf_matrix=[[1236    6]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.163022518157959, test_accuracy=0.826058201058201, test_precision=0.3, test_recall=0.24059139784946237, test_f1=0.2663327893759496, test_cf_matrix=[[1246   12]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.1187291145324707, test_accuracy=0.9166666666666666, test_precision=0.24874371859296482, test_recall=0.23286290322580644, test_f1=0.2405414786532454, test_cf_matrix=[[1386    3]
+ [   7    0]]
+INFO:root:client_5: test_loss=1.1865066289901733, test_accuracy=0.8406084656084656, test_precision=0.3088235294117647, test_recall=0.2545362903225806, test_f1=0.278726041343898, test_cf_matrix=[[1267   13]
+ [   0    4]]
+INFO:root:client_6: test_loss=1.2102395296096802, test_accuracy=0.8531746031746031, test_precision=0.5, test_recall=0.25772849462365593, test_f1=0.30322381295705014, test_cf_matrix=[[1286    0]
+ [   0    4]]
+INFO:root:client_7: test_loss=1.1737761497497559, test_accuracy=0.9523809523809523, test_precision=0.3888888888888889, test_recall=0.2931787634408602, test_f1=0.32122456173089087, test_cf_matrix=[[1435    4]
+ [   0    5]]
+INFO:root:client_8: test_loss=1.223494529724121, test_accuracy=0.8425925925925926, test_precision=0.39285714285714285, test_recall=0.2550403225806452, test_f1=0.29475543287562284, test_cf_matrix=[[1270    3]
+ [   0    4]]
+INFO:root:client_9: test_loss=1.2103785276412964, test_accuracy=0.7718253968253969, test_precision=0.2878787878787879, test_recall=0.24731182795698925, test_f1=0.26310493214167496, test_cf_matrix=[[1162   28]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.2137110233306885, test_accuracy=0.7744708994708994, test_precision=0.28703703703703703, test_recall=0.23773521505376344, test_f1=0.25898969757394485, test_cf_matrix=[[1167   23]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.1936602592468262, test_accuracy=0.8445767195767195, test_precision=0.34375, test_recall=0.2452956989247312, test_f1=0.27750497827661114, test_cf_matrix=[[1274    5]
+ [   0    3]]
+INFO:root:round 51
+INFO:root:client_0: train_loss=1.1767960596084595, train_accuracy=0.9259027777777777
+INFO:root:client_1: train_loss=1.1841753870248795, train_accuracy=0.9361478365384616
+INFO:root:client_2: train_loss=1.1862603425979614, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1808964729309082, train_accuracy=0.9232638888888889
+INFO:root:client_4: train_loss=1.1955987215042114, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.184128999710083, train_accuracy=0.922373670212766
+INFO:root:client_6: train_loss=1.1707014441490173, train_accuracy=0.8954326923076923
+INFO:root:client_7: train_loss=1.181011567513148, train_accuracy=0.9221219468390806
+INFO:root:client_8: train_loss=1.1831842541694642, train_accuracy=0.8805098684210526
+INFO:root:client_9: train_loss=1.1903396844863892, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1820675432682037, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.1822961211204528, train_accuracy=0.9209918478260869
+INFO:root:round 52
+INFO:root:client_0: train_loss=1.1742915678024293, train_accuracy=0.9290277777777777
+INFO:root:client_1: train_loss=1.18162202835083, train_accuracy=0.9361478365384616
+INFO:root:client_2: train_loss=1.1838108897209167, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.178338623046875, train_accuracy=0.9232638888888889
+INFO:root:client_4: train_loss=1.1932060718536377, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1815887888272603, train_accuracy=0.922373670212766
+INFO:root:client_6: train_loss=1.1680973768234253, train_accuracy=0.8954326923076923
+INFO:root:client_7: train_loss=1.1784773220618565, train_accuracy=0.9227729885057472
+INFO:root:client_8: train_loss=1.1806164383888245, train_accuracy=0.8820723684210525
+INFO:root:client_9: train_loss=1.1878471374511719, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1795356273651123, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.179780626296997, train_accuracy=0.9241168478260869
+INFO:root:round 53
+INFO:root:client_0: train_loss=1.1718266820907592, train_accuracy=0.9296527777777777
+INFO:root:client_1: train_loss=1.1791085451841354, train_accuracy=0.9400540865384616
+INFO:root:client_2: train_loss=1.1814034581184387, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1758238315582275, train_accuracy=0.9319444444444445
+INFO:root:client_4: train_loss=1.1908512115478516, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.179088056087494, train_accuracy=0.9330119680851063
+INFO:root:client_6: train_loss=1.1655362844467163, train_accuracy=0.9032451923076923
+INFO:root:client_7: train_loss=1.1759772449731827, train_accuracy=0.9240750718390806
+INFO:root:client_8: train_loss=1.1780863761901856, train_accuracy=0.8836348684210525
+INFO:root:client_9: train_loss=1.1853934526443481, train_accuracy=0.9115530303030303
+INFO:root:client_10: train_loss=1.1770428121089935, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.1773048043251038, train_accuracy=0.9272418478260869
+INFO:root:round 54
+INFO:root:client_0: train_loss=1.1694006729125976, train_accuracy=0.9315277777777777
+INFO:root:client_1: train_loss=1.1766341030597687, train_accuracy=0.9478665865384616
+INFO:root:client_2: train_loss=1.1790377497673035, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1733511686325073, train_accuracy=0.9319444444444445
+INFO:root:client_4: train_loss=1.1885333061218262, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1766261259714763, train_accuracy=0.935616134751773
+INFO:root:client_6: train_loss=1.1630173325538635, train_accuracy=0.9110576923076923
+INFO:root:client_7: train_loss=1.1735108147064846, train_accuracy=0.9247261135057472
+INFO:root:client_8: train_loss=1.1755934715270997, train_accuracy=0.8851973684210526
+INFO:root:client_9: train_loss=1.1829779148101807, train_accuracy=0.9167613636363635
+INFO:root:client_10: train_loss=1.1745882630348206, train_accuracy=0.9252604166666667
+INFO:root:client_11: train_loss=1.1748679041862489, train_accuracy=0.9303668478260869
+INFO:root:round 55
+INFO:root:client_0: train_loss=1.1670128202438355, train_accuracy=0.9327777777777777
+INFO:root:client_1: train_loss=1.1741979271173477, train_accuracy=0.9537259615384616
+INFO:root:client_2: train_loss=1.176712691783905, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1709201097488404, train_accuracy=0.9350694444444445
+INFO:root:client_4: train_loss=1.1862514019012451, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1742019454638164, train_accuracy=0.9382203014184397
+INFO:root:client_6: train_loss=1.1605400443077087, train_accuracy=0.9110576923076923
+INFO:root:client_7: train_loss=1.171077440182368, train_accuracy=0.9253771551724138
+INFO:root:client_8: train_loss=1.1731372117996215, train_accuracy=0.8851973684210526
+INFO:root:client_9: train_loss=1.180599570274353, train_accuracy=0.9167613636363635
+INFO:root:client_10: train_loss=1.17217156291008, train_accuracy=0.9291666666666667
+INFO:root:client_11: train_loss=1.1724691271781922, train_accuracy=0.9319293478260869
+INFO:root:round 56
+INFO:root:client_0: train_loss=1.1646625089645386, train_accuracy=0.9340277777777777
+INFO:root:client_1: train_loss=1.1717993170022964, train_accuracy=0.9556790865384616
+INFO:root:client_2: train_loss=1.1744276881217957, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.168530011177063, train_accuracy=0.9350694444444445
+INFO:root:client_4: train_loss=1.184004783630371, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1718149781227112, train_accuracy=0.9382203014184397
+INFO:root:client_6: train_loss=1.1581036448478699, train_accuracy=0.9110576923076923
+INFO:root:client_7: train_loss=1.168676699201266, train_accuracy=0.9260281968390806
+INFO:root:client_8: train_loss=1.1707167267799377, train_accuracy=0.8914473684210525
+INFO:root:client_9: train_loss=1.1782578229904175, train_accuracy=0.9167613636363635
+INFO:root:client_10: train_loss=1.1697918772697449, train_accuracy=0.9291666666666667
+INFO:root:client_11: train_loss=1.1701078534126281, train_accuracy=0.9350543478260869
+INFO:root:round 57
+INFO:root:client_0: train_loss=1.1623490715026856, train_accuracy=0.9346527777777777
+INFO:root:client_1: train_loss=1.1694375276565552, train_accuracy=0.9556790865384616
+INFO:root:client_2: train_loss=1.1721818447113037, train_accuracy=0.8700284090909092
+INFO:root:client_3: train_loss=1.1661802291870118, train_accuracy=0.9381944444444444
+INFO:root:client_4: train_loss=1.1817927360534668, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1694645484288533, train_accuracy=0.9408244680851063
+INFO:root:client_6: train_loss=1.1557077765464783, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.1663080503543217, train_accuracy=0.9260281968390806
+INFO:root:client_8: train_loss=1.1683317422866821, train_accuracy=0.8930098684210526
+INFO:root:client_9: train_loss=1.175951878229777, train_accuracy=0.9167613636363635
+INFO:root:client_10: train_loss=1.1674485504627228, train_accuracy=0.9291666666666667
+INFO:root:client_11: train_loss=1.1677832365036012, train_accuracy=0.9366168478260869
+INFO:root:round 58
+INFO:root:client_0: train_loss=1.160071702003479, train_accuracy=0.9377777777777777
+INFO:root:client_1: train_loss=1.1671118289232254, train_accuracy=0.9556790865384616
+INFO:root:client_2: train_loss=1.169974446296692, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.1638700246810914, train_accuracy=0.9381944444444444
+INFO:root:client_4: train_loss=1.1796140670776367, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.167149841785431, train_accuracy=0.943428634751773
+INFO:root:client_6: train_loss=1.153351604938507, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.1639710068702698, train_accuracy=0.9266792385057472
+INFO:root:client_8: train_loss=1.1659814357757567, train_accuracy=0.8945723684210526
+INFO:root:client_9: train_loss=1.1736810604731243, train_accuracy=0.9167613636363635
+INFO:root:client_10: train_loss=1.165140837430954, train_accuracy=0.9369791666666667
+INFO:root:client_11: train_loss=1.1654946208000183, train_accuracy=0.941304347826087
+INFO:root:round 59
+INFO:root:client_0: train_loss=1.1578298807144165, train_accuracy=0.9415277777777777
+INFO:root:client_1: train_loss=1.164821445941925, train_accuracy=0.9576322115384616
+INFO:root:client_2: train_loss=1.167804777622223, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.1615985870361327, train_accuracy=0.9413194444444445
+INFO:root:client_4: train_loss=1.1774687767028809, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1648702025413513, train_accuracy=0.9460328014184397
+INFO:root:client_6: train_loss=1.1510344743728638, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.161665250857671, train_accuracy=0.9286323635057472
+INFO:root:client_8: train_loss=1.1636653304100038, train_accuracy=0.8992598684210525
+INFO:root:client_9: train_loss=1.1714445352554321, train_accuracy=0.9167613636363635
+INFO:root:client_10: train_loss=1.1628682017326355, train_accuracy=0.9369791666666667
+INFO:root:client_11: train_loss=1.1632412314414977, train_accuracy=0.9428668478260869
+INFO:root:round 60
+INFO:root:client_0: train_loss=1.1556228685379029, train_accuracy=0.9465277777777777
+INFO:root:client_1: train_loss=1.1625657379627228, train_accuracy=0.9576322115384616
+INFO:root:client_2: train_loss=1.1656720638275146, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.1593654870986938, train_accuracy=0.9413194444444445
+INFO:root:client_4: train_loss=1.1753555536270142, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1626250346501668, train_accuracy=0.9486369680851063
+INFO:root:client_6: train_loss=1.1487558484077454, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.1593903948863347, train_accuracy=0.9299344468390806
+INFO:root:client_8: train_loss=1.161382794380188, train_accuracy=0.9070723684210525
+INFO:root:client_9: train_loss=1.1692417462666829, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1606300175189972, train_accuracy=0.9369791666666667
+INFO:root:client_11: train_loss=1.161022412776947, train_accuracy=0.949116847826087
+INFO:root:client_0: test_loss=1.1791960000991821, test_accuracy=0.8816137566137566, test_precision=0.375, test_recall=0.2649529569892473, test_f1=0.29838924387646437, test_cf_matrix=[[1329    4]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.156000018119812, test_accuracy=0.8763227513227513, test_precision=0.35, test_recall=0.26360887096774194, test_f1=0.29396058886352694, test_cf_matrix=[[1321    6]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.1387578248977661, test_accuracy=0.8359788359788359, test_precision=0.325, test_recall=0.24311155913978494, test_f1=0.27347377656046046, test_cf_matrix=[[1261    7]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.1413928270339966, test_accuracy=0.8591269841269841, test_precision=0.3125, test_recall=0.24899193548387097, test_f1=0.2744252873563218, test_cf_matrix=[[1296    9]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.1008952856063843, test_accuracy=0.9279100529100529, test_precision=0.41507092198581563, test_recall=0.2562163978494624, test_f1=0.27875546353807223, test_cf_matrix=[[1401    1]
+ [   9    2]]
+INFO:root:client_5: test_loss=1.1639442443847656, test_accuracy=0.873015873015873, test_precision=0.3125, test_recall=0.26276881720430106, test_f1=0.28466476462196866, test_cf_matrix=[[1316   12]
+ [   0    4]]
+INFO:root:client_6: test_loss=1.180908441543579, test_accuracy=0.8955026455026455, test_precision=0.5, test_recall=0.26848118279569894, test_f1=0.3092721232256116, test_cf_matrix=[[1350    0]
+ [   0    4]]
+INFO:root:client_7: test_loss=1.1499505043029785, test_accuracy=0.9583333333333334, test_precision=0.38636363636363635, test_recall=0.30493951612903225, test_f1=0.33187600526392746, test_cf_matrix=[[1443    5]
+ [   0    6]]
+INFO:root:client_8: test_loss=1.1964679956436157, test_accuracy=0.8829365079365079, test_precision=0.39285714285714285, test_recall=0.2652889784946237, test_f1=0.3005927519481857, test_cf_matrix=[[1331    3]
+ [   0    4]]
+INFO:root:client_9: test_loss=1.1915849447250366, test_accuracy=0.7797619047619048, test_precision=0.2867647058823529, test_recall=0.2493279569892473, test_f1=0.2636143423404751, test_cf_matrix=[[1174   29]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.1947981119155884, test_accuracy=0.7896825396825397, test_precision=0.2857142857142857, test_recall=0.24159946236559138, test_f1=0.2606422703510082, test_cf_matrix=[[1190   24]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.1701382398605347, test_accuracy=0.8763227513227513, test_precision=0.35714285714285715, test_recall=0.25336021505376344, test_f1=0.2836184135001722, test_cf_matrix=[[1322    4]
+ [   0    3]]
+INFO:root:round 61
+INFO:root:client_0: train_loss=1.153450093269348, train_accuracy=0.9527777777777777
+INFO:root:client_1: train_loss=1.1603440791368484, train_accuracy=0.9595853365384616
+INFO:root:client_2: train_loss=1.163575530052185, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.1571698904037475, train_accuracy=0.9444444444444444
+INFO:root:client_4: train_loss=1.1732741594314575, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1604135433832805, train_accuracy=0.9564494680851063
+INFO:root:client_6: train_loss=1.1465150713920593, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.1571459124485652, train_accuracy=0.9305854885057472
+INFO:root:client_8: train_loss=1.1591333150863647, train_accuracy=0.9148848684210525
+INFO:root:client_9: train_loss=1.1670719782511394, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1584255993366241, train_accuracy=0.9369791666666667
+INFO:root:client_11: train_loss=1.1588374853134156, train_accuracy=0.9506793478260869
+INFO:root:round 62
+INFO:root:client_0: train_loss=1.1513109397888184, train_accuracy=0.9565277777777778
+INFO:root:client_1: train_loss=1.158155620098114, train_accuracy=0.9595853365384616
+INFO:root:client_2: train_loss=1.1615147590637207, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.155011034011841, train_accuracy=0.9475694444444445
+INFO:root:client_4: train_loss=1.1712236404418945, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.158235212167104, train_accuracy=0.959053634751773
+INFO:root:client_6: train_loss=1.1443116664886475, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.1549316545327504, train_accuracy=0.9318875718390806
+INFO:root:client_8: train_loss=1.156916356086731, train_accuracy=0.9164473684210526
+INFO:root:client_9: train_loss=1.164934555689494, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1562544405460358, train_accuracy=0.9408854166666667
+INFO:root:client_11: train_loss=1.1566858410835266, train_accuracy=0.9597146739130435
+INFO:root:round 63
+INFO:root:client_0: train_loss=1.1492047691345215, train_accuracy=0.9590277777777777
+INFO:root:client_1: train_loss=1.1559999138116837, train_accuracy=0.9615384615384616
+INFO:root:client_2: train_loss=1.1594886779785156, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.1528884887695312, train_accuracy=0.9475694444444445
+INFO:root:client_4: train_loss=1.169203519821167, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.156089425086975, train_accuracy=0.9625997340425533
+INFO:root:client_6: train_loss=1.142145037651062, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.152747134367625, train_accuracy=0.9331896551724138
+INFO:root:client_8: train_loss=1.1547313332557678, train_accuracy=0.9195723684210526
+INFO:root:client_9: train_loss=1.1628288825352986, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1541158854961395, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1545667767524719, train_accuracy=0.9628396739130436
+INFO:root:round 64
+INFO:root:client_0: train_loss=1.1471309900283813, train_accuracy=0.9615277777777778
+INFO:root:client_1: train_loss=1.1538762599229813, train_accuracy=0.9634915865384616
+INFO:root:client_2: train_loss=1.157496690750122, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.1508012056350707, train_accuracy=0.9475694444444445
+INFO:root:client_4: train_loss=1.1672128438949585, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1539753874142964, train_accuracy=0.9652039007092199
+INFO:root:client_6: train_loss=1.140014410018921, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.150592212875684, train_accuracy=0.9331896551724138
+INFO:root:client_8: train_loss=1.1525778770446777, train_accuracy=0.9242598684210526
+INFO:root:client_9: train_loss=1.1607543230056763, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1520093977451324, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.152479600906372, train_accuracy=0.9644021739130435
+INFO:root:round 65
+INFO:root:client_0: train_loss=1.145088973045349, train_accuracy=0.9621527777777777
+INFO:root:client_1: train_loss=1.1517839431762695, train_accuracy=0.9654447115384616
+INFO:root:client_2: train_loss=1.1555382013320923, train_accuracy=0.8927556818181819
+INFO:root:client_3: train_loss=1.1487488508224488, train_accuracy=0.953125
+INFO:root:client_4: train_loss=1.165251612663269, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1518927415211995, train_accuracy=0.9713541666666666
+INFO:root:client_6: train_loss=1.1379194855690002, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.1484663883845012, train_accuracy=0.9331896551724138
+INFO:root:client_8: train_loss=1.1504553198814391, train_accuracy=0.9273848684210526
+INFO:root:client_9: train_loss=1.1587100823720295, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1499343812465668, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.150423812866211, train_accuracy=0.9659646739130435
+INFO:root:round 66
+INFO:root:client_0: train_loss=1.1430781745910645, train_accuracy=0.9621527777777777
+INFO:root:client_1: train_loss=1.149722382426262, train_accuracy=0.9654447115384616
+INFO:root:client_2: train_loss=1.1536123752593994, train_accuracy=0.9154829545454546
+INFO:root:client_3: train_loss=1.1467304468154906, train_accuracy=0.959375
+INFO:root:client_4: train_loss=1.1633185148239136, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1498407920201619, train_accuracy=0.9713541666666666
+INFO:root:client_6: train_loss=1.1358594298362732, train_accuracy=0.9302884615384616
+INFO:root:client_7: train_loss=1.1463696211576462, train_accuracy=0.9344917385057472
+INFO:root:client_8: train_loss=1.1483632564544677, train_accuracy=0.9273848684210526
+INFO:root:client_9: train_loss=1.1566956440607707, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.14789018034935, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.148398756980896, train_accuracy=0.9706521739130436
+INFO:root:round 67
+INFO:root:client_0: train_loss=1.1410980319976807, train_accuracy=0.9634027777777777
+INFO:root:client_1: train_loss=1.147691160440445, train_accuracy=0.9673978365384616
+INFO:root:client_2: train_loss=1.1517184376716614, train_accuracy=0.9232954545454546
+INFO:root:client_3: train_loss=1.1447455644607545, train_accuracy=0.96875
+INFO:root:client_4: train_loss=1.1614137887954712, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1478190422058105, train_accuracy=0.9713541666666666
+INFO:root:client_6: train_loss=1.133833885192871, train_accuracy=0.9399038461538461
+INFO:root:client_7: train_loss=1.1443014691273372, train_accuracy=0.9344917385057472
+INFO:root:client_8: train_loss=1.1463012218475341, train_accuracy=0.9273848684210526
+INFO:root:client_9: train_loss=1.1547104120254517, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1458763778209686, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.146403706073761, train_accuracy=0.9706521739130436
+INFO:root:round 68
+INFO:root:client_0: train_loss=1.1391480302810668, train_accuracy=0.9652777777777777
+INFO:root:client_1: train_loss=1.1456895172595978, train_accuracy=0.9673978365384616
+INFO:root:client_2: train_loss=1.149856150150299, train_accuracy=0.9232954545454546
+INFO:root:client_3: train_loss=1.1427934169769287, train_accuracy=0.96875
+INFO:root:client_4: train_loss=1.1595361232757568, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1458268562952678, train_accuracy=0.9739583333333334
+INFO:root:client_6: train_loss=1.131842017173767, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.142261768380801, train_accuracy=0.9351427801724138
+INFO:root:client_8: train_loss=1.1442687153816222, train_accuracy=0.9289473684210525
+INFO:root:client_9: train_loss=1.1527538696924846, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1438922882080078, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1444382309913634, train_accuracy=0.9706521739130436
+INFO:root:round 69
+INFO:root:client_0: train_loss=1.1372274732589722, train_accuracy=0.9659027777777777
+INFO:root:client_1: train_loss=1.143717035651207, train_accuracy=0.9673978365384616
+INFO:root:client_2: train_loss=1.1480243802070618, train_accuracy=0.9232954545454546
+INFO:root:client_3: train_loss=1.140873384475708, train_accuracy=0.96875
+INFO:root:client_4: train_loss=1.1576855182647705, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1438636779785156, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1298835277557373, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.1402502755324047, train_accuracy=0.9351427801724138
+INFO:root:client_8: train_loss=1.142265212535858, train_accuracy=0.9320723684210526
+INFO:root:client_9: train_loss=1.1508253812789917, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1419375538825989, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1425017595291138, train_accuracy=0.9706521739130436
+INFO:root:round 70
+INFO:root:client_0: train_loss=1.135336036682129, train_accuracy=0.9665277777777778
+INFO:root:client_1: train_loss=1.1417730897665024, train_accuracy=0.9673978365384616
+INFO:root:client_2: train_loss=1.1462227702140808, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.1389847278594971, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1558613777160645, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1419292092323303, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1279576420783997, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.138266791899999, train_accuracy=0.9351427801724138
+INFO:root:client_8: train_loss=1.1402904629707336, train_accuracy=0.9336348684210526
+INFO:root:client_9: train_loss=1.1489243507385254, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1400114595890045, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1405936360359192, train_accuracy=0.9706521739130436
+INFO:root:client_0: test_loss=1.1574478149414062, test_accuracy=0.9034391534391535, test_precision=0.375, test_recall=0.270497311827957, test_f1=0.30144736842105263, test_cf_matrix=[[1362    4]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.1362230777740479, test_accuracy=0.9001322751322751, test_precision=0.34375, test_recall=0.2594086021505376, test_f1=0.28545546380885456, test_cf_matrix=[[1358    5]
+ [   0    3]]
+INFO:root:client_2: test_loss=1.1211446523666382, test_accuracy=0.8578042328042328, test_precision=0.3333333333333333, test_recall=0.24865591397849462, test_f1=0.2780210443761846, test_cf_matrix=[[1294    6]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.1225486993789673, test_accuracy=0.8988095238095238, test_precision=0.3125, test_recall=0.25907258064516125, test_f1=0.2800632911392405, test_cf_matrix=[[1356    9]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.086118221282959, test_accuracy=0.9332010582010583, test_precision=0.43556201550387597, test_recall=0.26780913978494625, test_f1=0.29574549117892773, test_cf_matrix=[[1408    1]
+ [  11    3]]
+INFO:root:client_5: test_loss=1.1441758871078491, test_accuracy=0.9021164021164021, test_precision=0.3214285714285714, test_recall=0.2701612903225806, test_f1=0.2913956238911886, test_cf_matrix=[[1360   10]
+ [   0    4]]
+INFO:root:client_6: test_loss=1.1542630195617676, test_accuracy=0.9113756613756614, test_precision=0.5, test_recall=0.27251344086021506, test_f1=0.3114705001497454, test_cf_matrix=[[1374    0]
+ [   0    4]]
+INFO:root:client_7: test_loss=1.1294455528259277, test_accuracy=0.9603174603174603, test_precision=0.38636363636363635, test_recall=0.30544354838709675, test_f1=0.3321355536079463, test_cf_matrix=[[1446    5]
+ [   0    6]]
+INFO:root:client_8: test_loss=1.1727042198181152, test_accuracy=0.8981481481481481, test_precision=0.39285714285714285, test_recall=0.2691532258064516, test_f1=0.30272865542212435, test_cf_matrix=[[1354    3]
+ [   0    4]]
+INFO:root:client_9: test_loss=1.1745697259902954, test_accuracy=0.8002645502645502, test_precision=0.2931034482758621, test_recall=0.2545362903225806, test_f1=0.27089799550196525, test_cf_matrix=[[1205   24]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.1774811744689941, test_accuracy=0.8141534391534392, test_precision=0.29, test_recall=0.24781586021505375, test_f1=0.26678317735934154, test_cf_matrix=[[1227   21]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.1495009660720825, test_accuracy=0.9001322751322751, test_precision=0.35714285714285715, test_recall=0.2594086021505376, test_f1=0.28696756058304806, test_cf_matrix=[[1358    4]
+ [   0    3]]
+INFO:root:round 71
+INFO:root:client_0: train_loss=1.1334730243682862, train_accuracy=0.9671527777777778
+INFO:root:client_1: train_loss=1.1398571878671646, train_accuracy=0.9717548076923077
+INFO:root:client_2: train_loss=1.1444504857063293, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.1371269941329956, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1540632247924805, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1400227745374043, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1260640621185303, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.136310984690984, train_accuracy=0.9351427801724138
+INFO:root:client_8: train_loss=1.138343918323517, train_accuracy=0.9336348684210526
+INFO:root:client_9: train_loss=1.147050380706787, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1381136178970337, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1387134671211243, train_accuracy=0.9722146739130435
+INFO:root:round 72
+INFO:root:client_0: train_loss=1.1316380786895752, train_accuracy=0.9690277777777777
+INFO:root:client_1: train_loss=1.137968972325325, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1427070498466492, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.1352994680404662, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1522903442382812, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1381439367930095, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.124202013015747, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.134382834037145, train_accuracy=0.9351427801724138
+INFO:root:client_8: train_loss=1.1364251494407653, train_accuracy=0.9367598684210525
+INFO:root:client_9: train_loss=1.145202914873759, train_accuracy=0.9219696969696969
+INFO:root:client_10: train_loss=1.1362435221672058, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1368606090545654, train_accuracy=0.9722146739130435
+INFO:root:round 73
+INFO:root:client_0: train_loss=1.1298305463790894, train_accuracy=0.9696527777777777
+INFO:root:client_1: train_loss=1.1361077278852463, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.140991747379303, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.1335014343261718, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1505423784255981, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1362922588984172, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1223711967468262, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.1324819525082905, train_accuracy=0.9357938218390806
+INFO:root:client_8: train_loss=1.1345337271690368, train_accuracy=0.9383223684210525
+INFO:root:client_9: train_loss=1.1433813174565632, train_accuracy=0.9271780303030303
+INFO:root:client_10: train_loss=1.1344005763530731, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1350346326828002, train_accuracy=0.9722146739130435
+INFO:root:round 74
+INFO:root:client_0: train_loss=1.1280500841140748, train_accuracy=0.9696527777777777
+INFO:root:client_1: train_loss=1.134273186326027, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1393041610717773, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.13173246383667, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1488193273544312, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1344672640164692, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1205707788467407, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.1306081712245941, train_accuracy=0.9357938218390806
+INFO:root:client_8: train_loss=1.1326694369316102, train_accuracy=0.9398848684210526
+INFO:root:client_9: train_loss=1.1415851910909016, train_accuracy=0.9271780303030303
+INFO:root:client_10: train_loss=1.1325844824314117, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1332349538803101, train_accuracy=0.9722146739130435
+INFO:root:round 75
+INFO:root:client_0: train_loss=1.1262960958480834, train_accuracy=0.9709027777777777
+INFO:root:client_1: train_loss=1.1324648261070251, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1376433372497559, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.1299919366836548, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1471202373504639, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1326685746510823, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1188005208969116, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.1287612865368526, train_accuracy=0.9377469468390806
+INFO:root:client_8: train_loss=1.1308316826820373, train_accuracy=0.9398848684210526
+INFO:root:client_9: train_loss=1.1398141384124756, train_accuracy=0.9271780303030303
+INFO:root:client_10: train_loss=1.1307945847511292, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1314611434936523, train_accuracy=0.9722146739130435
+INFO:root:round 76
+INFO:root:client_0: train_loss=1.1245681762695312, train_accuracy=0.9715277777777778
+INFO:root:client_1: train_loss=1.130682110786438, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.136008858680725, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.1282790660858155, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1454449892044067, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1308955947558086, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.117059588432312, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.1269410997629166, train_accuracy=0.9383979885057472
+INFO:root:client_8: train_loss=1.129020130634308, train_accuracy=0.9430098684210526
+INFO:root:client_9: train_loss=1.138067642847697, train_accuracy=0.9271780303030303
+INFO:root:client_10: train_loss=1.1290305256843567, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1297126531600952, train_accuracy=0.9722146739130435
+INFO:root:round 77
+INFO:root:client_0: train_loss=1.1228658437728882, train_accuracy=0.9721527777777778
+INFO:root:client_1: train_loss=1.1289249062538147, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.134400486946106, train_accuracy=0.9538352272727273
+INFO:root:client_3: train_loss=1.1265936374664307, train_accuracy=0.971875
+INFO:root:client_4: train_loss=1.1437933444976807, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.129147966702779, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.115347683429718, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.1251473426818848, train_accuracy=0.9383979885057472
+INFO:root:client_8: train_loss=1.1272344589233398, train_accuracy=0.9445723684210525
+INFO:root:client_9: train_loss=1.1363452672958374, train_accuracy=0.9271780303030303
+INFO:root:client_10: train_loss=1.1272918283939362, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1279891848564148, train_accuracy=0.9722146739130435
+INFO:root:round 78
+INFO:root:client_0: train_loss=1.121188588142395, train_accuracy=0.9734027777777777
+INFO:root:client_1: train_loss=1.127192422747612, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.132817029953003, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1249346733093262, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1421645879745483, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1274253924687703, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.113664150238037, train_accuracy=0.9477163461538461
+INFO:root:client_7: train_loss=1.123379682501157, train_accuracy=0.9390490301724138
+INFO:root:client_8: train_loss=1.1254741668701171, train_accuracy=0.9461348684210525
+INFO:root:client_9: train_loss=1.1346465746561687, train_accuracy=0.9271780303030303
+INFO:root:client_10: train_loss=1.1255778968334198, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1262900710105896, train_accuracy=0.9722146739130435
+INFO:root:round 79
+INFO:root:client_0: train_loss=1.1195360565185546, train_accuracy=0.9740277777777777
+INFO:root:client_1: train_loss=1.1254845559597015, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1312583088874817, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1233020067214965, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1405583620071411, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.125727355480194, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.112008512020111, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1216380695501964, train_accuracy=0.9390490301724138
+INFO:root:client_8: train_loss=1.123739194869995, train_accuracy=0.9476973684210526
+INFO:root:client_9: train_loss=1.132971207300822, train_accuracy=0.9271780303030303
+INFO:root:client_10: train_loss=1.1238884031772614, train_accuracy=0.9447916666666667
+INFO:root:client_11: train_loss=1.1246150255203247, train_accuracy=0.9722146739130435
+INFO:root:round 80
+INFO:root:client_0: train_loss=1.1179077482223512, train_accuracy=0.9740277777777777
+INFO:root:client_1: train_loss=1.1238007992506027, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1297237277030945, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.121694803237915, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.138974666595459, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1240535179773967, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.110380470752716, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1199221660693486, train_accuracy=0.9397000718390806
+INFO:root:client_8: train_loss=1.1220288634300233, train_accuracy=0.9476973684210526
+INFO:root:client_9: train_loss=1.1313187678654988, train_accuracy=0.9323863636363635
+INFO:root:client_10: train_loss=1.1222229599952698, train_accuracy=0.9486979166666667
+INFO:root:client_11: train_loss=1.1229636311531066, train_accuracy=0.9722146739130435
+INFO:root:client_0: test_loss=1.138501524925232, test_accuracy=0.9074074074074074, test_precision=0.3611111111111111, test_recall=0.271505376344086, test_f1=0.3001018589253883, test_cf_matrix=[[1368    5]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.1190299987792969, test_accuracy=0.908068783068783, test_precision=0.35714285714285715, test_recall=0.2614247311827957, test_f1=0.28806519334522224, test_cf_matrix=[[1370    4]
+ [   0    3]]
+INFO:root:client_2: test_loss=1.1059154272079468, test_accuracy=0.8743386243386243, test_precision=0.325, test_recall=0.25285618279569894, test_f1=0.27906599048597, test_cf_matrix=[[1319    7]
+ [   0    3]]
+INFO:root:client_3: test_loss=1.1061182022094727, test_accuracy=0.9041005291005291, test_precision=0.3076923076923077, test_recall=0.26041666666666663, test_f1=0.2796709753231492, test_cf_matrix=[[1364   10]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.0739922523498535, test_accuracy=0.9384920634920635, test_precision=0.49807152875175315, test_recall=0.2794018817204301, test_f1=0.31422198254730854, test_cf_matrix=[[1415    0]
+ [  11    4]]
+INFO:root:client_5: test_loss=1.127003788948059, test_accuracy=0.9087301587301587, test_precision=0.34615384615384615, test_recall=0.2820900537634409, test_f1=0.30715454691653504, test_cf_matrix=[[1369    8]
+ [   0    5]]
+INFO:root:client_6: test_loss=1.1302821636199951, test_accuracy=0.9206349206349206, test_precision=0.5, test_recall=0.29536290322580644, test_f1=0.34112734864300626, test_cf_matrix=[[1386    0]
+ [   0    6]]
+INFO:root:client_7: test_loss=1.1117229461669922, test_accuracy=0.9642857142857143, test_precision=0.38636363636363635, test_recall=0.3064516129032258, test_f1=0.3326530612244898, test_cf_matrix=[[1452    5]
+ [   0    6]]
+INFO:root:client_8: test_loss=1.1518901586532593, test_accuracy=0.91005291005291, test_precision=0.39285714285714285, test_recall=0.2721774193548387, test_f1=0.30437626889239794, test_cf_matrix=[[1372    3]
+ [   0    4]]
+INFO:root:client_9: test_loss=1.1590957641601562, test_accuracy=0.8187830687830688, test_precision=0.2916666666666667, test_recall=0.25924059139784944, test_f1=0.27286740985748703, test_cf_matrix=[[1233   25]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.1620044708251953, test_accuracy=0.8253968253968254, test_precision=0.28846153846153844, test_recall=0.2506720430107527, test_f1=0.26767203513909227, test_cf_matrix=[[1244   22]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.1315038204193115, test_accuracy=0.9034391534391535, test_precision=0.34375, test_recall=0.2602486559139785, test_f1=0.2859139337074711, test_cf_matrix=[[1363    5]
+ [   0    3]]
+INFO:root:round 81
+INFO:root:client_0: train_loss=1.1163032913208009, train_accuracy=0.9740277777777777
+INFO:root:client_1: train_loss=1.122140809893608, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.128212809562683, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1201128244400025, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.137412667274475, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.122403581937154, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1087791919708252, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1182317684094112, train_accuracy=0.9410021551724138
+INFO:root:client_8: train_loss=1.120343029499054, train_accuracy=0.9476973684210526
+INFO:root:client_9: train_loss=1.129688819249471, train_accuracy=0.9323863636363635
+INFO:root:client_10: train_loss=1.1205811202526093, train_accuracy=0.9486979166666667
+INFO:root:client_11: train_loss=1.1213353633880616, train_accuracy=0.9722146739130435
+INFO:root:round 82
+INFO:root:client_0: train_loss=1.1147221946716308, train_accuracy=0.9740277777777777
+INFO:root:client_1: train_loss=1.1205041855573654, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.126724898815155, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1185553312301635, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.135872721672058, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1207771301269531, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1072044372558594, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1165665835142136, train_accuracy=0.9410021551724138
+INFO:root:client_8: train_loss=1.118681299686432, train_accuracy=0.9529605263157894
+INFO:root:client_9: train_loss=1.1280811230341594, train_accuracy=0.9323863636363635
+INFO:root:client_10: train_loss=1.1189624071121216, train_accuracy=0.9486979166666667
+INFO:root:client_11: train_loss=1.1197298884391784, train_accuracy=0.9722146739130435
+INFO:root:round 83
+INFO:root:client_0: train_loss=1.1131641387939453, train_accuracy=0.9746527777777777
+INFO:root:client_1: train_loss=1.118890717625618, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1252596974372864, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1170219421386718, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1343539953231812, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.11917382478714, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1056554317474365, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1149262934923172, train_accuracy=0.9416531968390806
+INFO:root:client_8: train_loss=1.1170433521270753, train_accuracy=0.9529605263157894
+INFO:root:client_9: train_loss=1.1264952421188354, train_accuracy=0.9323863636363635
+INFO:root:client_10: train_loss=1.117366462945938, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.118146812915802, train_accuracy=0.9722146739130435
+INFO:root:round 84
+INFO:root:client_0: train_loss=1.1116286897659302, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1172998547554016, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1238163113594055, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1155120611190796, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1328562498092651, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1175931493441265, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.1041319370269775, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1133106847604115, train_accuracy=0.9429552801724138
+INFO:root:client_8: train_loss=1.1154287934303284, train_accuracy=0.9529605263157894
+INFO:root:client_9: train_loss=1.1249308586120605, train_accuracy=0.9323863636363635
+INFO:root:client_10: train_loss=1.1157928109169006, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.1165857076644898, train_accuracy=0.9722146739130435
+INFO:root:round 85
+INFO:root:client_0: train_loss=1.1101153516769409, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1157313883304596, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1223947405815125, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1140253305435182, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1313793659210205, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.116034984588623, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.10263329744339, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1117194443941116, train_accuracy=0.9436063218390806
+INFO:root:client_8: train_loss=1.1138373613357544, train_accuracy=0.9545230263157893
+INFO:root:client_9: train_loss=1.1233876546223958, train_accuracy=0.9323863636363635
+INFO:root:client_10: train_loss=1.1142411530017853, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.1150462746620178, train_accuracy=0.9722146739130435
+INFO:root:round 86
+INFO:root:client_0: train_loss=1.1086238145828247, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.114184945821762, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1209940910339355, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1125612258911133, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.129922866821289, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.1144989132881165, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.101159155368805, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1101523290077846, train_accuracy=0.9450431034482758
+INFO:root:client_8: train_loss=1.1122687697410583, train_accuracy=0.9545230263157893
+INFO:root:client_9: train_loss=1.1218653122584026, train_accuracy=0.9384469696969697
+INFO:root:client_10: train_loss=1.112711101770401, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.1135280132293701, train_accuracy=0.9722146739130435
+INFO:root:round 87
+INFO:root:client_0: train_loss=1.1071537637710571, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1126602739095688, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1196143627166748, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1111193418502807, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1284866333007812, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.112984538078308, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0997090935707092, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.108608956138293, train_accuracy=0.9456941451149424
+INFO:root:client_8: train_loss=1.1107226252555846, train_accuracy=0.9545230263157893
+INFO:root:client_9: train_loss=1.1203635136286418, train_accuracy=0.9384469696969697
+INFO:root:client_10: train_loss=1.1112021505832672, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.1120306730270386, train_accuracy=0.9722146739130435
+INFO:root:round 88
+INFO:root:client_0: train_loss=1.1057046270370483, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1111569106578827, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1182544827461243, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1096990823745727, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1270703077316284, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.111491620540619, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0982823371887207, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1070891271034877, train_accuracy=0.9456941451149424
+INFO:root:client_8: train_loss=1.1091986656188966, train_accuracy=0.9545230263157893
+INFO:root:client_9: train_loss=1.1188818613688152, train_accuracy=0.9384469696969697
+INFO:root:client_10: train_loss=1.1097140312194824, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.1105538487434388, train_accuracy=0.9722146739130435
+INFO:root:round 89
+INFO:root:client_0: train_loss=1.1042762088775635, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.109674721956253, train_accuracy=0.9737079326923077
+INFO:root:client_2: train_loss=1.1169145703315735, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.108300018310547, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1256736516952515, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.11001984278361, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0968788862228394, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1055924842755, train_accuracy=0.9456941451149424
+INFO:root:client_8: train_loss=1.107696533203125, train_accuracy=0.9545230263157893
+INFO:root:client_9: train_loss=1.1174203157424927, train_accuracy=0.9384469696969697
+INFO:root:client_10: train_loss=1.1082464456558228, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.1090972185134889, train_accuracy=0.9722146739130435
+INFO:root:round 90
+INFO:root:client_0: train_loss=1.1028681373596192, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1082133203744888, train_accuracy=0.9756610576923077
+INFO:root:client_2: train_loss=1.1155938506126404, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1069219589233399, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1242965459823608, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.108568787574768, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0954979062080383, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.104118620355924, train_accuracy=0.9463451867816092
+INFO:root:client_8: train_loss=1.1062159895896913, train_accuracy=0.9545230263157893
+INFO:root:client_9: train_loss=1.115978439648946, train_accuracy=0.9384469696969697
+INFO:root:client_10: train_loss=1.1067990064620972, train_accuracy=0.95703125
+INFO:root:client_11: train_loss=1.10766042470932, train_accuracy=0.9722146739130435
+INFO:root:client_0: test_loss=1.1220916509628296, test_accuracy=0.9120370370370371, test_precision=0.35, test_recall=0.27268145161290325, test_f1=0.2989562573195537, test_cf_matrix=[[1375    6]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.1041901111602783, test_accuracy=0.9153439153439153, test_precision=0.3611111111111111, test_recall=0.27352150537634407, test_f1=0.30119183466463806, test_cf_matrix=[[1380    5]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.0926746129989624, test_accuracy=0.8869047619047619, test_precision=0.34090909090909094, test_recall=0.2662970430107527, test_f1=0.2937800252844501, test_cf_matrix=[[1337    7]
+ [   0    4]]
+INFO:root:client_3: test_loss=1.0917637348175049, test_accuracy=0.9087301587301587, test_precision=0.3076923076923077, test_recall=0.2615927419354839, test_f1=0.2803096905930065, test_cf_matrix=[[1371   10]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.0637943744659424, test_accuracy=0.9457671957671958, test_precision=0.49808629088378564, test_recall=0.28125, test_f1=0.31518925518925517, test_cf_matrix=[[1426    0]
+ [  11    4]]
+INFO:root:client_5: test_loss=1.1121952533721924, test_accuracy=0.9166666666666666, test_precision=0.35, test_recall=0.2943548387096774, test_f1=0.3175088509816544, test_cf_matrix=[[1380    9]
+ [   0    6]]
+INFO:root:client_6: test_loss=1.1089533567428589, test_accuracy=0.9312169312169312, test_precision=0.5, test_recall=0.3082997311827957, test_f1=0.35537466921247446, test_cf_matrix=[[1401    0]
+ [   0    7]]
+INFO:root:client_7: test_loss=1.0964596271514893, test_accuracy=0.9682539682539683, test_precision=0.4, test_recall=0.30745967741935487, test_f1=0.33568946927039656, test_cf_matrix=[[1458    4]
+ [   0    6]]
+INFO:root:client_8: test_loss=1.1337521076202393, test_accuracy=0.916005291005291, test_precision=0.40625, test_recall=0.28393817204301075, test_f1=0.3187107740585774, test_cf_matrix=[[1380    3]
+ [   0    5]]
+INFO:root:client_9: test_loss=1.1459312438964844, test_accuracy=0.8306878306878307, test_precision=0.2931034482758621, test_recall=0.26226478494623656, test_f1=0.27553782884539874, test_cf_matrix=[[1251   24]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.1484909057617188, test_accuracy=0.8412698412698413, test_precision=0.29, test_recall=0.2547043010752688, test_f1=0.27085986789490835, test_cf_matrix=[[1268   21]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.1159230470657349, test_accuracy=0.91005291005291, test_precision=0.3333333333333333, test_recall=0.26192876344086025, test_f1=0.28540561151536337, test_cf_matrix=[[1373    6]
+ [   0    3]]
+INFO:root:round 91
+INFO:root:client_0: train_loss=1.1014799451828003, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.106772392988205, train_accuracy=0.9756610576923077
+INFO:root:client_2: train_loss=1.1142919659614563, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.105564284324646, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1229381561279297, train_accuracy=0.7894736842105263
+INFO:root:client_5: train_loss=1.107138216495514, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0941390991210938, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1026673465967178, train_accuracy=0.9482983117816092
+INFO:root:client_8: train_loss=1.1047566771507262, train_accuracy=0.9560855263157894
+INFO:root:client_9: train_loss=1.1145559549331665, train_accuracy=0.9384469696969697
+INFO:root:client_10: train_loss=1.1053712964057922, train_accuracy=0.9609375
+INFO:root:client_11: train_loss=1.106243121623993, train_accuracy=0.9722146739130435
+INFO:root:round 92
+INFO:root:client_0: train_loss=1.1001113748550415, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1053516119718552, train_accuracy=0.9756610576923077
+INFO:root:client_2: train_loss=1.113008737564087, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.104226541519165, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1215988397598267, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.1057278911272685, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0928019285202026, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.1012382507324219, train_accuracy=0.9489493534482758
+INFO:root:client_8: train_loss=1.1033182740211487, train_accuracy=0.9576480263157894
+INFO:root:client_9: train_loss=1.1131527026494343, train_accuracy=0.9445075757575757
+INFO:root:client_10: train_loss=1.1039630472660065, train_accuracy=0.9609375
+INFO:root:client_11: train_loss=1.1048449993133544, train_accuracy=0.9722146739130435
+INFO:root:round 93
+INFO:root:client_0: train_loss=1.0987620401382445, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1039507389068604, train_accuracy=0.9756610576923077
+INFO:root:client_2: train_loss=1.1117432713508606, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1029084920883179, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.120278000831604, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.1043373545010884, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0914860963821411, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.0998310446739197, train_accuracy=0.9496003951149424
+INFO:root:client_8: train_loss=1.101900577545166, train_accuracy=0.9644736842105264
+INFO:root:client_9: train_loss=1.111768364906311, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.102573961019516, train_accuracy=0.9609375
+INFO:root:client_11: train_loss=1.103465723991394, train_accuracy=0.9722146739130435
+INFO:root:round 94
+INFO:root:client_0: train_loss=1.0974315929412841, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.1025695204734802, train_accuracy=0.9776141826923077
+INFO:root:client_2: train_loss=1.1104957461357117, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1016096115112304, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1189756393432617, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.1029665072758992, train_accuracy=0.9765625
+INFO:root:client_6: train_loss=1.0901911854743958, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.0984453211228054, train_accuracy=0.9496003951149424
+INFO:root:client_8: train_loss=1.1005032420158387, train_accuracy=0.9660361842105264
+INFO:root:client_9: train_loss=1.1104025840759277, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.1012036204338074, train_accuracy=0.9609375
+INFO:root:client_11: train_loss=1.1021049737930297, train_accuracy=0.9722146739130435
+INFO:root:round 95
+INFO:root:client_0: train_loss=1.09611976146698, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.101207673549652, train_accuracy=0.9776141826923077
+INFO:root:client_2: train_loss=1.1092654466629028, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.1003296613693236, train_accuracy=0.975
+INFO:root:client_4: train_loss=1.1176912784576416, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.1016149123509724, train_accuracy=0.9791666666666666
+INFO:root:client_6: train_loss=1.0889166593551636, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.0970808813969295, train_accuracy=0.9502514367816092
+INFO:root:client_8: train_loss=1.0991259574890138, train_accuracy=0.9660361842105264
+INFO:root:client_9: train_loss=1.1090552409489949, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.099851906299591, train_accuracy=0.96484375
+INFO:root:client_11: train_loss=1.1007624506950378, train_accuracy=0.9722146739130435
+INFO:root:round 96
+INFO:root:client_0: train_loss=1.094826145172119, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.0998647958040237, train_accuracy=0.9795673076923077
+INFO:root:client_2: train_loss=1.1080520153045654, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.0990680694580077, train_accuracy=0.978125
+INFO:root:client_4: train_loss=1.1164249181747437, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.1002822518348694, train_accuracy=0.9791666666666666
+INFO:root:client_6: train_loss=1.0876622796058655, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.0957372784614563, train_accuracy=0.9502514367816092
+INFO:root:client_8: train_loss=1.097768449783325, train_accuracy=0.9675986842105264
+INFO:root:client_9: train_loss=1.1077261368433635, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.0985183119773865, train_accuracy=0.96484375
+INFO:root:client_11: train_loss=1.099437916278839, train_accuracy=0.9722146739130435
+INFO:root:round 97
+INFO:root:client_0: train_loss=1.0935504674911498, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.098540648818016, train_accuracy=0.9795673076923077
+INFO:root:client_2: train_loss=1.1068552136421204, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.0978246212005616, train_accuracy=0.978125
+INFO:root:client_4: train_loss=1.1151760816574097, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.0989684065183003, train_accuracy=0.9791666666666666
+INFO:root:client_6: train_loss=1.0864274501800537, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.0944142192602158, train_accuracy=0.9509024784482758
+INFO:root:client_8: train_loss=1.0964303612709045, train_accuracy=0.9675986842105264
+INFO:root:client_9: train_loss=1.106414794921875, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.0972027480602264, train_accuracy=0.96484375
+INFO:root:client_11: train_loss=1.0981309533119201, train_accuracy=0.9722146739130435
+INFO:root:round 98
+INFO:root:client_0: train_loss=1.0922924041748048, train_accuracy=0.9752777777777777
+INFO:root:client_1: train_loss=1.0972350239753723, train_accuracy=0.9815204326923077
+INFO:root:client_2: train_loss=1.1056746244430542, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.0965989828109741, train_accuracy=0.978125
+INFO:root:client_4: train_loss=1.11394464969635, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.0976728399594624, train_accuracy=0.9791666666666666
+INFO:root:client_6: train_loss=1.0852118134498596, train_accuracy=0.9573317307692308
+INFO:root:client_7: train_loss=1.0931112964948018, train_accuracy=0.9509024784482758
+INFO:root:client_8: train_loss=1.0951114892959595, train_accuracy=0.9675986842105264
+INFO:root:client_9: train_loss=1.1051212549209595, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.0959047973155975, train_accuracy=0.96484375
+INFO:root:client_11: train_loss=1.0968412399291991, train_accuracy=0.9722146739130435
+INFO:root:round 99
+INFO:root:client_0: train_loss=1.0910516595840454, train_accuracy=0.9759027777777777
+INFO:root:client_1: train_loss=1.0959475934505463, train_accuracy=0.9815204326923077
+INFO:root:client_2: train_loss=1.104509711265564, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.0953906774520874, train_accuracy=0.978125
+INFO:root:client_4: train_loss=1.1127303838729858, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.0963953932126362, train_accuracy=0.9791666666666666
+INFO:root:client_6: train_loss=1.084015130996704, train_accuracy=0.9669471153846154
+INFO:root:client_7: train_loss=1.0918282369772594, train_accuracy=0.9509024784482758
+INFO:root:client_8: train_loss=1.0938114643096923, train_accuracy=0.9675986842105264
+INFO:root:client_9: train_loss=1.1038451194763184, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.094624102115631, train_accuracy=0.96875
+INFO:root:client_11: train_loss=1.0955686211585998, train_accuracy=0.9722146739130435
+INFO:root:round 100
+INFO:root:client_0: train_loss=1.0898278951644897, train_accuracy=0.9765277777777777
+INFO:root:client_1: train_loss=1.0946780890226364, train_accuracy=0.9815204326923077
+INFO:root:client_2: train_loss=1.1033604145050049, train_accuracy=0.9616477272727273
+INFO:root:client_3: train_loss=1.0941994190216064, train_accuracy=0.978125
+INFO:root:client_4: train_loss=1.1115330457687378, train_accuracy=0.8421052631578947
+INFO:root:client_5: train_loss=1.0951358278592427, train_accuracy=0.9791666666666666
+INFO:root:client_6: train_loss=1.0828368663787842, train_accuracy=0.9669471153846154
+INFO:root:client_7: train_loss=1.0905646433432896, train_accuracy=0.9509024784482758
+INFO:root:client_8: train_loss=1.0925301790237427, train_accuracy=0.9691611842105263
+INFO:root:client_9: train_loss=1.1025861501693726, train_accuracy=0.9497159090909091
+INFO:root:client_10: train_loss=1.0933606624603271, train_accuracy=0.97265625
+INFO:root:client_11: train_loss=1.0943127393722534, train_accuracy=0.9722146739130435
+INFO:root:client_0: test_loss=1.1079050302505493, test_accuracy=0.917989417989418, test_precision=0.3333333333333333, test_recall=0.27419354838709675, test_f1=0.29650263076446914, test_cf_matrix=[[1384    8]
+ [   0    4]]
+INFO:root:client_1: test_loss=1.0913704633712769, test_accuracy=0.917989417989418, test_precision=0.34090909090909094, test_recall=0.27419354838709675, test_f1=0.2980899323517708, test_cf_matrix=[[1384    7]
+ [   0    4]]
+INFO:root:client_2: test_loss=1.081248164176941, test_accuracy=0.8948412698412699, test_precision=0.3541666666666667, test_recall=0.27856182795698925, test_f1=0.3071031186334431, test_cf_matrix=[[1348    7]
+ [   0    5]]
+INFO:root:client_3: test_loss=1.0795564651489258, test_accuracy=0.9146825396825397, test_precision=0.3125, test_recall=0.2631048387096774, test_f1=0.2822524407252441, test_cf_matrix=[[1380    9]
+ [   0    3]]
+INFO:root:client_4: test_loss=1.0550352334976196, test_accuracy=0.9477513227513228, test_precision=0.4980902777777778, test_recall=0.2817540322580645, test_f1=0.3154517954722873, test_cf_matrix=[[1429    0]
+ [  11    4]]
+INFO:root:client_5: test_loss=1.0994614362716675, test_accuracy=0.9246031746031746, test_precision=0.375, test_recall=0.33736559139784944, test_f1=0.3549437349854596, test_cf_matrix=[[1388   10]
+ [   0   10]]
+INFO:root:client_6: test_loss=1.0906754732131958, test_accuracy=0.9404761904761905, test_precision=0.5, test_recall=0.3209005376344086, test_f1=0.3686250861474845, test_cf_matrix=[[1414    0]
+ [   0    8]]
+INFO:root:client_7: test_loss=1.0833622217178345, test_accuracy=0.9708994708994709, test_precision=0.38636363636363635, test_recall=0.3081317204301075, test_f1=0.33351089588377725, test_cf_matrix=[[1462    5]
+ [   0    6]]
+INFO:root:client_8: test_loss=1.1180055141448975, test_accuracy=0.9206349206349206, test_precision=0.40625, test_recall=0.28511424731182794, test_f1=0.31934239130434783, test_cf_matrix=[[1387    3]
+ [   0    5]]
+INFO:root:client_9: test_loss=1.1348382234573364, test_accuracy=0.8452380952380952, test_precision=0.2980769230769231, test_recall=0.2659610215053763, test_f1=0.28053241579137994, test_cf_matrix=[[1273   21]
+ [   0    5]]
+INFO:root:client_10: test_loss=1.1368783712387085, test_accuracy=0.8584656084656085, test_precision=0.28846153846153844, test_recall=0.2590725806451613, test_f1=0.2725664989216391, test_cf_matrix=[[1294   22]
+ [   0    4]]
+INFO:root:client_11: test_loss=1.1024399995803833, test_accuracy=0.9173280423280423, test_precision=0.35, test_recall=0.2740255376344086, test_f1=0.2996803737168849, test_cf_matrix=[[1383    6]
+ [   0    4]]
