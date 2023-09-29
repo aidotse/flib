@@ -48,7 +48,7 @@ def main():
     # hyperparameters
     n_rounds = 101
     eval_every = 10
-    n_rounds_no_aggregation = 101
+    n_rounds_no_aggregation = 201 
     Module = LogisticRegressor 
     Optimizer = torch.optim.SGD
     Criterion = torch.nn.CrossEntropyLoss
@@ -90,10 +90,10 @@ def main():
     # train
     server.run(n_rounds=n_rounds, eval_every=eval_every, n_rounds_no_aggregation=n_rounds_no_aggregation)
     
-    # save results
-    dt = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-    os.makedirs(f'results/{dt}', exist_ok=True)
-    os.system(f'mv log results/{dt}/log')
+    # # save results
+    # dt = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    # os.makedirs(f'results/{dt}', exist_ok=True)
+    # os.system(f'mv log results/{dt}/log')
 
 if __name__ == '__main__':
     main()
