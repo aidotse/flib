@@ -92,8 +92,8 @@ def main():
     
     # save results
     dt = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-    os.makedirs(f'results/{dt}', exist_ok=True)
-    os.system(f'mv log results/{dt}/log')
+    os.makedirs(f'~/flib/results/{dt}', exist_ok=True)
+    os.system(f'mv log ~/flib/results/{dt}/log')
 
 if __name__ == '__main__':
     main()
