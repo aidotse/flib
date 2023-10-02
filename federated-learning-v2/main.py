@@ -35,7 +35,7 @@ def run_experiment(name, n_workers, trainsets, testsets, Module, Optimizer, Crit
     server = Server(clients, model, n_workers)
     
     server.run(n_rounds=n_rounds, eval_every=eval_every, n_rounds_no_aggregation=n_rounds_no_aggregation)
-    print('kas cas, cla, xzc')
+    
     dt = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
     os.makedirs(f'results/{dt}', exist_ok=True)
     os.system(f'mv log results/{dt}/log')
@@ -90,12 +90,10 @@ def main():
     # train
     server.run(n_rounds=n_rounds, eval_every=eval_every, n_rounds_no_aggregation=n_rounds_no_aggregation)
     
-    print('run is done')
-    
-    # # save results
-    # dt = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-    # os.makedirs(f'results/{dt}', exist_ok=True)
-    # os.system(f'mv log results/{dt}/log')
+    # save results
+    dt = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    os.makedirs(f'results/{dt}', exist_ok=True)
+    os.system(f'mv log results/{dt}/log')
 
 if __name__ == '__main__':
     main()
