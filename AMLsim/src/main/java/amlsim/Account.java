@@ -222,7 +222,11 @@ public class Account implements Steppable {
 		long currentStep = state.schedule.getSteps(); // Current simulation step
 		long start = this.startStep >= 0 ? this.startStep : 0;
 		long end = this.endStep > 0 ? this.endStep : AMLSim.getNumOfSteps();
-
+		
+		// TODO: Handle salary, if 25th of the month, deposit salary
+		// TODO: Handle income
+		// TODO: Handle monthly expense, if 26th to 28th of the month, pay monthly expense
+		// TODO: Handle smallar expenses
 		this.bankID = this.accountBehaviour.getNewBank(this.bankID);
 		this.accountBehaviour.update();
 		if (currentStep < start || end < currentStep) {
