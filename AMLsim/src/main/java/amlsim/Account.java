@@ -74,6 +74,12 @@ public class Account implements Steppable {
 		this.cashOutModel.setParameters(interval, -1, -1);
 
 		this.accountBehaviour = new AccountBehaviour(this.isSAR);
+
+		// TODO: Set salary
+		// this.salary = new TruncatedNormal(0, 0, 0, 0);
+
+		// TODO: set rent
+		// this.rent = new TruncatedNormal(0, 0, 0, 0);
 	}
 
 	public String getBankID() {
