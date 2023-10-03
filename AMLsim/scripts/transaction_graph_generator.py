@@ -1567,7 +1567,7 @@ class TransactionGenerator:
 if __name__ == "__main__":
     argv = sys.argv
     # debug: 
-    PARAM_FILES = '10K_accts_super_easy'
+    PARAM_FILES = '1K_accts_super_easy'
     argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
     argc = len(argv)
     if argc < 2:

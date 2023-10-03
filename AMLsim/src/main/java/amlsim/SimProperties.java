@@ -43,6 +43,20 @@ public class SimProperties {
     private double meanBankChangeFrequencySAR;
     private double stdBankChangeFrequencySAR;
 
+    // Income and outcome parameters
+    private double probIncome;
+    private double meanIncome;
+    private double stdIncome;
+    private double probIncomeSAR;
+    private double meanIncomeSAR;
+    private double stdIncomeSAR;
+    //private double probOutcome;
+    //private double meanOutcome;
+    //private double stdOutcome;
+    //private double probOutcomeSar;
+    //private double meanOutcomeSar;
+    //private double stdOutcomeSar;
+
     SimProperties(String jsonName) throws IOException {
         String jsonStr = loadTextFile(jsonName);
         JSONObject jsonObject = new JSONObject(jsonStr);
@@ -70,6 +84,13 @@ public class SimProperties {
         stdBankChangeFrequency = defaultProp.getDouble("std_bank_change_frequency");
         meanBankChangeFrequencySAR = defaultProp.getDouble("mean_bank_change_frequency_sar");
         stdBankChangeFrequencySAR = defaultProp.getDouble("std_bank_change_frequency_sar");
+
+        probIncome = defaultProp.getDouble("prob_income");
+        meanIncome = defaultProp.getDouble("mean_income");
+        stdIncome = defaultProp.getDouble("std_income");
+        probIncome = defaultProp.getDouble("prob_income_sar");
+        meanIncome = defaultProp.getDouble("mean_income_sar");
+        stdIncome = defaultProp.getDouble("std_income_sar");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
@@ -178,6 +199,42 @@ public class SimProperties {
     public double getStdBankChangeFrequencySAR() {
         return stdBankChangeFrequencySAR;
     }
+
+    public double getProbIncome() {
+        return probIncome;
+    }
+
+    public double getMeanIncome() {
+        return meanIncome;
+    }
+
+    public double getStdIncome() {
+        return stdIncome;
+    }
+
+    public double getProbIncomeSAR() {
+        return probIncomeSAR;
+    }
+
+    public double getMeanIncomeSAR() {
+        return meanIncomeSAR;
+    }
+
+    public double getStdIncomeSAR() {
+        return stdIncomeSAR;
+    }
+    
+    //public double getProbOutcome() {
+    //    return probOutcome;
+    //}
+    //
+    //public double getMeanOutcome() {
+    //    return meanOutcome;
+    //}
+    //
+    //public double getStdOutcome() {
+    //    return stdOutcome;
+    //}
 
     public double getMarginRatio() {
         return marginRatio;

@@ -4,6 +4,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.random.JDKRandomGenerator;
 
 import java.io.FileReader;
@@ -17,9 +18,13 @@ public class SalaryDistribution {
     private List<SalaryInfo> salaryInfos;
     private double[] cumulativeProbabilities;
 
-    public SalaryDistribution(String csvFilePath) throws IOException {
+    public SalaryDistribution() {
         salaryInfos = new ArrayList<>();
-        readCSV(csvFilePath);
+        try {
+            readCSV("src/main/java/amlsim/dists/salarydist/scb_statistics_2021.csv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         computeCumulativeProbabilities();
     }
 
@@ -68,13 +73,16 @@ public class SalaryDistribution {
         }
 
         double mean = salaryInfos.get(ageIndex).getAverageYearIncome();
-        double variance = 50.0;
-
+        double median = salaryInfos.get(ageIndex).getMedianYearIncome();
+        double mu = Math.log(median);
+        double sigma = Math.sqrt(2 * Math.abs(Math.log(mean) - mu));
+        
         JDKRandomGenerator rng = new JDKRandomGenerator();
-        NormalDistribution normal = new NormalDistribution(rng, mean, Math.sqrt(variance));
-
-        return normal.sample();
+        //NormalDistribution normal = new NormalDistribution(rng, mean, Math.sqrt(variance));
+        LogNormalDistribution normal = new LogNormalDistribution(rng, mu, sigma);
+        double salary = normal.sample() * 1000 / 12;
+        
+        return salary;
     }
-
     // SalaryInfo class remains the same...
 }

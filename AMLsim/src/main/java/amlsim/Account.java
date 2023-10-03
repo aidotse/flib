@@ -7,6 +7,7 @@ import sim.engine.SimState;
 import sim.engine.Steppable;
 import java.util.*;
 import amlsim.dists.TruncatedNormal;
+import amlsim.dists.salarydist.SalaryDistribution;
 import amlsim.AccountBehaviour;
 
 public class Account implements Steppable {
@@ -23,6 +24,13 @@ public class Account implements Steppable {
 	private List<Account> beneAccts = new ArrayList<>(); // Beneficiary accounts to which this account sends money
 	private int numSARBene = 0; // Number of SAR beneficiary accounts
 	private String bankID = ""; // Bank ID
+
+	private double monthlyIncome = 0; // Salary
+	private double monthlyOutcome = 0; // Rent
+	private double meanIncome = 0; // Mean income
+	private double stdIncome = 0; // Standard deviation of income
+	private double meanOutcome = 0; // Mean outcome
+	private double stdOutcome = 0; // Standard deviation of outcome
 
 	private Account prevOrig = null; // Previous originator account
 	private Account debtor = null; // Previous beneficiary account
@@ -74,10 +82,10 @@ public class Account implements Steppable {
 		this.cashOutModel.setParameters(interval, -1, -1);
 
 		this.accountBehaviour = new AccountBehaviour(this.isSAR);
-
+		
 		// TODO: Set salary
-		// this.salary = new TruncatedNormal(0, 0, 0, 0);
-
+		this.monthlyIncome = new SalaryDistribution().sample();
+		
 		// TODO: set rent
 		// this.rent = new TruncatedNormal(0, 0, 0, 0);
 	}
@@ -230,7 +238,13 @@ public class Account implements Steppable {
 		long end = this.endStep > 0 ? this.endStep : AMLSim.getNumOfSteps();
 		
 		// TODO: Handle salary, if 25th of the month, deposit salary
+		if (currentStep % 28 == 25) {
+			this.deposit(this.monthlyIncome);
+		}
+		
 		// TODO: Handle income
+		
+		
 		// TODO: Handle monthly expense, if 26th to 28th of the month, pay monthly expense
 		// TODO: Handle smallar expenses
 		this.bankID = this.accountBehaviour.getNewBank(this.bankID);
