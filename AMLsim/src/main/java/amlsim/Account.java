@@ -240,7 +240,7 @@ public class Account implements Steppable {
 		// TODO: Handle salary, if 25th of the month, deposit salary
 		if (currentStep % 28 == 25) {
 			this.deposit(this.monthlyIncome);
-			AMLSim.handleTransaction(currentStep, this.id, this.monthlyIncome, "source");
+			//AMLSim.handleTransaction(currentStep, this.id, this.monthlyIncome, "source");
 		}
 		
 		// TODO: Handle income
