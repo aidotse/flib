@@ -555,6 +555,34 @@ public class AMLSim extends SimState {
 		diameter.addEdge(origID, beneID);
 	}
 
+	public static void handleIncome(long step, String desc, double amt, Account bene, boolean isSAR, long alertID, long modelType) {
+		// Increase the balance of the beneficiary account
+		String beneID = bene.getID();
+		String beneBankID = bene.getBankID();
+		float beneBefore = (float) bene.getBalance();
+		bene.deposit(amt);
+		float beneAfter = (float) bene.getBalance();
+		long benePhoneChanges = (long) bene.getNumberOfPhoneChanges();
+		long beneDaysInBank = (long) bene.getDaysInBank();
+
+		txs.addTransaction(step, desc, amt, "-2", "source", beneID, beneBankID, 0, 0, beneBefore, beneAfter, isSAR, alertID, modelType,
+				0, benePhoneChanges, 0, beneDaysInBank);
+	}
+
+	public static void handleOutcome(long step, String desc, double amt, Account orig, boolean isSAR, long alertID, long modelType) {
+		// Reduce the balance of the originator account
+		String origID = orig.getID();
+		String origBankID = orig.getBankID();
+		float origBefore = (float) orig.getBalance();
+		orig.withdraw(amt);
+		float origAfter = (float) orig.getBalance();
+		long origPhoneChanges = (long) orig.getNumberOfPhoneChanges();
+		long origDaysInBank = (long) orig.getDaysInBank();
+
+		txs.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+				origPhoneChanges, 0, origDaysInBank, 0);
+	}
+
 	/**
 	 * Write diameters of the transaction network snapshots to a CSV file
 	 * 
@@ -582,7 +610,7 @@ public class AMLSim extends SimState {
 
 		// Loading configuration JSON file instead of parsing command line arguments
 		// String confFile = args[0];
-		String paramFiles = "1K_accts_super_easy";
+		String paramFiles = "100_accts";
 		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 
 		try {

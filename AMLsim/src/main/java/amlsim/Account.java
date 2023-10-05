@@ -27,8 +27,12 @@ public class Account implements Steppable {
 
 	private double monthlyIncome = 0; // Salary
 	private double monthlyOutcome = 0; // Rent
-	private double meanIncome = 0; // Mean income
-	private double stdIncome = 0; // Standard deviation of income
+	private double probIncome = 0.1; // Probability of income
+	private double meanIncome = 1000; // Mean income
+	private double stdIncome = 100; // Standard deviation of income
+	private double probIncomeSar = 0.1; // Probability of income
+	private double meanIncomeSar = 1000; // Mean income
+	private double stdIncomeSar = 100; // Standard deviation of income
 	private double meanOutcome = 0; // Mean outcome
 	private double stdOutcome = 0; // Standard deviation of outcome
 
@@ -83,11 +87,11 @@ public class Account implements Steppable {
 
 		this.accountBehaviour = new AccountBehaviour(this.isSAR);
 		
-		// TODO: Set salary
+		// TODO: Set monthlyIncome
 		this.monthlyIncome = new SalaryDistribution().sample();
 		
-		// TODO: set rent
-		// this.rent = new TruncatedNormal(0, 0, 0, 0);
+		// TODO: set monthlyOutcome
+		this.monthlyOutcome = new TruncatedNormal(0.5*this.monthlyIncome, 0.1*this.monthlyIncome, 0, 0.9*this.monthlyIncome).sample();
 	}
 
 	public String getBankID() {
@@ -239,15 +243,26 @@ public class Account implements Steppable {
 		
 		// TODO: Handle salary, if 25th of the month, deposit salary
 		if (currentStep % 28 == 25) {
-			this.deposit(this.monthlyIncome);
-			//AMLSim.handleTransaction(currentStep, this.id, this.monthlyIncome, "source");
+			AMLSim.handleIncome(currentStep, "TRANSFER", this.monthlyIncome, this, this.isSAR, (long) -1, (long) 11);
+			// TODO: Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
+			AMLSim.handleOutcome(currentStep+random.nextInt(3), "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
 		}
 		
 		// TODO: Handle income
+		// sample if new income
+		if (this.random.nextDouble() < this.probIncome) {
+			TruncatedNormal tn = new TruncatedNormal(this.meanIncome, this.stdIncome, 0, 1000000);
+        	double amt = tn.sample();
+			AMLSim.handleIncome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 11);
+		}
+
 		
+		//// TODO: Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
+		//if (currentStep % 28 >= 26 + random.nextInt(3) || currentStep % 28 == 0) {
+		//	AMLSim.handleOutcome(currentStep, "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
+		//}
 		
-		// TODO: Handle monthly expense, if 26th to 28th of the month, pay monthly expense
-		// TODO: Handle smallar expenses
+		// TODO: Handle outcome
 		this.bankID = this.accountBehaviour.getNewBank(this.bankID);
 		this.accountBehaviour.update();
 		if (currentStep < start || end < currentStep) {
