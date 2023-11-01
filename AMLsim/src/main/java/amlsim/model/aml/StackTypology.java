@@ -179,7 +179,18 @@ public class StackTypology extends AMLTypology {
         //        makeTransaction(step, transactionAmount.doubleValue(), orig, bene, AMLTypology.STACK);
         //    }
         //}
-
+        if (step == this.stepReciveFunds) {
+            int numOrigs = origIdxs.length;
+            for (int i = 0; i < numOrigs; i++) {
+                Account orig = members.get(origIdxs[i]);
+                transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+                if (this.sourceType.equals("CASH")) {
+                    acct.depositCash(transactionAmount.doubleValue());
+                } else if (this.sourceType.equals("TRANSFER")){
+                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                }
+            }
+        }
         for (int i = 0; i < numTxs; i++) {
             if (step == steps[i]) {
                 Account orig = members.get(origIdxs[i]);

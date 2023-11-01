@@ -77,8 +77,8 @@ def powerlaw_cluster_generator(_n, _edge_factor):
 if __name__ == "__main__":
     argv = sys.argv
     
-    argv.append(32)
-    argv.append(20)
+    argv.append(100000)
+    argv.append(54)
     argv.append("test_degree.csv")
     
     if len(argv) < 4:
@@ -92,14 +92,20 @@ if __name__ == "__main__":
     print("Number of vertices: %d" % g.number_of_nodes())  # Number of vertices (accounts)
     print("Number of edges: %d" % g.number_of_edges())  # Number of edges (transactions)
 
-    in_deg = Counter(g.in_degree().values())
-    out_deg = Counter(g.out_degree().values())
+    #out_deg = Counter(g.out_degree().values())
+    #in_deg = Counter(g.in_degree().values())
 
-    keys = set(sorted(list(in_deg.keys()) + list(out_deg.keys())))
+    #keys = set(sorted(list(in_deg.keys()) + list(out_deg.keys())))
+    
+    in_deg = g.in_degree()
+    out_deg = g.out_degree()
 
+    keys = sorted(in_deg.keys())
+    
     with open(argv[3], "w") as wf:
         writer = csv.writer(wf)
         writer.writerow(["Count", "In-degree", "Out-degree"])
         for k in keys:
             # Degree, number of vertices for in-degree, number of vertices for out-degree
-            writer.writerow([k, in_deg[k], out_deg[k]])
+            #writer.writerow([k, in_deg[k], out_deg[k]])
+            writer.writerow([1, in_deg[k], out_deg[k]])

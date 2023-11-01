@@ -54,7 +54,14 @@ public class RandomTypology extends AMLTypology {
         long alertID = alert.getAlertID();
         if (!isValidStep(step))
             return;
-
+        if (step == this.stepReciveFunds) {
+            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+            if (this.sourceType.equals("CASH")) {
+                nextOrig.depositCash(transactionAmount.doubleValue());
+            } else if (this.sourceType.equals("TRANSFER")) {
+                AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), nextOrig, false, (long) -1, (long) 0);
+            }
+        }
         List<Account> beneList = nextOrig.getBeneList();
         int numBenes = beneList.size();
         if (numBenes == 0)

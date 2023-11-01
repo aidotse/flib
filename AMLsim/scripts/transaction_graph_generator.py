@@ -879,6 +879,8 @@ class TransactionGenerator:
                     idx_bank = i
                 elif k == "is_sar":  # SAR flag
                     idx_sar = i
+                elif k == "source_type": # Source type 
+                    idx_source_type = i
                 else:
                     logger.warning("Unknown column name in %s: %s" % (alert_file, k))
 
@@ -898,6 +900,7 @@ class TransactionGenerator:
                 max_period = parse_int(row[idx_max_period])
                 bank_id = row[idx_bank] if idx_bank is not None else ""  # If empty, it has inter-bank transactions
                 is_sar = parse_flag(row[idx_sar])
+                source_type = row[idx_source_type]
 
                 if typology_name not in self.alert_types:
                     logger.warning("Pattern type name (%s) must be one of %s"
@@ -907,12 +910,12 @@ class TransactionGenerator:
                 for i in range(num_patterns):
                     num_accts = random.randrange(min_accts, max_accts + 1) # Number of accounts
                     period = random.randrange(min_period, max_period + 1) # Period
-                    self.add_aml_typology(is_sar, typology_name, num_accts, min_amount, max_amount, period, bank_id, schedule)
+                    self.add_aml_typology(is_sar, typology_name, num_accts, min_amount, max_amount, period, bank_id, schedule, source_type)
                     count += 1
                     if count % 1000 == 0:
                         logger.info("Created %d alerts" % count)
 
-    def add_aml_typology(self, is_sar, typology_name, num_accounts, min_amount, max_amount, period, bank_id="", schedule=1):
+    def add_aml_typology(self, is_sar, typology_name, num_accounts, min_amount, max_amount, period, bank_id="", schedule=1, source_type='TRANSFER'):
         """Add an AML typology transaction set
         :param is_sar: Whether the alerted transaction set is SAR (True) or false-alert (False)
         :param typology_name: Name of pattern type
@@ -972,8 +975,7 @@ class TransactionGenerator:
         # Create subgraph structure with transaction attributes
         model_id = self.alert_types[typology_name]  # alert model ID
         sub_g = nx.DiGraph(model_id=model_id, reason=typology_name, scheduleID=schedule,
-                           start=start_date, end=end_date)  # Create a subgraph for the AML typology with given attributes
-
+                           start=start_date, end=end_date, source_type=source_type)  # Create a subgraph for the AML typology with given attributes
 
         if typology_name == "fan_in":  # fan_in pattern (multiple accounts --> single (main) account)
             #main_acct, main_bank_id = add_main_acct() # Create a main account ID and a bank ID from hub accounts 
@@ -1349,7 +1351,6 @@ class TransactionGenerator:
                 gather_date = random.randrange(scatter_date, end_date + 1)
                 add_edge(mid_acct, bene_acct, gather_amount, gather_date)
 
-
         elif typology_name == "gather_scatter":  # Gather-Scatter (fan-in -> fan-out)
             
             #num_orig_accts = num_bene_accts = (num_accounts - 1) // 2
@@ -1494,7 +1495,7 @@ class TransactionGenerator:
         with open(alert_member_file, "w") as wf:
             writer = csv.writer(wf)
             base_attrs = ["alertID", "reason", "accountID", "isMain", "isSAR", "modelID",
-                          "minAmount", "maxAmount", "startStep", "endStep", "scheduleID", "bankID"]
+                          "minAmount", "maxAmount", "startStep", "endStep", "scheduleID", "bankID", "sourceType"]
             writer.writerow(base_attrs + self.attr_names)
             for gid, sub_g in self.alert_groups.items(): # go over all subgraphs of alert groups
                 main_id = sub_g.graph[MAIN_ACCT_KEY] # get main account ID
@@ -1503,6 +1504,7 @@ class TransactionGenerator:
                 reason = sub_g.graph["reason"] # get the type of money laundering
                 start = sub_g.graph["start"] # starting step 
                 end = sub_g.graph["end"] # ending step
+                source_type = sub_g.graph["source_type"] # source type
                 for n in sub_g.nodes(): # go over all nodes in the subgraph
                     is_main = "true" if n == main_id else "false"
                     is_sar = "true" if sub_g.graph[IS_SAR_KEY] else "false"
@@ -1512,7 +1514,7 @@ class TransactionGenerator:
                     max_step = end
                     bank_id = sub_g.node[n]["bank_id"]
                     values = [gid, reason, n, is_main, is_sar, model_id, min_amt, max_amt,
-                              min_step, max_step, schedule_id, bank_id] # read out all the values
+                              min_step, max_step, schedule_id, bank_id, source_type] # read out all the values
                     prop = self.g.node[n] # get the current node from the main graph
                     for attr_name in self.attr_names: # read out all the user-defined attributes
                         values.append(prop[attr_name]) # append the values to the list
@@ -1566,9 +1568,11 @@ class TransactionGenerator:
 
 if __name__ == "__main__":
     argv = sys.argv
+    
     # debug: 
-    PARAM_FILES = '100_accts'
-    argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
+    # PARAM_FILES = '10K_accts'
+    # argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
+    
     argc = len(argv)
     if argc < 2:
         print("Usage: python3 %s [ConfJSON]" % argv[0])
@@ -1576,8 +1580,6 @@ if __name__ == "__main__":
 
     _conf_file = argv[1]
     _sim_name = argv[2] if argc >= 3 else None
-
-
 
     # Validation option for graph contractions
     deg_param = os.getenv("DEGREE")

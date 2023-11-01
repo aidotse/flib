@@ -389,6 +389,7 @@ public class AMLSim extends SimState {
 			int startStep = Integer.parseInt(elements[columnIndex.get("startStep")]);
 			int endStep = Integer.parseInt(elements[columnIndex.get("endStep")]);
 			int scheduleID = Integer.parseInt(elements[columnIndex.get("scheduleID")]);
+			String sourceType = elements[columnIndex.get("sourceType")];
 
 			if (minAmount > maxAmount) {
 				throw new IllegalArgumentException(
@@ -410,7 +411,7 @@ public class AMLSim extends SimState {
 
 			} else { // Create a new AML typology object
 				AMLTypology model = AMLTypology.createTypology(modelID, minAmount, maxAmount, startStep, endStep, scheduleID, this.normalTxInterval); // TODO: add sarTxInterval
-				alert = new Alert(alertID, model, this); // TODO: implement same structure as normal where the model has access to the alert
+				alert = new Alert(alertID, model, sourceType, this); // TODO: implement same structure as normal where the model has access to the alert
 				alerts.put(alertID, alert);
 			}
 			Account account = getAccountFromID(accountID);
@@ -609,9 +610,9 @@ public class AMLSim extends SimState {
 		 */
 
 		// Loading configuration JSON file instead of parsing command line arguments
-		// String confFile = args[0];
-		String paramFiles = "100_accts";
-		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
+		String confFile = args[0];
+		//String paramFiles = "10K_accts";
+		//String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 
 		try {
 			simProp = new SimProperties(confFile);

@@ -85,6 +85,13 @@ public class FanOutTypology extends AMLTypology {
         boolean isSAR = alert.isSAR();
         double amount = this.getTransactionAmount().doubleValue();
 
+        if (step == this.stepReciveFunds) {
+            if (this.sourceType.equals("CASH")) {
+                acct.depositCash(amount);
+            } else if (this.sourceType.equals("TRANSFER")){
+                AMLSim.handleIncome(step, "TRANSFER", amount, orig, false, (long) -1, (long) 0);
+            }
+        }
         for (int i = 0; i < beneList.size(); i++) {
             if (steps[i] == step) {
                 Account bene = beneList.get(i);

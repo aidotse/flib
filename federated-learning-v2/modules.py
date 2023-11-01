@@ -1,9 +1,9 @@
 import torch
 
 class LogisticRegressor(torch.nn.Module):
-    def __init__(self, input_dim=23, output_dim=1):
+    def __init__(self, input_dim=23, output_dim=2):
         super(LogisticRegressor, self).__init__()
-        self.linear = torch.nn.Linear(input_dim, output_dim)
+        self.linear = torch.nn.Linear(input_dim, output_dim-1)
         
     def forward(self, x):
         x = self.linear(x)

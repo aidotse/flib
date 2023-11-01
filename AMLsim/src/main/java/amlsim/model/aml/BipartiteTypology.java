@@ -56,7 +56,7 @@ public class BipartiteTypology extends AMLTypology {
             origIdxs[i] = i / numBenes;
             beneIdxs[i] = i % numBenes + numOrigs;
         }
-        
+
         // Set transaction schedule
         int range = (int) (this.endStep - this.startStep + 1);// get the range of steps
         steps = new long[numTxs];
@@ -80,6 +80,7 @@ public class BipartiteTypology extends AMLTypology {
             long step = generateFromInterval(range) + this.startStep;
             Arrays.fill(steps, step);
         }
+        
     }
 
     @Override
@@ -89,6 +90,17 @@ public class BipartiteTypology extends AMLTypology {
 
     @Override
     public void sendTransactions(long step, Account acct) {
+        if (step == this.stepReciveFunds) {
+            for (int i = 0; i < numOrigs; i++) {
+                Account orig = members.get(i);
+                transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+                if (this.sourceType.equals("CASH")) {
+                    acct.depositCash(transactionAmount.doubleValue());
+                } else if (this.sourceType.equals("TRANSFER")){
+                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                }
+            }
+        }
         for (int i = 0; i < numTxs; i++) {
             if (step == steps[i]) {
                 Account orig = members.get(origIdxs[i]);

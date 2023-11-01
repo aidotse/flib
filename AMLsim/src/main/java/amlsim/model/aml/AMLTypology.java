@@ -94,6 +94,8 @@ public abstract class AMLTypology extends AbstractTransactionModel {
     protected double maxAmount;
     protected long startStep;
     protected long endStep;
+    protected long stepReciveFunds;
+    protected String sourceType;
 
     /**
      * Set parameters (timestamps and amounts) of transactions
@@ -115,6 +117,27 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      */
     public void setAlert(Alert ag) {
         this.alert = ag;
+        this.sourceType = "TRANSFER"; //this.alert.getSourceType(); TODO: fix this, getSourceType() rturns null
+        // Set step for reciving illicit funds
+        if (this.sourceType.equals("TRANSFER")) {
+            if (this.startStep < 25) {
+                this.startStep = this.startStep + 25;
+                this.endStep = this.endStep + 25;
+            }
+            long s = this.startStep % 28;
+            long d;
+            if (s < 25) {
+                d = s + 3;
+            } else {
+                d = s - 25;
+            }
+            this.stepReciveFunds = this.startStep - d;
+        } else {
+            this.stepReciveFunds = this.startStep - alert.getSimulator().random.nextLong(7);
+            if (this.stepReciveFunds < 0) {
+                this.stepReciveFunds = this.startStep - alert.getSimulator().random.nextLong(this.startStep);
+            }
+        }
     }
 
     /**

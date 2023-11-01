@@ -85,12 +85,12 @@ public class SimProperties {
         meanBankChangeFrequencySAR = defaultProp.getDouble("mean_bank_change_frequency_sar");
         stdBankChangeFrequencySAR = defaultProp.getDouble("std_bank_change_frequency_sar");
 
-        probIncome = defaultProp.getDouble("prob_income");
-        meanIncome = defaultProp.getDouble("mean_income");
-        stdIncome = defaultProp.getDouble("std_income");
-        probIncome = defaultProp.getDouble("prob_income_sar");
-        meanIncome = defaultProp.getDouble("mean_income_sar");
-        stdIncome = defaultProp.getDouble("std_income_sar");
+        //probIncome = defaultProp.getDouble("prob_income");
+        //meanIncome = defaultProp.getDouble("mean_income");
+        //stdIncome = defaultProp.getDouble("std_income");
+        //probIncome = defaultProp.getDouble("prob_income_sar");
+        //meanIncome = defaultProp.getDouble("mean_income_sar");
+        //stdIncome = defaultProp.getDouble("std_income_sar");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);

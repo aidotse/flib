@@ -20,6 +20,7 @@ public class FanInTypology extends AMLTypology {
     private List<Account> origList = new ArrayList<>(); // The origin (originator) accounts
 
     private long[] steps;
+    
     private static final int SIMULTANEOUS = 1;
     private static final int FIXED_INTERVAL = 2;
     private static final int RANDOM_RANGE = 3;
@@ -86,12 +87,22 @@ public class FanInTypology extends AMLTypology {
     public void sendTransactions(long step, Account acct) {
         long alertID = alert.getAlertID();
         boolean isSAR = alert.isSAR();
-
+        if (step == this.stepReciveFunds) {
+            int numOrigs = origList.size();
+            for (int i = 0; i < numOrigs; i++) {
+                Account orig = origList.get(i);
+                transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+                if (this.sourceType.equals("CASH")) {
+                    acct.depositCash(transactionAmount.doubleValue());
+                } else if (this.sourceType.equals("TRANSFER")){
+                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                }
+            }
+        }
         for (int i = 0; i < origList.size(); i++) {
             if (steps[i] == step) {
                 Account orig = origList.get(i);
-
-                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, true);
+                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, true); // TODO: if the source was cash or transfer, send that amount
                 makeTransaction(step, this.transactionAmount.doubleValue(), orig, bene, isSAR, alertID,
                         AMLTypology.AML_FAN_IN);
             }

@@ -20,6 +20,7 @@ public class CycleTypology extends AMLTypology {
 
     private Random random = AMLSim.getRandom();
 
+    
     CycleTypology(double minAmount, double maxAmount, int startStep, int endStep) {
         super(minAmount, maxAmount, startStep, endStep);
     }
@@ -98,6 +99,21 @@ public class CycleTypology extends AMLTypology {
         double amount = Double.MAX_VALUE;
         TargetedTransactionAmount transactionAmount;
 
+        // Receive illicit funds
+        if (step == this.stepReciveFunds) {
+            Account orig = alert.getMembers().get(0);
+            transactionAmount = new TargetedTransactionAmount(amount, random, true); // TODO: Handle max illicit fund init 
+            if (this.sourceType.equals("CASH")) {
+                acct.depositCash(transactionAmount.doubleValue());
+                double margin = amount * marginRatio;
+                amount = amount - margin;
+            } else if (this.sourceType.equals("TRANSFER")) {
+                AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                double margin = amount * marginRatio;
+                amount = amount - margin;
+            }
+        }
+        
         // Create cycle transactions
         for (int i = 0; i < length; i++) {
             if (steps[i] == step) {

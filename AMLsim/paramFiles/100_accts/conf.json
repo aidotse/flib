@@ -2,7 +2,7 @@
   "general": {
     "random_seed": 0,
     "simulation_name": "100_accts",
-    "total_steps": 367,
+    "total_steps": 84,
     "base_date": "2023-01-01"
   },
   "default": {

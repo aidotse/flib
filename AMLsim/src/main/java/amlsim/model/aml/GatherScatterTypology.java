@@ -76,7 +76,19 @@ public class GatherScatterTypology extends AMLTypology {
         boolean isSAR = alert.isSAR();
         int numGathers = gatherSteps.length;
         int numScatters = scatterSteps.length;
-
+        if (step == this.stepReciveFunds) {
+            TargetedTransactionAmount transactionAmount;
+            int numOrigs = origAccts.size();
+            for (int i = 0; i < numOrigs; i++) {
+                Account orig = origAccts.get(i);
+                transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+                if (this.sourceType.equals("CASH")) {
+                    acct.depositCash(transactionAmount.doubleValue());
+                } else if (this.sourceType.equals("TRANSFER")){
+                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                }
+            }
+        }
         if (step <= middleStep) {
             for (int i = 0; i < numGathers; i++) {
                 if (gatherSteps[i] == step) {
