@@ -3,6 +3,8 @@ import multiprocessing as mp
 import time
 import scipy as sp
 import numpy as np
+import warnings
+warnings.simplefilter(action='ignore')
 
 def load_data(path:str) -> pd.DataFrame:
     df = pd.read_csv(path)
@@ -28,10 +30,17 @@ def cal_stats(df:pd.DataFrame, range:list=None, direction:str='both', include_so
     mins = gb['amount'].min()
     degrees = gb['counterparty'].count()
     uniques = gb['counterparty'].nunique()
-    is_sar = gb['is_sar'].max()
-    df = pd.concat([sums, means, medians, stds, maxs, mins, degrees, uniques, is_sar], axis=1)
-    df.columns = ['sum', 'mean', 'median', 'std', 'max', 'min', 'degree', 'unique', 'is_sar']
+    df = pd.concat([sums, means, medians, stds, maxs, mins, degrees, uniques], axis=1)
+    suffix = ''
+    if range:
+        suffix += f'_{range[0]}_{range[1]}'
+    df.columns = ['sum'+suffix, 'mean'+suffix, 'median'+suffix, 'std'+suffix, 'max'+suffix, 'min'+suffix, 'degree'+suffix, 'unique'+suffix]
     return df
+
+def cal_label(df:pd.DataFrame) -> pd.DataFrame:
+    gb = df.groupby(['name'])
+    is_sar = gb['is_sar'].max().to_frame()
+    return is_sar
 
 def anderson_ksamp_mp(samples):
     res = sp.stats.anderson_ksamp(samples)
@@ -46,7 +55,27 @@ def cal_pvalues(df:pd.DataFrame) -> float:
         pvalues = pool.map(anderson_ksamp_mp, samples)
     pvalue = np.sum(pvalues)
     return pvalue
-    
+
+def compare(input:tuple) -> tuple:
+    name, df = input
+    n_rows = df.shape[0]
+    columns = df.columns[1:].to_list()
+    anomalies = {column: 0.0 for column in columns}
+    for column in columns:
+        for row in range(n_rows):
+            value = df.iloc[row, :][column]
+            df_tmp = df.drop(df.index[row])
+            tenth_percentile = df_tmp[column].quantile(0.05)
+            ninetieth_percentile = df_tmp[column].quantile(0.95)
+            if value < tenth_percentile or value > ninetieth_percentile:
+                anomalies[column] += 1 / n_rows
+    return name[0], anomalies
+
+def compare_mp(df:pd.DataFrame, n_workers:int=mp.cpu_count()) -> list[tuple]:
+    dfs = list(df.groupby(['name']))
+    with mp.Pool(processes=n_workers) as pool:
+        results = pool.map(compare, dfs)
+    return results
 
 def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> pd.DataFrame:
     if range:
@@ -55,11 +84,11 @@ def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> p
     df['interval_group'] = df['step'] // interval
     df['amount'] = df['amount'].abs()
     gb = df.groupby(['name', 'interval_group'])
-    df = gb['amount'].mean().reset_index().drop(columns=['interval_group'])
-    print(df)
-    df = df.groupby(['name']).apply(cal_pvalues)
-    print(df)
-    
+    df_bundled = pd.concat([gb['amount'].sum().rename('volume'), gb['amount'].count().rename('count')], axis=1).reset_index().drop(columns=['interval_group'])
+    list_spending_behavior = compare_mp(df_bundled)
+    list_spending_behavior = [(name, d['volume'], d['count']) for name, d in list_spending_behavior]
+    df_speding_behavior = pd.DataFrame(list_spending_behavior, columns=['name', 'volume', 'count'])
+    return df_speding_behavior
     
 def split_and_reform(df:pd.DataFrame, bank:str) -> pd.DataFrame:
     df1 = df[df['bankOrig'] == bank]
@@ -74,26 +103,28 @@ def split_and_reform(df:pd.DataFrame, bank:str) -> pd.DataFrame:
     return pd.concat([df1, df2])
 
 def main():
-    
-    DATASET = '100K_accts'
+    DATASET = '10K_accts'
     path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     df = load_data(path)
-    
-    
-    banks = ['ålandsbanken'] # set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
-    
-    dfs = []
+    banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
+    banks.remove('sink')
+    banks.remove('source')
+    ranges = [[0, int(365/4)], [int(365/4), int(365/2)], [int(365/2), int(365/4*3)], [int(365/4*3), 365]]
     for bank in banks:
-        print(bank)
-        dfs.append(split_and_reform(df, bank))
-        
-    t = time.time()
-    print(dfs[0].columns)
-    
-    cal_spending_behavior(dfs[0])
-    
-    
-    print(time.time() - t)
+        df_bank = split_and_reform(df, bank)
+        df_stats1 = cal_stats(df_bank, ranges[0])
+        df_stats2 = cal_stats(df_bank, ranges[1])
+        df_stats3 = cal_stats(df_bank, ranges[2])
+        df_stats4 = cal_stats(df_bank, ranges[3])
+        df_spending_behavior = cal_spending_behavior(df_bank)
+        df_label = cal_label(df_bank)
+        df_features = pd.merge(df_stats1, df_stats2, on='name')
+        df_features = pd.merge(df_features, df_stats3, on='name')
+        df_features = pd.merge(df_features, df_stats4, on='name')
+        df_features = pd.merge(df_features, df_spending_behavior, on='name')
+        df_features = pd.merge(df_features, df_label, on='name')
+        df_features.to_csv(f'../datasets/{DATASET}/preprocessed/{bank}.csv', index=False)
+        print(bank + ' done')
 
 if __name__ == '__main__':
     main()
