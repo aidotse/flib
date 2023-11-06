@@ -1,2 +1,4 @@
 datasets
-AMLsim/target*
+AMLsim/target/*
+AMLsim/target/amlsim-1.0.0.jar
+AMLsim/target/maven-archiver/pom.properties
