@@ -3,6 +3,3 @@ tmp
 scripts/amlsim/__pycache__
 image.tar.gz
 image.tar
-target/*
-target/amlsim-1.0.0.jar
-target/maven-archiver/pom.properties
