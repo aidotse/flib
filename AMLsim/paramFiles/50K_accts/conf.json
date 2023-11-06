@@ -1,7 +1,7 @@
 {
   "general": {
     "random_seed": 0,
-    "simulation_name": "10K_accts",
+    "simulation_name": "50K_accts",
     "total_steps": 367,
     "base_date": "2023-01-01"
   },
@@ -47,7 +47,7 @@
     }
   },
   "input": {
-    "directory": "paramFiles/10K_accts",
+    "directory": "paramFiles/50K_accts",
     "schema": "schema.json",
     "accounts": "accounts.csv",
     "alert_patterns": "alertPatterns.csv",
