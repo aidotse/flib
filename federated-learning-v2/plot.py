@@ -109,4 +109,4 @@ def plot(*log_files, types=['train', 'test'], metrics=['loss', 'accuracy', 'bala
     pass
 
 if __name__ == "__main__":
-    plot('results/param_sweep_fed/run_5/log', 'results/param_sweep_iso/run_8/log', 'results/param_sweep_cen/run_6/log', types=['test'], metrics=['loss', 'accuracy', 'balanced_accuracy', 'precision', 'recall', 'f1'])
+    plot('results/param_sweep_fed/run_5/log', 'results/param_sweep_iso/run_8/log', 'results/param_sweep_cen/run_0/log', types=['test'], metrics=['loss', 'accuracy', 'balanced_accuracy', 'precision', 'recall', 'f1'])

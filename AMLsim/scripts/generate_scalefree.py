@@ -77,9 +77,9 @@ def powerlaw_cluster_generator(_n, _edge_factor):
 if __name__ == "__main__":
     argv = sys.argv
     
-    argv.append(100000)
+    argv.append(50000)
     argv.append(54)
-    argv.append("test_degree.csv")
+    argv.append("paramFiles/50K_accts/degree.csv")
     
     if len(argv) < 4:
         print("Usage: python3 %s [NumVertices] [EdgeFactor] [DegCSV]" % argv[0])

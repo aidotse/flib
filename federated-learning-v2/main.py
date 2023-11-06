@@ -234,9 +234,28 @@ def main():
     n_workers = 4
     
     # load data
-    DATASET = '10K_accts'
+    DATASET = '50K_accts'
     path = f'../datasets/{DATASET}/preprocessed/'
     trainsets, _, testsets = BankDataset(path).datasets()
+    
+    '''
+    run_experiment(
+        n_workers=n_workers, 
+        trainsets=trainsets, 
+        testsets=testsets, 
+        Module=Module, 
+        Optimizer=Optimizer, 
+        Criterion=Criterion, 
+        lr=1.5, 
+        n_epochs=n_epochs, 
+        batch_size=batch_size, 
+        n_rounds=n_rounds, 
+        eval_every=eval_every, 
+        n_rounds_no_aggregation=0, 
+        optimizer_params={'momentum': 0.9, 'dampening': 0.0, 'weight_decay': 0.0}, 
+        criterion_params={'beta': 0.99999999999, 'loss_type': 'sigmoid'}
+    )
+    '''
     
     pg = ParameterGrid({
         'lr':  [1.4, 1.5, 1.6], 

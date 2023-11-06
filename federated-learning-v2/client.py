@@ -31,7 +31,7 @@ class Client:
             self.x_val = []
             self.y_val = []
         
-        input_dim = 23 #self.x_train.shape[1]
+        input_dim = 34 #self.x_train.shape[1]
         output_dim = 2 #self.y_train.unique().shape[0]
         self.module = Module(input_dim=input_dim, output_dim=output_dim).to(device)
         self.optimizer = Optimizer(self.module.parameters(), lr=lr)

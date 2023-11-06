@@ -1,206 +1,132 @@
 import pandas as pd
+import multiprocessing as mp
+import time
+import scipy as sp
 import numpy as np
 import os
-from multiprocessing import Pool
-import time
+import warnings
+warnings.simplefilter(action='ignore')
 
-def num_incoming_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    num = df[df['nameDest'] == account].shape[0]
-    return num
+def load_data(path:str) -> pd.DataFrame:
+    df = pd.read_csv(path)
+    df.drop(columns=['type', 'daysInBankOrig', 'daysInBankDest', 'oldbalanceOrig', 'oldbalanceDest', 'newbalanceOrig', 'newbalanceDest', 'phoneChangesOrig', 'phoneChangesDest', 'alertID', 'modelType'], inplace=True)
+    return df
 
-def sum_incoming_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    sum = df[df['nameDest'] == account]['amount'].sum()
-    return sum
+def cal_stats(df:pd.DataFrame, range:list=None, direction:str='both', include_source_sink:bool=False) -> pd.DataFrame:
+    if not include_source_sink:
+        df = df[(df['account'] != -1) & (df['account'] != -2)]
+    if range:
+        df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
+    if direction == 'incoming':
+        df = df.loc[df['amount'] > 0.0]
+    elif direction == 'outgoing':
+        df = df.loc[df['amount'] < 0.0]
+        df['amount'] = df['amount'].abs()    
+    gb = df.groupby(['account'])
+    sums = gb['amount'].sum()
+    means = gb['amount'].mean()
+    medians = gb['amount'].median()
+    stds = gb['amount'].std()
+    maxs = gb['amount'].max()
+    mins = gb['amount'].min()
+    degrees = gb['counterpart'].count()
+    uniques = gb['counterpart'].nunique()
+    df = pd.concat([sums, means, medians, stds, maxs, mins, degrees, uniques], axis=1)
+    suffix = ''
+    if range:
+        suffix += f'_{range[0]}_{range[1]}'
+    df.columns = ['sum'+suffix, 'mean'+suffix, 'median'+suffix, 'std'+suffix, 'max'+suffix, 'min'+suffix, 'degree'+suffix, 'unique'+suffix]
+    return df
 
-def freq_incoming_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    freq = df[df['nameDest'] == account].shape[0] / (range[1] - range[0])
-    return freq
-
-def num_outgoing_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    num = df[df['nameOrig'] == account].shape[0]
-    return num
-
-def sum_outgoing_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    sum = df[df['nameOrig'] == account]['amount'].sum()
-    return sum
-
-def freq_outgoing_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    freq = df[df['nameOrig'] == account].shape[0] / (range[1] - range[0])
-    return freq
-
-def num_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    num = df[(df['nameOrig'] == account) | (df['nameDest'] == account)].shape[0]
-    return num
-
-def sum_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    sum = df[(df['nameOrig'] == account) | (df['nameDest'] == account)]['amount'].sum()
-    return sum
-
-def freq_txs(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    freq = df[(df['nameOrig'] == account) | (df['nameDest'] == account)].shape[0] / (range[1] - range[0])
-    return freq
-
-def num_unique_counterparties(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    unique_incoming = df[df['nameDest'] == account]['nameOrig'].unique()
-    unique_outgoing = df[df['nameOrig'] == account]['nameDest'].unique()
-    unique = np.unique(np.concatenate((unique_incoming, unique_outgoing), axis=0))
-    num = unique.shape[0]
-    return num
-
-def freq_unique_counterparties(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    unique_incoming = df[df['nameDest'] == account]['nameOrig'].unique()
-    unique_outgoing = df[df['nameOrig'] == account]['nameDest'].unique()
-    unique = np.unique(np.concatenate((unique_incoming, unique_outgoing), axis=0))
-    freq = unique.shape[0] / (range[1] - range[0])
-    return freq
-
-def num_phone_changes(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    df = df[(df['nameOrig'] == account) | (df['nameDest'] == account)]
-    if df.empty:
-        return 0
-    if df.iloc[0]['nameOrig'] == account:
-        num_start = df.iloc[0]['phoneChangesOrig']
-    else:
-        num_start = df.iloc[0]['phoneChangesDest']
-    if df.iloc[-1]['nameOrig'] == account:
-        num_end = df.iloc[-1]['phoneChangesOrig']
-    else:
-        num_end = df.iloc[-1]['phoneChangesDest']
-    num = num_end - num_start
-    return num
-
-def freq_phone_changes(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    df = df[(df['nameOrig'] == account) | (df['nameDest'] == account)]
-    if df.empty:
-        return 0
-    if df.iloc[0]['nameOrig'] == account:
-        num_start = df.iloc[0]['phoneChangesOrig']
-    else:
-        num_start = df.iloc[0]['phoneChangesDest']
-    if df.iloc[-1]['nameOrig'] == account:
-        num_end = df.iloc[-1]['phoneChangesOrig']
-    else:
-        num_end = df.iloc[-1]['phoneChangesDest']
-    num = num_end - num_start
-    freq = num / (range[1] - range[0])
-    return freq
-
-def num_bank_changes(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    bankOrigs = df[df['nameOrig'] == account]['bankOrig']
-    bankDests = df[df['nameDest'] == account]['bankDest']
-    unique_banks = np.unique(np.concatenate((bankOrigs, bankDests), axis=0))
-    num = unique_banks.shape[0] - 1
-    return num
-
-def freq_bank_changes(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    bankOrigs = df[df['nameOrig'] == account]['bankOrig']
-    bankDests = df[df['nameDest'] == account]['bankDest']
-    unique_banks = np.unique(np.concatenate((bankOrigs, bankDests), axis=0))
-    num = unique_banks.shape[0] - 1
-    freq = num / (range[1] - range[0])
-    freq = 0 if freq < 0 else freq
-    return freq
-
-def num_days_in_bank(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    daysInBankOrigs = df[df['nameOrig'] == account]['daysInBankOrig'].max()
-    daysInBankDests = df[df['nameDest'] == account]['daysInBankDest'].max()
-    num = max(0, daysInBankOrigs, daysInBankDests)
-    return num
-
-def freq_days_in_bank(df, account, range):
-    df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    daysInBankOrigs = df[df['nameOrig'] == account]['daysInBankOrig'].max()
-    daysInBankDests = df[df['nameDest'] == account]['daysInBankDest'].max()
-    num = max(0, daysInBankOrigs, daysInBankDests)
-    freq = num / (range[1] - range[0])
-    return freq
-
-def is_sar(df, account):
-    if df[df['nameOrig'] == account]['isSAR'].sum() > 0:
-        is_sar = 1
-    elif df[df['nameDest'] == account]['isSAR'].sum() > 0:
-        is_sar = 1
-    else:
-        is_sar = 0
+def cal_label(df:pd.DataFrame) -> pd.DataFrame:
+    gb = df.groupby(['account'])
+    is_sar = gb['is_sar'].max().to_frame()
     return is_sar
 
-def process_accounts(args):
-    df, accounts, ranges = args
-    functions = [num_incoming_txs, sum_incoming_txs, num_outgoing_txs, sum_outgoing_txs, num_txs, sum_txs, num_unique_counterparties]
-    accounts_features = []
-    for account in accounts:
-        account_features = [account]
-        for range in ranges:
-            for function in functions:
-                account_features.append(function(df, account, range))
-        account_features.append(num_phone_changes(df, account, [ranges[0][0], ranges[-1][1]]))
-        account_features.append(num_days_in_bank(df, account, [ranges[0][0], ranges[-1][1]]))
-        account_features.append(is_sar(df, account))
-        accounts_features.append(account_features)
-    return accounts_features
+def anderson_ksamp_mp(samples):
+    res = sp.stats.anderson_ksamp(samples)
+    return res.pvalue
+
+def cal_pvalues(df:pd.DataFrame) -> float:
+    amounts = df['amount'].to_numpy()
+    samples = []
+    for i in range(len(amounts)):
+        samples.append([amounts[i:i+1], np.delete(amounts, i)])
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        pvalues = pool.map(anderson_ksamp_mp, samples)
+    pvalue = np.sum(pvalues)
+    return pvalue
+
+def compare(input:tuple) -> tuple:
+    name, df = input
+    n_rows = df.shape[0]
+    columns = df.columns[1:].to_list()
+    anomalies = {column: 0.0 for column in columns}
+    for column in columns:
+        for row in range(n_rows):
+            value = df.iloc[row, :][column]
+            df_tmp = df.drop(df.index[row])
+            tenth_percentile = df_tmp[column].quantile(0.05)
+            ninetieth_percentile = df_tmp[column].quantile(0.95)
+            if value < tenth_percentile or value > ninetieth_percentile:
+                anomalies[column] += 1 / n_rows
+    return name[0], anomalies
+
+def compare_mp(df:pd.DataFrame, n_workers:int=mp.cpu_count()) -> list[tuple]:
+    dfs = list(df.groupby(['account']))
+    with mp.Pool(processes=n_workers) as pool:
+        results = pool.map(compare, dfs)
+    return results
+
+def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> pd.DataFrame:
+    if range:
+        df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
+    df = df.loc[df['counterpart']==-2]
+    df['interval_group'] = df['step'] // interval
+    df['amount'] = df['amount'].abs()
+    gb = df.groupby(['account', 'interval_group'])
+    df_bundled = pd.concat([gb['amount'].sum().rename('volume'), gb['amount'].count().rename('count')], axis=1).reset_index().drop(columns=['interval_group'])
+    list_spending_behavior = compare_mp(df_bundled)
+    list_spending_behavior = [(name, d['volume'], d['count']) for name, d in list_spending_behavior]
+    df_speding_behavior = pd.DataFrame(list_spending_behavior, columns=['account', 'volume', 'count'])
+    return df_speding_behavior
+    
+def split_and_reform(df:pd.DataFrame, bank:str) -> pd.DataFrame:
+    df1 = df[df['bankOrig'] == bank]
+    df1 = df1.drop(columns=['bankOrig', 'bankDest'])
+    df1.rename(columns={'nameOrig': 'account', 'nameDest': 'counterpart', 'isSAR': 'is_sar'}, inplace=True)
+    
+    df2 = df[df['bankDest'] == bank]
+    df2 = df2.drop(columns=['bankOrig', 'bankDest'])
+    df2.rename(columns={'nameDest': 'account', 'nameOrig': 'counterpart', 'isSAR': 'is_sar'}, inplace=True)
+    
+    df2['amount'] = df2['amount'] * -1
+    return pd.concat([df1, df2])
 
 def main():
-    DATASET = '100K_accts'
-    NAME = '100K_accts'
-    df = pd.read_csv(f'../AMLsim/outputs/{DATASET}/tx_log.csv')
-    #df = df.sample(n=10000).reset_index(drop=True)
-    bankOrigs = df['bankOrig'].unique()
-    bankDests = df['bankDest'].unique()
-    #banks = np.unique(np.concatenate((bankOrigs, bankDests), axis=0))
-    banks = ['nordea']
-    os.makedirs(f'../datasets/{NAME}/preprocessed', exist_ok=True)
-    
-    min_step = df['step'].min()
-    max_step = df['step'].max()
-    
-    n_accts = 0
-    acct_list = []
+    DATASET = '50K_accts'
+    path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
+    os.makedirs(f'../datasets/{DATASET}/preprocessed', exist_ok=True)
+    df = load_data(path)
+    banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
+    banks.remove('sink')
+    banks.remove('source')
+    ranges = [[0, int(365/4)], [int(365/4), int(365/2)], [int(365/2), int(365/4*3)], [int(365/4*3), 365]]
     for bank in banks:
-        df_bank = df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
-        #ranges = [[min_step, max_step], [max_step // 2, max_step], [2 * max_step // 3, max_step]]
-        ranges = [[min_step, max_step], [min_step, max_step//2], [max_step//2+1, max_step]]#[[i, i+7] for i in range(min_step, max_step-7, 7)]
-        nameOrigs = df_bank[df_bank['bankOrig']==bank]['nameOrig'].unique()
-        nameDests = df_bank[df_bank['bankDest']==bank]['nameDest'].unique()
-        names = pd.concat([df_bank[df_bank['bankOrig']==bank]['nameOrig'], df_bank[df_bank['bankDest']==bank]['nameDest']])
-
-        names = names.drop_duplicates().sort_values()
-        acct_list.append(names)
-        accounts = np.unique(np.concatenate((nameOrigs, nameDests), axis=0))
-        print(f'n accts in {bank}: {len(accounts)}')
-        print()
-        n_accts += len(accounts)
-        processed_df = pd.DataFrame(columns=['account'] + [f'{function.__name__}_{range[0]}_{range[1]}' for range in ranges for function in [num_incoming_txs, sum_incoming_txs, num_outgoing_txs, sum_outgoing_txs, num_txs, sum_txs, num_unique_counterparties]] + ['num_phone_changes', 'num_days_in_bank', 'is_sar'])
-        num_workers = 10
-        accounts_list = np.array_split(accounts, num_workers)
-        args = [(df_bank, account, ranges) for account in accounts_list]
-        with Pool(num_workers) as p:
-            outputs = p.map(process_accounts, args)
-        i = 0
-        for output in outputs:
-            for account_features in output:
-                processed_df.loc[i] = account_features
-                i += 1
-        processed_df.to_csv(f'../datasets/{NAME}/preprocessed/{bank}.csv', index=False)
-    
-    print(f'n accts total: {n_accts}')
-    acct_list = np.unique(np.concatenate(acct_list, axis=0))
-    print(f'n unique accts total: {len(acct_list)}')
+        df_bank = split_and_reform(df, bank)
+        df_stats1 = cal_stats(df_bank, ranges[0])
+        df_stats2 = cal_stats(df_bank, ranges[1])
+        df_stats3 = cal_stats(df_bank, ranges[2])
+        df_stats4 = cal_stats(df_bank, ranges[3])
+        df_spending_behavior = cal_spending_behavior(df_bank)
+        df_label = cal_label(df_bank)
+        df_features = pd.merge(df_stats1, df_stats2, on='account')
+        df_features = pd.merge(df_features, df_stats3, on='account')
+        df_features = pd.merge(df_features, df_stats4, on='account')
+        df_features = pd.merge(df_features, df_spending_behavior, on='account')
+        df_features = pd.merge(df_features, df_label, on='account')
+        df_features.to_csv(f'../datasets/{DATASET}/preprocessed/{bank}.csv', index=False)
+        print(bank + ' done')
 
 if __name__ == '__main__':
     main()
