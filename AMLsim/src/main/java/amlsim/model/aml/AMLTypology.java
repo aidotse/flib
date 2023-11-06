@@ -42,6 +42,9 @@ public abstract class AMLTypology extends AbstractTransactionModel {
                                                                      // amount
                                                                      // amount
 
+    protected long stepReciveFunds;
+    protected String sourceType;
+    
     /**
      * Create an AML typology object (alert transaction model)
      * 
@@ -55,37 +58,37 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      * @return AML typology model object
      */
     public static AMLTypology createTypology(int modelID, double minAmount, double maxAmount,
-            int startStep, int endStep, int scheduleID, int interval) {
+            int startStep, int endStep, int scheduleID, int interval, String sourceType) {
         AMLTypology model;
         switch (modelID) {
             case AML_FAN_OUT:
-                model = new FanOutTypology(minAmount, maxAmount, startStep, endStep);
+                model = new FanOutTypology(minAmount, maxAmount, startStep, endStep, sourceType);
                 break;
             case AML_FAN_IN:
-                model = new FanInTypology(minAmount, maxAmount, startStep, endStep);
+                model = new FanInTypology(minAmount, maxAmount, startStep, endStep, sourceType);
                 break;
             case CYCLE:
-                model = new CycleTypology(minAmount, maxAmount, startStep, endStep);
+                model = new CycleTypology(minAmount, maxAmount, startStep, endStep, sourceType);
                 break;
             case BIPARTITE:
-                model = new BipartiteTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval);
+                model = new BipartiteTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
                 break;
             case STACK:
-                model = new StackTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval);
+                model = new StackTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
                 break;
             case RANDOM:
-                model = new RandomTypology(minAmount, maxAmount, startStep, endStep);
+                model = new RandomTypology(minAmount, maxAmount, startStep, endStep, sourceType);
                 break;
             case SCATTER_GATHER:
-                model = new ScatterGatherTypology(minAmount, maxAmount, startStep, endStep);
+                model = new ScatterGatherTypology(minAmount, maxAmount, startStep, endStep, sourceType);
                 break;
             case GATHER_SCATTER:
-                model = new GatherScatterTypology(minAmount, maxAmount, startStep, endStep);
+                model = new GatherScatterTypology(minAmount, maxAmount, startStep, endStep, sourceType);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown typology model ID: " + modelID);
         }
-        model.setParameters(startStep, endStep);
+        model.setParameters(startStep, endStep); // TODO: remove?
         return model;
     }
 
@@ -94,8 +97,6 @@ public abstract class AMLTypology extends AbstractTransactionModel {
     protected double maxAmount;
     protected long startStep;
     protected long endStep;
-    protected long stepReciveFunds;
-    protected String sourceType;
 
     /**
      * Set parameters (timestamps and amounts) of transactions
@@ -117,27 +118,6 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      */
     public void setAlert(Alert ag) {
         this.alert = ag;
-        this.sourceType = "TRANSFER"; //this.alert.getSourceType(); TODO: fix this, getSourceType() rturns null
-        // Set step for reciving illicit funds
-        if (this.sourceType.equals("TRANSFER")) {
-            if (this.startStep < 25) {
-                this.startStep = this.startStep + 25;
-                this.endStep = this.endStep + 25;
-            }
-            long s = this.startStep % 28;
-            long d;
-            if (s < 25) {
-                d = s + 3;
-            } else {
-                d = s - 25;
-            }
-            this.stepReciveFunds = this.startStep - d;
-        } else {
-            this.stepReciveFunds = this.startStep - alert.getSimulator().random.nextLong(7);
-            if (this.stepReciveFunds < 0) {
-                this.stepReciveFunds = this.startStep - alert.getSimulator().random.nextLong(this.startStep);
-            }
-        }
     }
 
     /**
@@ -167,11 +147,29 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      * @param endStep   End simulation step of alert transactions (any transactions
      *                  cannot be carried out after this step)
      */
-    public AMLTypology(double minAmount, double maxAmount, int startStep, int endStep) {
+    public AMLTypology(double minAmount, double maxAmount, int startStep, int endStep, String sourceType) {
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
         this.startStep = startStep;
         this.endStep = endStep;
+        this.sourceType = sourceType;
+        // Set step for reciving illicit funds
+        if (this.sourceType.equals("TRANSFER")) {
+            if (this.startStep < 25) { // TODO: change this when inital balance is set as a transaction on step 0, if ML pattern starts before step 25 we'll assume the funds are in the inital balance.  
+                this.startStep = this.startStep + 25;
+                this.endStep = this.endStep + 25;
+            }
+            long s = this.startStep % 28;
+            long d;
+            if (s < 25) {
+                d = s + 3;
+            } else {
+                d = s - 25;
+            }
+            this.stepReciveFunds = this.startStep - d;
+        } else {
+            this.stepReciveFunds = this.startStep; // TODO: implement some randomization
+        }
     }
 
     /**

@@ -30,8 +30,8 @@ public class BipartiteTypology extends AMLTypology {
 
     private Random random = AMLSim.getRandom();
     
-    public BipartiteTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval) {
-        super(minAmount, maxAmount, minStep, maxStep);
+    public BipartiteTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval, String sourceType) {
+        super(minAmount, maxAmount, minStep, maxStep, sourceType);
         
         this.startStep = minStep; //alert.getStartStep();
         this.endStep = maxStep; //alert.getEndStep();

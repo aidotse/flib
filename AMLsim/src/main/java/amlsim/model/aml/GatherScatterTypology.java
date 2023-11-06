@@ -21,8 +21,8 @@ public class GatherScatterTypology extends AMLTypology {
     private double scatterAmount = 0.0; // Scatter transaction amount will be defined after gather transactions
     private Random random = AMLSim.getRandom();
 
-    GatherScatterTypology(double minAmount, double maxAmount, int startStep, int endStep) {
-        super(minAmount, maxAmount, startStep, endStep);
+    GatherScatterTypology(double minAmount, double maxAmount, int startStep, int endStep, String sourceType) {
+        super(minAmount, maxAmount, startStep, endStep, sourceType);
     }
 
     @Override

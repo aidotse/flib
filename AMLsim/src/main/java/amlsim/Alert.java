@@ -16,10 +16,9 @@ public class Alert {
     private List<Account> members;  // Accounts involved in this alert
     private Account mainAccount;   // Main account of this alert
     private AMLTypology model;    // Transaction model
-    private String sourceType;  // Source type of this alert
     private AMLSim amlsim;  // AMLSim main object
 
-    Alert(long alertID, AMLTypology model, String sourceType, AMLSim sim){
+    Alert(long alertID, AMLTypology model, AMLSim sim){
         this.alertID = alertID;
         //this.scheduleID = scheduleID;
         //this.interval = interval;
@@ -27,7 +26,6 @@ public class Alert {
         this.mainAccount = null;
         this.model = model;
         this.model.setAlert(this);
-        this.sourceType = sourceType;
         this.amlsim = sim;
     }
 
@@ -106,8 +104,5 @@ public class Alert {
         return this.mainAccount != null && this.mainAccount.isSAR();
     }
 
-    public String getSourceType(){
-        return this.sourceType;
-    }
 }
 

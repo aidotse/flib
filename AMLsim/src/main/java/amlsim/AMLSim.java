@@ -410,8 +410,8 @@ public class AMLSim extends SimState {
 				model.updateEndStep(endStep);
 
 			} else { // Create a new AML typology object
-				AMLTypology model = AMLTypology.createTypology(modelID, minAmount, maxAmount, startStep, endStep, scheduleID, this.normalTxInterval); // TODO: add sarTxInterval
-				alert = new Alert(alertID, model, sourceType, this); // TODO: implement same structure as normal where the model has access to the alert
+				AMLTypology model = AMLTypology.createTypology(modelID, minAmount, maxAmount, startStep, endStep, scheduleID, this.normalTxInterval, sourceType); // TODO: add sarTxInterval
+				alert = new Alert(alertID, model, this); // TODO: implement same structure as normal where the model has access to the alert
 				alerts.put(alertID, alert);
 			}
 			Account account = getAccountFromID(accountID);
@@ -611,7 +611,7 @@ public class AMLSim extends SimState {
 
 		// Loading configuration JSON file instead of parsing command line arguments
 		//String confFile = args[0];
-		String paramFiles = "50K_accts";
+		String paramFiles = "20K_accts";
 		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 
 		try {

@@ -21,8 +21,8 @@ public class ScatterGatherTypology extends AMLTypology {
     private double gatherAmount;
     private Random random = AMLSim.getRandom();
 
-    ScatterGatherTypology(double minAmount, double maxAmount, int startStep, int endStep) {
-        super(minAmount, maxAmount, startStep, endStep);
+    ScatterGatherTypology(double minAmount, double maxAmount, int startStep, int endStep, String sourceType) {
+        super(minAmount, maxAmount, startStep, endStep, sourceType);
     }
 
     @Override

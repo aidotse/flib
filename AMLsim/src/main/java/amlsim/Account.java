@@ -271,9 +271,10 @@ public class Account implements Steppable {
 				AMLSim.handleIncome(currentStep, "TRANSFER", this.monthlyIncome, this, this.isSAR, (long) -1, (long) 11);
 			}
 			// Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
-			if (currentStep % 28 == this.stepMonthlyOutcome) {
+			if (currentStep == this.stepMonthlyOutcome) {
 				AMLSim.handleOutcome(currentStep, "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
-				this.stepMonthlyOutcome = 28 + random.nextInt(3);
+				int currentMonth = (int) (currentStep / 28);
+				this.stepMonthlyOutcome = 28 * (currentMonth + 1) + random.nextInt(3);
 			}
 			// Handle income
 			if (this.random.nextDouble() < this.probIncome) {
@@ -293,9 +294,10 @@ public class Account implements Steppable {
 				AMLSim.handleIncome(currentStep, "TRANSFER", this.monthlyIncomeSar, this, this.isSAR, (long) -1, (long) 11);
 			}
 			// Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
-			if (currentStep % 28 == this.stepMonthlyOutcome) {
+			if (currentStep == this.stepMonthlyOutcome) {
 				AMLSim.handleOutcome(currentStep, "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
-				this.stepMonthlyOutcome = 28 + random.nextInt(3);
+				int currentMonth = (int) (currentStep / 28);
+				this.stepMonthlyOutcome = 28 * (currentMonth + 1) + random.nextInt(3);
 			}
 			// Handle income
 			if (this.random.nextDouble() < this.probIncomeSar) {

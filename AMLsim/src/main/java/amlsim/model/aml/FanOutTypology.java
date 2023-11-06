@@ -23,8 +23,8 @@ public class FanOutTypology extends AMLTypology {
 
     private long[] steps;
 
-    FanOutTypology(double minAmount, double maxAmount, int minStep, int maxStep) {
-        super(minAmount, maxAmount, minStep, maxStep);
+    FanOutTypology(double minAmount, double maxAmount, int minStep, int maxStep, String sourceType) {
+        super(minAmount, maxAmount, minStep, maxStep, sourceType);
     }
 
     public int getNumTransactions() {

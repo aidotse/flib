@@ -1570,7 +1570,7 @@ if __name__ == "__main__":
     argv = sys.argv
     
     # debug: 
-    PARAM_FILES = '50K_accts'
+    PARAM_FILES = '20K_accts'
     argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
     
     argc = len(argv)

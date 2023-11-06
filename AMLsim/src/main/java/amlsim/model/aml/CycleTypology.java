@@ -21,8 +21,8 @@ public class CycleTypology extends AMLTypology {
     private Random random = AMLSim.getRandom();
 
     
-    CycleTypology(double minAmount, double maxAmount, int startStep, int endStep) {
-        super(minAmount, maxAmount, startStep, endStep);
+    CycleTypology(double minAmount, double maxAmount, int startStep, int endStep, String sourceType) {
+        super(minAmount, maxAmount, startStep, endStep, sourceType);
     }
 
     /**

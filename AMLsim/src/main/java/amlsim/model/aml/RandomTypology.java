@@ -36,8 +36,8 @@ public class RandomTypology extends AMLTypology {
     // return alert.getMembers().size();
     // }
 
-    RandomTypology(double minAmount, double maxAmount, int minStep, int maxStep) {
-        super(minAmount, maxAmount, minStep, maxStep);
+    RandomTypology(double minAmount, double maxAmount, int minStep, int maxStep, String sourceType) {
+        super(minAmount, maxAmount, minStep, maxStep, sourceType);
     }
 
     @Override

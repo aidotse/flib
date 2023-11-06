@@ -29,8 +29,8 @@ public class FanInTypology extends AMLTypology {
 
     private Random random = AMLSim.getRandom();
 
-    FanInTypology(double minAmount, double maxAmount, int start, int end) {
-        super(minAmount, maxAmount, start, end);
+    FanInTypology(double minAmount, double maxAmount, int start, int end, String sourceType) {
+        super(minAmount, maxAmount, start, end, sourceType);
     }
 
     public void setParameters(int schedulingID) {

@@ -39,8 +39,8 @@ public class StackTypology extends AMLTypology {
         // return orig_members * mid_members + mid_members + bene_members;
         // }
         
-    StackTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval) {
-        super(minAmount, maxAmount, minStep, maxStep);
+    StackTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval, String sourceType) {
+        super(minAmount, maxAmount, minStep, maxStep, sourceType);
 
         this.startStep = minStep; //alert.getStartStep();
         this.endStep = maxStep; //alert.getEndStep();
