@@ -17,6 +17,7 @@ public class GatherScatterTypology extends AMLTypology {
     private long[] gatherSteps;
     private long[] scatterSteps;
     private long middleStep;
+    private double[] amounts;
     private double totalReceivedAmount = 0.0;
     private double scatterAmount = 0.0; // Scatter transaction amount will be defined after gather transactions
     private Random random = AMLSim.getRandom();
@@ -63,6 +64,13 @@ public class GatherScatterTypology extends AMLTypology {
         for (int i = 1; i < numBeneMembers; i++) {
             scatterSteps[i] = getRandomStepRange(middleStep + 1, endStep);
         }
+
+        // Set transactions amounts
+        amounts = new double[numOrigMembers];
+        for (int i = 1; i < numOrigMembers; i++) {
+            TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+            amounts[i] = transactionAmount.doubleValue();
+        }
     }
 
     // @Override
@@ -77,15 +85,13 @@ public class GatherScatterTypology extends AMLTypology {
         int numGathers = gatherSteps.length;
         int numScatters = scatterSteps.length;
         if (step == this.stepReciveFunds) {
-            TargetedTransactionAmount transactionAmount;
             int numOrigs = origAccts.size();
             for (int i = 0; i < numOrigs; i++) {
                 Account orig = origAccts.get(i);
-                transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
                 if (this.sourceType.equals("CASH")) {
-                    acct.depositCash(transactionAmount.doubleValue());
+                    acct.depositCash(amounts[i]);
                 } else if (this.sourceType.equals("TRANSFER")){
-                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                    AMLSim.handleIncome(step, "TRANSFER", amounts[i], orig, false, (long) -1, (long) 0);
                 }
             }
         }
@@ -94,7 +100,10 @@ public class GatherScatterTypology extends AMLTypology {
                 if (gatherSteps[i] == step) {
                     Account orig = origAccts.get(i);
                     Account bene = alert.getMainAccount();
-                    double amount = new TargetedTransactionAmount(orig.getBalance(), random, true).doubleValue();
+                    double amount = amounts[i] * (1.0 - marginRatio);
+                    if (!isValidAmount(amount, orig)) {
+                        amount = 0.9 * orig.getBalance();
+                    }
                     makeTransaction(step, amount, orig, bene, isSAR, alertID, AMLTypology.GATHER_SCATTER);
                     totalReceivedAmount += amount;
                 }

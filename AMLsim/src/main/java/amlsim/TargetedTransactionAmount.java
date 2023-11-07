@@ -36,7 +36,7 @@ public class TargetedTransactionAmount {
         if (this.isSAR) {
             mean = simProperties.getMeanTransactionAmountSAR();
             std = simProperties.getStdTransactionAmountSAR();
-            lb = 500.0;
+            lb = 500.0; // TODO: add min and max transaction amounts for SARs in conf.json
             ub = 10000.0;
         }
         else {

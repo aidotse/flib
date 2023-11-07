@@ -17,6 +17,7 @@ public class ScatterGatherTypology extends AMLTypology {
     private List<Account> intermediate = new ArrayList<>();
     private long[] scatterSteps;
     private long[] gatherSteps;
+    private double[] amounts;
     private double scatterAmount;
     private double gatherAmount;
     private Random random = AMLSim.getRandom();
@@ -55,6 +56,13 @@ public class ScatterGatherTypology extends AMLTypology {
             scatterSteps[i] = getRandomStepRange(startStep, middleStep + 1);
             gatherSteps[i] = getRandomStepRange(middleStep + 1, endStep);
         }
+
+        // Set transaction amounts
+        amounts = new double[size];
+        for (int i = 1; i < size; i++) {
+            TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+            amounts[i] = transactionAmount.doubleValue();
+        }
     }
 
     // @Override
@@ -72,29 +80,30 @@ public class ScatterGatherTypology extends AMLTypology {
         int numMidMembers = numTotalMembers - 2;
         
         if (step == this.stepReciveFunds) {
-            TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
-            if (this.sourceType.equals("CASH")) {
-                acct.depositCash(transactionAmount.doubleValue());
-            } else if (this.sourceType.equals("TRANSFER")){
-                AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+            for (int i = 1; i < numMidMembers; i++) {
+                if (this.sourceType.equals("CASH")) {
+                    acct.depositCash(amounts[i]);
+                } else if (this.sourceType.equals("TRANSFER")){
+                    AMLSim.handleIncome(step, "TRANSFER", amounts[i], orig, false, (long) -1, (long) 0);
+                }
             }
         }
         
         for (int i = 0; i < numMidMembers; i++) {
             if (scatterSteps[i] == step) {
                 Account _bene = intermediate.get(i);
-
-                double target = Math.min(orig.getBalance(), scatterAmount);
-                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(target, random, true);
-                makeTransaction(step, transactionAmount.doubleValue(), orig, _bene, isSAR, alertID,
-                        AMLTypology.SCATTER_GATHER);
+                double amount = amounts[i] * (1.0 - marginRatio);
+                if (!isValidAmount(amount, orig)) {
+                    amount = 0.9 * orig.getBalance();
+                }
+                makeTransaction(step, amount, orig, _bene, isSAR, alertID, AMLTypology.SCATTER_GATHER);
             } else if (gatherSteps[i] == step) {
                 Account _orig = intermediate.get(i);
-
-                double target = Math.min(_orig.getBalance(), scatterAmount);
-                TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(target, random, true);
-                makeTransaction(step, transactionAmount.doubleValue(), _orig, bene, isSAR, alertID,
-                        AMLTypology.SCATTER_GATHER);
+                double amount = amounts[i] * (1.0 - marginRatio);
+                if (!isValidAmount(amount, orig)) {
+                    amount = 0.9 * orig.getBalance();
+                }
+                makeTransaction(step, amount, _orig, bene, isSAR, alertID, AMLTypology.SCATTER_GATHER);
             }
         }
     }

@@ -25,9 +25,8 @@ public class BipartiteTypology extends AMLTypology {
     private int numTxs;
     
     private long[] steps;
-
-    private TargetedTransactionAmount transactionAmount;
-
+    private double[] amounts;
+    
     private Random random = AMLSim.getRandom();
     
     public BipartiteTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval, String sourceType) {
@@ -80,6 +79,13 @@ public class BipartiteTypology extends AMLTypology {
             long step = generateFromInterval(range) + this.startStep;
             Arrays.fill(steps, step);
         }
+
+        // Set transaction amounts
+        amounts = new double[numTxs];
+        for (int i = 0; i < numTxs; i++) {
+            TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+            amounts[i] = transactionAmount.doubleValue();
+        }
         
     }
 
@@ -91,13 +97,12 @@ public class BipartiteTypology extends AMLTypology {
     @Override
     public void sendTransactions(long step, Account acct) {
         if (step == this.stepReciveFunds) {
-            for (int i = 0; i < numOrigs; i++) {
-                Account orig = members.get(i);
-                transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+            for (int i = 0; i < numTxs; i++) {
+                Account orig = members.get(origIdxs[i]);
                 if (this.sourceType.equals("CASH")) {
-                    acct.depositCash(transactionAmount.doubleValue());
+                    acct.depositCash(amounts[i]);
                 } else if (this.sourceType.equals("TRANSFER")){
-                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                    AMLSim.handleIncome(step, "TRANSFER", amounts[i], orig, false, (long) -1, (long) 0);
                 }
             }
         }
@@ -105,8 +110,11 @@ public class BipartiteTypology extends AMLTypology {
             if (step == steps[i]) {
                 Account orig = members.get(origIdxs[i]);
                 Account bene = members.get(beneIdxs[i]);
-                transactionAmount = new TargetedTransactionAmount(orig.getBalance(), random, true);
-                makeTransaction(step, transactionAmount.doubleValue(), orig, bene, alert.isSAR(), alert.getAlertID(), AMLTypology.BIPARTITE);
+                double amount = amounts[i] * (1.0 - marginRatio);
+                if (!isValidAmount(amount, orig)) {
+                    amount = 0.9 * orig.getBalance();
+                }
+                makeTransaction(step, amount, orig, bene, alert.isSAR(), alert.getAlertID(), AMLTypology.BIPARTITE);
             }
         }
     }

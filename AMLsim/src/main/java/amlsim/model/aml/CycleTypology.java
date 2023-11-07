@@ -17,6 +17,7 @@ public class CycleTypology extends AMLTypology {
 
     // Transaction schedule
     private long[] steps; // Array of simulation steps when each transaction is scheduled to be made
+    private double amount;
 
     private Random random = AMLSim.getRandom();
 
@@ -71,7 +72,10 @@ public class CycleTypology extends AMLTypology {
                 Arrays.sort(steps); // Ordered
             }
         }
-        // System.out.println(Arrays.toString(steps));
+        
+        // Set transaction amount
+        TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+        amount = transactionAmount.doubleValue();
     }
 
     // @Override
@@ -96,21 +100,13 @@ public class CycleTypology extends AMLTypology {
         long alertID = alert.getAlertID();
         boolean isSAR = alert.isSAR();
 
-        double amount = Double.MAX_VALUE;
-        TargetedTransactionAmount transactionAmount;
-
         // Receive illicit funds
         if (step == this.stepReciveFunds) {
             Account orig = alert.getMembers().get(0);
-            transactionAmount = new TargetedTransactionAmount(amount, random, true); // TODO: Handle max illicit fund init 
             if (this.sourceType.equals("CASH")) {
-                acct.depositCash(transactionAmount.doubleValue());
-                double margin = amount * marginRatio;
-                amount = amount - margin;
+                acct.depositCash(amount);
             } else if (this.sourceType.equals("TRANSFER")) {
-                AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
-                double margin = amount * marginRatio;
-                amount = amount - margin;
+                AMLSim.handleIncome(step, "TRANSFER", amount, orig, false, (long) -1, (long) 0);
             }
         }
         
@@ -120,16 +116,11 @@ public class CycleTypology extends AMLTypology {
                 int j = (i + 1) % length; // i, j: index of the previous, next account
                 Account src = alert.getMembers().get(i); // The previous account
                 Account dst = alert.getMembers().get(j); // The next account
-
-                if (src.getBalance() < amount) {
-                    amount = src.getBalance();
+                amount = amount * (1.0 - marginRatio);
+                if (!isValidAmount(amount, src)) {
+                    amount = 0.9 * src.getBalance();
                 }
-                transactionAmount = new TargetedTransactionAmount(amount, random, true);
-                makeTransaction(step, transactionAmount.doubleValue(), src, dst, isSAR, alertID, AMLTypology.CYCLE);
-
-                // Update the next transaction amount
-                double margin = amount * marginRatio;
-                amount = amount - margin;
+                makeTransaction(step, amount, src, dst, isSAR, alertID, AMLTypology.CYCLE);
             }
         }
     }

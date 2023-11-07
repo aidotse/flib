@@ -19,14 +19,13 @@ public class FanInTypology extends AMLTypology {
     private Account bene; // The destination (beneficiary) account
     private List<Account> origList = new ArrayList<>(); // The origin (originator) accounts
 
-    private long[] steps;
-    
     private static final int SIMULTANEOUS = 1;
     private static final int FIXED_INTERVAL = 2;
     private static final int RANDOM_RANGE = 3;
-
-    private TargetedTransactionAmount transactionAmount;
-
+    
+    private long[] steps;
+    private double[] amounts;
+    
     private Random random = AMLSim.getRandom();
 
     FanInTypology(double minAmount, double maxAmount, int start, int end, String sourceType) {
@@ -72,6 +71,13 @@ public class FanInTypology extends AMLTypology {
                 steps[i] = getRandomStep();
             }
         }
+
+        // Set transaction amounts
+        amounts = new double[numOrigs];
+        for (int i = 0; i < numOrigs; i++) {
+            TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+            amounts[i] = transactionAmount.doubleValue();
+        }
     }
 
     // @Override
@@ -84,27 +90,30 @@ public class FanInTypology extends AMLTypology {
         return "FanInTypology";
     }
 
+    @Override
     public void sendTransactions(long step, Account acct) {
         long alertID = alert.getAlertID();
         boolean isSAR = alert.isSAR();
+        
         if (step == this.stepReciveFunds) {
-            int numOrigs = origList.size();
-            for (int i = 0; i < numOrigs; i++) {
+            for (int i = 0; i < origList.size(); i++) {
                 Account orig = origList.get(i);
-                transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
                 if (this.sourceType.equals("CASH")) {
-                    acct.depositCash(transactionAmount.doubleValue());
+                    acct.depositCash(amounts[i]);
                 } else if (this.sourceType.equals("TRANSFER")){
-                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                    AMLSim.handleIncome(step, "TRANSFER", amounts[i], orig, false, (long) -1, (long) 0);
                 }
             }
         }
+        
         for (int i = 0; i < origList.size(); i++) {
             if (steps[i] == step) {
                 Account orig = origList.get(i);
-                this.transactionAmount = new TargetedTransactionAmount(orig.getBalance(), this.random, true); // TODO: if the source was cash or transfer, send that amount
-                makeTransaction(step, this.transactionAmount.doubleValue(), orig, bene, isSAR, alertID,
-                        AMLTypology.AML_FAN_IN);
+                double amount = amounts[i] * (1.0 - marginRatio);
+                if (!isValidAmount(amount, orig)) {
+                    amount = 0.9 * orig.getBalance();
+                }
+                makeTransaction(step, amount, orig, bene, isSAR, alertID, AMLTypology.AML_FAN_IN);
             }
         }
     }

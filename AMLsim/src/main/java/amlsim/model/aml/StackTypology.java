@@ -21,6 +21,7 @@ public class StackTypology extends AMLTypology {
     private int numTxs;
     
     private long steps[];
+    private double amounts[];
     
     private TargetedTransactionAmount transactionAmount;
 
@@ -134,6 +135,10 @@ public class StackTypology extends AMLTypology {
 			}
             start = end;
         }
+
+        // Set transaction amounts
+        amounts = new double[numTxs];
+
     }
 
     @Override
@@ -195,7 +200,7 @@ public class StackTypology extends AMLTypology {
             if (step == steps[i]) {
                 Account orig = members.get(origIdxs[i]);
                 Account bene = members.get(beneIdxs[i]);
-                transactionAmount = new TargetedTransactionAmount(orig.getBalance(), random, true);
+                transactionAmount = new TargetedTransactionAmount(orig.getBalance(), random, true); // TODO: make sure amount mach inital funds
                 makeTransaction(step, transactionAmount.doubleValue(), orig, bene, alert.isSAR(), alert.getAlertID(), AMLTypology.STACK);
             }
         }

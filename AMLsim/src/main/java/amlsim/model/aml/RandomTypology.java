@@ -16,7 +16,7 @@ import java.util.*;
  * The beneficiary account and amount of each transaction are determined
  * randomly.
  */
-public class RandomTypology extends AMLTypology {
+public class RandomTypology extends AMLTypology { // TODO: review this pattern, not realistic? similar to cycle but with random amounts
 
     private static Random random = AMLSim.getRandom();
     private Set<Long> steps = new HashSet<>(); // Set of simulation steps when the transaction is performed
@@ -54,6 +54,7 @@ public class RandomTypology extends AMLTypology {
         long alertID = alert.getAlertID();
         if (!isValidStep(step))
             return;
+        
         if (step == this.stepReciveFunds) {
             TargetedTransactionAmount transactionAmount = new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
             if (this.sourceType.equals("CASH")) {
@@ -62,6 +63,7 @@ public class RandomTypology extends AMLTypology {
                 AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), nextOrig, false, (long) -1, (long) 0);
             }
         }
+        
         List<Account> beneList = nextOrig.getBeneList();
         int numBenes = beneList.size();
         if (numBenes == 0)

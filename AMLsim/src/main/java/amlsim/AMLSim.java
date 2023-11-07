@@ -575,7 +575,11 @@ public class AMLSim extends SimState {
 		String origID = orig.getID();
 		String origBankID = orig.getBankID();
 		float origBefore = (float) orig.getBalance();
-		orig.withdraw(amt);
+		if (desc.equals("CASH")) {
+			orig.withdrawCash(amt);
+		} else {
+			orig.withdraw(amt);
+		}
 		float origAfter = (float) orig.getBalance();
 		long origPhoneChanges = (long) orig.getNumberOfPhoneChanges();
 		long origDaysInBank = (long) orig.getDaysInBank();
@@ -611,7 +615,7 @@ public class AMLSim extends SimState {
 
 		// Loading configuration JSON file instead of parsing command line arguments
 		//String confFile = args[0];
-		String paramFiles = "20K_accts";
+		String paramFiles = "10K_accts";
 		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 
 		try {

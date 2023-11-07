@@ -65,6 +65,8 @@ public class Account implements Steppable {
 
 	private AccountBehaviour accountBehaviour;
 
+	private double[] balanceHistory = new double[14];
+
 	public Account() {
 		this.id = "-";
 	}
@@ -301,15 +303,25 @@ public class Account implements Steppable {
 			}
 			// Handle income
 			if (this.random.nextDouble() < this.probIncomeSar) {
-				TruncatedNormal tn = new TruncatedNormal(this.meanIncomeSar, this.stdIncomeSar, 0, 1000000);
+				TruncatedNormal tn = new TruncatedNormal(this.meanIncomeSar, this.stdIncomeSar, 1.0, 1000000); // TODO: handle lb better, maybe define in conf.json?
         		double amt = tn.sample();
 				AMLSim.handleIncome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
 			}
 			// Handle outcome
 			if (this.random.nextDouble() < this.probOutcomeSar) {
-				TruncatedNormal tn = new TruncatedNormal(this.meanOutcomeSar, this.stdOutcomeSar, 0, 0.9*this.balance);
-				double amt = tn.sample();
-				AMLSim.handleOutcome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
+				double probSpendCash = -1.0;
+				if (cashBalance > 1.0) {
+					probSpendCash = 0.9;
+				}
+				if (this.random.nextDouble() < probSpendCash) {
+					TruncatedNormal tn = new TruncatedNormal(this.meanOutcomeSar, this.stdOutcomeSar, 1.0, this.cashBalance); // TODO: handle lb better, maybe define in conf.json?
+					double amt = tn.sample();
+					AMLSim.handleOutcome(currentStep, "CASH", amt, this, this.isSAR, (long) -1, (long) 0);
+				} else {
+					TruncatedNormal tn = new TruncatedNormal(this.meanOutcomeSar, this.stdOutcomeSar, 1.0, 0.9*this.balance); // TODO: handle lb better, maybe define in conf.json?
+					double amt = tn.sample();
+					AMLSim.handleOutcome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
+				}
 			}
 		}
 

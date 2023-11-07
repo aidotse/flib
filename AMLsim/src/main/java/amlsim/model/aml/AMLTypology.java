@@ -38,9 +38,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
     static final int UNORDERED = 2; // All accounts send money randomly
     static final int SIMULTANEOUS = 3; // All transactions are performed at single step simultaneously
 
-    final double marginRatio = AMLSim.getSimProp().getMarginRatio(); // Each member holds this ratio of the received
-                                                                     // amount
-                                                                     // amount
+    final double marginRatio = AMLSim.getSimProp().getMarginRatio(); // Each member holds this ratio of the received amount
 
     protected long stepReciveFunds;
     protected String sourceType;
@@ -131,6 +129,18 @@ public abstract class AMLTypology extends AbstractTransactionModel {
         return startStep <= step && step <= endStep;
     }
 
+    
+    /**
+     * Checks if the given amount is valid for the specified account.
+     * @param amount the amount to check
+     * @param acct the account to check against
+     * @return true if the account balance is greater than or equal to the amount, false otherwise
+     */
+    public boolean isValidAmount(double amount, Account acct) {
+        double balance = acct.getBalance();
+        return balance >= amount;
+    }
+
     public int getStepRange() {
         return (int) (endStep - startStep + 1);
     }
@@ -168,7 +178,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
             }
             this.stepReciveFunds = this.startStep - d;
         } else {
-            this.stepReciveFunds = this.startStep; // TODO: implement some randomization
+            this.stepReciveFunds = this.startStep; // TODO: implement some randomization, and multiple steps if several origs
         }
     }
 

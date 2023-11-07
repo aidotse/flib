@@ -22,7 +22,8 @@ public class FanOutTypology extends AMLTypology {
     private Random random = AMLSim.getRandom();
 
     private long[] steps;
-
+    private double[] amounts;
+    
     FanOutTypology(double minAmount, double maxAmount, int minStep, int maxStep, String sourceType) {
         super(minAmount, maxAmount, minStep, maxStep, sourceType);
     }
@@ -69,6 +70,13 @@ public class FanOutTypology extends AMLTypology {
                 steps[i] = getRandomStep();
             }
         }
+
+        // Set transaction amounts
+        amounts = new double[numBenes];
+        for (int i = 0; i < numBenes; i++) {
+            TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
+            amounts[i] = transactionAmount.doubleValue();
+        }
     }
 
     @Override
@@ -83,27 +91,34 @@ public class FanOutTypology extends AMLTypology {
         }
         long alertID = alert.getAlertID();
         boolean isSAR = alert.isSAR();
-        double amount = this.getTransactionAmount().doubleValue();
-
+        
         if (step == this.stepReciveFunds) {
-            if (this.sourceType.equals("CASH")) {
-                acct.depositCash(amount);
-            } else if (this.sourceType.equals("TRANSFER")){
-                AMLSim.handleIncome(step, "TRANSFER", amount, orig, false, (long) -1, (long) 0);
+            for (int i = 0; i < beneList.size(); i++) {
+                if (this.sourceType.equals("CASH")) {
+                    acct.depositCash(amounts[i]);
+                } else if (this.sourceType.equals("TRANSFER")){
+                    AMLSim.handleIncome(step, "TRANSFER", amounts[i], orig, false, (long) -1, (long) 0);
+                }
             }
         }
+
         for (int i = 0; i < beneList.size(); i++) {
             if (steps[i] == step) {
                 Account bene = beneList.get(i);
+                double amount = amounts[i] * (1.0 - marginRatio);
+                if (!isValidAmount(amount, orig)) {
+                    amount = 0.9 * orig.getBalance();
+                }
                 makeTransaction(step, amount, orig, bene, isSAR, alertID, AMLTypology.AML_FAN_OUT);
             }
         }
     }
 
-    private TargetedTransactionAmount getTransactionAmount() {
-        if (this.beneList.size() == 0) {
-            return new TargetedTransactionAmount(0, this.random, true);
-        }
-        return new TargetedTransactionAmount(orig.getBalance() / this.beneList.size(), random, true);
-    }
+    // TODO: remove?
+    // private TargetedTransactionAmount getTransactionAmount() {
+    //     if (this.beneList.size() == 0) {
+    //         return new TargetedTransactionAmount(0, this.random, true);
+    //     }
+    //     return new TargetedTransactionAmount(orig.getBalance() / this.beneList.size(), random, true);
+    // }
 }
