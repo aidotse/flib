@@ -22,17 +22,28 @@ public class AccountGroup {
         assert startStep < endStep : "startStep must be smaller than endStep";
         assert interval > 0 : "interval must be positive";
 
-        if (startStep >= 0 && startStep < AMLSim.getNumOfSteps()) {
-            int range = (int) (endStep - startStep + 1);
-            this.startStep = AMLSim.getRandom().nextInt(range) + startStep;
-        } else {
-            this.startStep = AMLSim.getRandom().nextInt((int) AMLSim.getNumOfSteps() - 1);
-        }
+        //if (startStep >= 0 && startStep < AMLSim.getNumOfSteps()) {
+        //    int range = (int) (endStep - startStep + 1);
+        //    this.startStep = AMLSim.getRandom().nextInt(range) + startStep;
+        //} else {
+        //    this.startStep = AMLSim.getRandom().nextInt((int) AMLSim.getNumOfSteps() - 1);
+        //}
+        //
+        //if (endStep >= 0 && endStep < AMLSim.getNumOfSteps()) {
+        //    this.endStep = endStep;
+        //} else {
+        //    this.endStep = AMLSim.getNumOfSteps();
+        //}
 
-        if (endStep >= 0 && endStep < AMLSim.getNumOfSteps()) {
+        long s1 = startStep + AMLSim.getRandom().nextInt((int) (endStep - startStep + 1));
+        long s2 = startStep + AMLSim.getRandom().nextInt((int) (endStep - startStep + 1));
+        this.startStep = Math.min(s1, s2);
+        this.endStep = Math.max(s1, s2);
+        if (this.startStep < startStep) {
+            this.startStep = startStep;
+        }
+        if (this.endStep > endStep) {
             this.endStep = endStep;
-        } else {
-            this.endStep = AMLSim.getNumOfSteps();
         }
 
         this.scheduleID = scheduleID;

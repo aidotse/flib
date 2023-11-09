@@ -31,6 +31,7 @@ class TransactionNetwork():
     
     def load_data(self, path:str) -> pd.DataFrame:
         df = pd.read_csv(path)
+        df = df.loc[df['type']!='CASH']
         return df
     
     def format_data(self, df:pd.DataFrame) -> pd.DataFrame:
