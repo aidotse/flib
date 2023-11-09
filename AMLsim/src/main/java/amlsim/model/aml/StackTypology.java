@@ -184,7 +184,7 @@ public class StackTypology extends AMLTypology {
         //        makeTransaction(step, transactionAmount.doubleValue(), orig, bene, AMLTypology.STACK);
         //    }
         //}
-        if (step == this.stepReciveFunds) {
+        if (step == this.stepReciveFunds) { 
             int numOrigs = origIdxs.length;
             for (int i = 0; i < numOrigs; i++) {
                 Account orig = members.get(origIdxs[i]);

@@ -50,13 +50,11 @@ public class SimProperties {
     private double probIncomeSAR;
     private double meanIncomeSAR;
     private double stdIncomeSAR;
-    //private double probOutcome;
-    //private double meanOutcome;
-    //private double stdOutcome;
-    //private double probOutcomeSar;
-    //private double meanOutcomeSar;
-    //private double stdOutcomeSar;
-
+    private double meanOutcome;
+    private double stdOutcome;
+    private double meanOutcomeSar;
+    private double stdOutcomeSar;
+    
     SimProperties(String jsonName) throws IOException {
         String jsonStr = loadTextFile(jsonName);
         JSONObject jsonObject = new JSONObject(jsonStr);
@@ -85,12 +83,16 @@ public class SimProperties {
         meanBankChangeFrequencySAR = defaultProp.getDouble("mean_bank_change_frequency_sar");
         stdBankChangeFrequencySAR = defaultProp.getDouble("std_bank_change_frequency_sar");
 
-        //probIncome = defaultProp.getDouble("prob_income");
-        //meanIncome = defaultProp.getDouble("mean_income");
-        //stdIncome = defaultProp.getDouble("std_income");
-        //probIncome = defaultProp.getDouble("prob_income_sar");
-        //meanIncome = defaultProp.getDouble("mean_income_sar");
-        //stdIncome = defaultProp.getDouble("std_income_sar");
+        probIncome = defaultProp.getDouble("prob_income");
+        meanIncome = defaultProp.getDouble("mean_income");
+        stdIncome = defaultProp.getDouble("std_income");
+        probIncome = defaultProp.getDouble("prob_income_sar");
+        meanIncome = defaultProp.getDouble("mean_income_sar");
+        stdIncome = defaultProp.getDouble("std_income_sar");
+        meanOutcome = defaultProp.getDouble("mean_outcome");
+        stdOutcome = defaultProp.getDouble("std_outcome");
+        meanOutcomeSar = defaultProp.getDouble("mean_outcome_sar");
+        stdOutcomeSar = defaultProp.getDouble("std_outcome_sar");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
@@ -224,18 +226,22 @@ public class SimProperties {
         return stdIncomeSAR;
     }
     
-    //public double getProbOutcome() {
-    //    return probOutcome;
-    //}
-    //
-    //public double getMeanOutcome() {
-    //    return meanOutcome;
-    //}
-    //
-    //public double getStdOutcome() {
-    //    return stdOutcome;
-    //}
+    public double getMeanOutcome() {
+        return meanOutcome;
+    }
+    
+    public double getStdOutcome() {
+        return stdOutcome;
+    }
 
+    public double getMeanOutcomeSar() {
+        return meanOutcomeSar;
+    }
+    
+    public double getStdOutcomeSar() {
+        return stdOutcomeSar;
+    }
+    
     public double getMarginRatio() {
         return marginRatio;
     }

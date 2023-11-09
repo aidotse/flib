@@ -157,6 +157,12 @@ public abstract class AbstractTransactionModel {
         if (isSAR) {
             AMLSim.getLogger().fine("Handle transaction: " + orig.getID() + " -> " + dest.getID());
         }
+        if (amount > orig.getBalance()) {
+            //System.out.println("Invalid transaction amount: " + amount + " > " + orig.getBalance());
+        }
+        if (orig.getBalance() <= 100.0) {
+            //System.out.println("Error! Balance: " + orig.getBalance() + ", amount: " + amount);
+        }
         AMLSim.handleTransaction(step, ttype, amount, orig, dest, isSAR, alertID, modelType);
     }
 

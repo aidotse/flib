@@ -266,6 +266,10 @@ public class AMLSim extends SimState {
 				account = new Account(accountID, normalTxInterval, initBalance, bankID,
 						getRandom());
 			}
+			account.setProp(simProp.getProbIncome(), simProp.getMeanIncome(), simProp.getStdIncome(),
+					simProp.getProbIncomeSAR(), simProp.getMeanIncomeSAR(), simProp.getStdIncomeSAR(),
+					simProp.getMeanOutcome(), simProp.getStdOutcome(),
+					simProp.getMeanOutcomeSar(), simProp.getStdOutcomeSar());
 
 			int index = this.getAccounts().size();
 			account.setBranch(this.branches.get(index % this.numBranches));
@@ -532,6 +536,11 @@ public class AMLSim extends SimState {
 	 */
 	public static void handleTransaction(long step, String desc, double amt, Account orig, Account bene,
 			boolean isSAR, long alertID, long modelType) {
+		
+		if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
+			return;
+		}
+		
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
 		String origBankID = orig.getBankID();
@@ -549,6 +558,7 @@ public class AMLSim extends SimState {
 		float beneAfter = (float) bene.getBalance();
 		long benePhoneChanges = (long) bene.getNumberOfPhoneChanges();
 		long beneDaysInBank = (long) bene.getDaysInBank();
+
 
 		txs.addTransaction(step, desc, amt, origID, origBankID, beneID, beneBankID, origBefore, origAfter, beneBefore,
 				beneAfter, isSAR, alertID, modelType, origPhoneChanges, benePhoneChanges, origDaysInBank,
