@@ -537,9 +537,10 @@ public class AMLSim extends SimState {
 	public static void handleTransaction(long step, String desc, double amt, Account orig, Account bene,
 			boolean isSAR, long alertID, long modelType) {
 		
-		if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
-			return;
-		}
+		//if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
+		//	//System.out.println("error! balance = " + orig.getBalance() + ", amount = " + amt);
+		//	return;
+		//}
 		
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
@@ -581,6 +582,19 @@ public class AMLSim extends SimState {
 	}
 
 	public static void handleOutcome(long step, String desc, double amt, Account orig, boolean isSAR, long alertID, long modelType) {
+		
+		//boolean e;
+		//if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
+		//	//System.out.println("outcome error! balance = " + orig.getBalance() + ", amount = " + amt);
+		//	e = true;
+		//	return;
+		//} else {
+		//	e = false;
+		//}
+		//if (e) {
+		//	System.out.println("wtf");
+		//}
+		
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
 		String origBankID = orig.getBankID();

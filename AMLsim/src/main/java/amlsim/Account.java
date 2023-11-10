@@ -141,12 +141,20 @@ public class Account implements Steppable {
 		this.balance = balance;
 	}
 
-	public void withdraw(double amount) {
-		if (this.balance < amount) {
-			this.balance = 0.0;
-		} else {
+	public boolean withdraw(double amount) {
+		//if (this.balance < amount) {
+		//	this.balance = 0.0;
+		//} else {
+		//	this.balance -= amount;
+		//}
+		boolean success;
+		if (this.balance > amount) {
 			this.balance -= amount;
+			success = true;
+		} else {
+			success = false;
 		}
+		return success
 	}
 
 	public void deposit(double ammount) {
@@ -293,26 +301,28 @@ public class Account implements Steppable {
         		double amt = tn.sample();
 				AMLSim.handleIncome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
 			}
-			// Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
-			if (currentStep == this.stepMonthlyOutcome) {
-				AMLSim.handleOutcome(currentStep, "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
-				int diff = this.stepMonthlyOutcome % 28 - 25;
-				diff = diff < 0 ? 3 : diff;
-				this.stepMonthlyOutcome = this.stepMonthlyOutcome + 28 - diff + random.nextInt(4);
-			}
-			// Handle outcome
-			double meanBalance = 0.0;
-			for (double balance : balanceHistory) {
-				meanBalance += balance / 28;
-			}
-			//System.out.println("meanBalance = " + meanBalance + ", balance = " + this.balance + ", inital balance = " + balanceHistory[0]);
-			double x = (this.balance - meanBalance) / meanBalance;
-			double sigmoid = 1 / (1 + Math.exp(-x));
-			if (this.random.nextDouble() < sigmoid) {
-				TruncatedNormal tn = new TruncatedNormal(this.meanOutcome, this.stdOutcome, 0.0, 0.9*this.balance); 
-				double amt = tn.sample();
-				if (this.balance > amt) {
-					AMLSim.handleOutcome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
+			if (this.balance >= 100.0) {
+				// Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
+				if (currentStep == this.stepMonthlyOutcome) {
+					AMLSim.handleOutcome(currentStep, "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
+					int diff = this.stepMonthlyOutcome % 28 - 25;
+					diff = diff < 0 ? 3 : diff;
+					this.stepMonthlyOutcome = this.stepMonthlyOutcome + 28 - diff + random.nextInt(4);
+				}
+				// Handle outcome
+				double meanBalance = 0.0;
+				for (double balance : balanceHistory) {
+					meanBalance += balance / 28;
+				}
+				//System.out.println("meanBalance = " + meanBalance + ", balance = " + this.balance + ", inital balance = " + balanceHistory[0]);
+				double x = (this.balance - meanBalance) / meanBalance;
+				double sigmoid = 1 / (1 + Math.exp(-x));
+				if (this.random.nextDouble() < sigmoid) {
+					TruncatedNormal tn = new TruncatedNormal(this.meanOutcome, this.stdOutcome, 0.0, 0.9*this.balance); 
+					double amt = tn.sample();
+					if (this.balance > amt) {
+						AMLSim.handleOutcome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
+					}
 				}
 			}
 		} else {
