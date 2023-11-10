@@ -145,10 +145,6 @@ public abstract class AbstractTransactionModel {
      */
     protected void makeTransaction(long step, double amount, Account orig, Account dest, boolean isSAR, long alertID,
             long modelType) {
-        if (amount <= 0) { // Invalid transaction amount
-            // AMLSim.getLogger().warning("Warning: invalid transaction amount: " + amount);
-            return;
-        }
         if (orig.getBalance() < 100) { // Insufficient balance
             // AMLSim.getLogger().warning("Warning: insufficient balance: " + orig.getBalance());
             return;
@@ -157,13 +153,9 @@ public abstract class AbstractTransactionModel {
         if (isSAR) {
             AMLSim.getLogger().fine("Handle transaction: " + orig.getID() + " -> " + dest.getID());
         }
-        if (amount > orig.getBalance()) {
-            //System.out.println("Invalid transaction amount: " + amount + " > " + orig.getBalance());
+        if (orig.getBalance() > amount && amount > 0.0 && orig.getBalance() >= 100.0) {
+            AMLSim.handleTransaction(step, ttype, amount, orig, dest, isSAR, alertID, modelType);
         }
-        if (orig.getBalance() <= 100.0) {
-            //System.out.println("Error! Balance: " + orig.getBalance() + ", amount: " + amount);
-        }
-        AMLSim.handleTransaction(step, ttype, amount, orig, dest, isSAR, alertID, modelType);
     }
 
     /**

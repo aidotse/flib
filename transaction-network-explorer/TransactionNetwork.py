@@ -191,6 +191,8 @@ class TransactionNetwork():
     def get_balances(self, index):
         names = self.df_nodes.loc[index, 'name'].tolist()
         # TODO: filter on steps aswell?
+        
+        '''
         df1 = self.df[self.df['nameOrig'].isin(names)][['nameOrig', 'step', 'amount']]
         df1 = df1.rename(columns={'nameOrig': 'name'})
         df2 = self.df[self.df['nameDest'].isin(names)][['nameDest', 'step', 'amount']]
@@ -199,16 +201,25 @@ class TransactionNetwork():
         df = pd.concat([df1, df2]).reset_index(drop=True)
         df = df.sort_values(by=['step'])
         df['balance'] = df.groupby('name')['amount'].cumsum()
+        '''
+        
+        df1 = self.df[self.df['nameOrig'].isin(names)][['nameOrig', 'step', 'newbalanceOrig']]
+        df1 = df1.rename(columns={'nameOrig': 'name', 'newbalanceOrig': 'balance'})
+        df2 = self.df[self.df['nameDest'].isin(names)][['nameDest', 'step', 'newbalanceDest']]
+        df2 = df2.rename(columns={'nameDest': 'name', 'balance': 'newbalanceDest'})
+        df = pd.concat([df1, df2]).reset_index(drop=True)
+        #df = df.sort_values(by=['step']).reset_index(drop=True)
+        
         curves = {}
         for i, name in enumerate(names):
             curves[i] = hv.Curve(df[df['name']==name][['step', 'balance']], 'step', 'balance')
         if curves:
             curves = hv.NdOverlay(curves).opts(
-                hv.opts.Curve(xlim=(0, 365), ylim=(0, 100000), interpolation='steps-post', xlabel='step', ylabel='balance')
+                hv.opts.Curve(xlim=(0, 365), ylim=(0, 100000), xlabel='step', ylabel='balance')#, interpolation='steps-post')
             )
         else:
             curves = hv.NdOverlay({0: hv.Curve(data=sorted(zip([0], [0])))}).opts(
-                hv.opts.Curve(xlim=(0, 365), ylim=(0, 100000), interpolation='steps-post', xlabel='step', ylabel='balance')
+                hv.opts.Curve(xlim=(0, 365), ylim=(0, 100000), xlabel='step', ylabel='balance')#, interpolation='steps-post')
             )
         return curves.opts(shared_axes=False, show_legend=False)
     

@@ -537,34 +537,33 @@ public class AMLSim extends SimState {
 	public static void handleTransaction(long step, String desc, double amt, Account orig, Account bene,
 			boolean isSAR, long alertID, long modelType) {
 		
-		//if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
-		//	//System.out.println("error! balance = " + orig.getBalance() + ", amount = " + amt);
-		//	return;
-		//}
+		if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
+			return;
+		}
 		
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
 		String origBankID = orig.getBankID();
 		float origBefore = (float) orig.getBalance();
-		orig.withdraw(amt);
+		boolean success = orig.withdraw(amt);
 		float origAfter = (float) orig.getBalance();
 		long origPhoneChanges = (long) orig.getNumberOfPhoneChanges();
 		long origDaysInBank = (long) orig.getDaysInBank();
 
-		// Increase the balance of the beneficiary account
-		String beneID = bene.getID();
-		String beneBankID = bene.getBankID();
-		float beneBefore = (float) bene.getBalance();
-		bene.deposit(amt);
-		float beneAfter = (float) bene.getBalance();
-		long benePhoneChanges = (long) bene.getNumberOfPhoneChanges();
-		long beneDaysInBank = (long) bene.getDaysInBank();
-
-
-		txs.addTransaction(step, desc, amt, origID, origBankID, beneID, beneBankID, origBefore, origAfter, beneBefore,
-				beneAfter, isSAR, alertID, modelType, origPhoneChanges, benePhoneChanges, origDaysInBank,
-				beneDaysInBank);
-		diameter.addEdge(origID, beneID);
+		if (success) {
+			// Increase the balance of the beneficiary account
+			String beneID = bene.getID();
+			String beneBankID = bene.getBankID();
+			float beneBefore = (float) bene.getBalance();
+			bene.deposit(amt);
+			float beneAfter = (float) bene.getBalance();
+			long benePhoneChanges = (long) bene.getNumberOfPhoneChanges();
+			long beneDaysInBank = (long) bene.getDaysInBank();
+			txs.addTransaction(step, desc, amt, origID, origBankID, beneID, beneBankID, origBefore, origAfter, beneBefore,
+					beneAfter, isSAR, alertID, modelType, origPhoneChanges, benePhoneChanges, origDaysInBank,
+					beneDaysInBank);
+			diameter.addEdge(origID, beneID);
+		}
 	}
 
 	public static void handleIncome(long step, String desc, double amt, Account bene, boolean isSAR, long alertID, long modelType) {
@@ -583,33 +582,27 @@ public class AMLSim extends SimState {
 
 	public static void handleOutcome(long step, String desc, double amt, Account orig, boolean isSAR, long alertID, long modelType) {
 		
-		//boolean e;
-		//if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
-		//	//System.out.println("outcome error! balance = " + orig.getBalance() + ", amount = " + amt);
-		//	e = true;
-		//	return;
-		//} else {
-		//	e = false;
-		//}
-		//if (e) {
-		//	System.out.println("wtf");
-		//}
-		
+		if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
+			return;
+		}
+
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
 		String origBankID = orig.getBankID();
 		float origBefore = (float) orig.getBalance();
+		boolean success = false;
 		if (desc.equals("CASH")) {
-			orig.withdrawCash(amt);
+			success = orig.withdrawCash(amt);
 		} else {
-			orig.withdraw(amt);
+			success = orig.withdraw(amt);
 		}
 		float origAfter = (float) orig.getBalance();
 		long origPhoneChanges = (long) orig.getNumberOfPhoneChanges();
 		long origDaysInBank = (long) orig.getDaysInBank();
-
-		txs.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+		if (success) {
+			txs.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
 				origPhoneChanges, 0, origDaysInBank, 0);
+		}
 	}
 
 	/**

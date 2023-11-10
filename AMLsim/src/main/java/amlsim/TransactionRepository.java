@@ -76,6 +76,12 @@ public class TransactionRepository {
             String destBankID, float origBefore, float origAfter, float destBefore, float destAfter, boolean isSAR,
             long aid, long modelType, long origPhoneChange, long destPhoneChange, long origDaysInBank,
             long destDaysInBank) {
+
+        if (origID != "-2" && amt > origBefore) {
+            System.err.println("Warning: the amount of transaction is larger than the balance: " + amt + " > "
+                    + origBefore + " (" + origID + " -> " + destID + ")");
+        }
+
         if (count >= limit) {
             if (count == limit) {
                 System.err.println("Warning: the number of output transactions has reached the limit: " + limit);

@@ -148,25 +148,33 @@ public class Account implements Steppable {
 		//	this.balance -= amount;
 		//}
 		boolean success;
-		if (this.balance > amount) {
+		if (this.balance > amount && amount > 0.0 && this.balance >= 100.0) {
 			this.balance -= amount;
 			success = true;
 		} else {
 			success = false;
 		}
-		return success
+		return success;
 	}
 
-	public void deposit(double ammount) {
-		this.balance += ammount;
+	public void deposit(double amount) {
+		this.balance += amount;
 	}
 
-	public void withdrawCash(double ammount){
-		if (this.cashBalance < ammount) {
-			this.cashBalance = 0;
+	public boolean withdrawCash(double amount){
+		//if (this.cashBalance < ammount) {
+		//	this.cashBalance = 0;
+		//} else {
+		//	this.cashBalance -= ammount;
+		//}
+		boolean success;
+		if (this.cashBalance > amount && amount > 0.0 && this.cashBalance >= 100.0) {
+			this.balance -= amount;
+			success = true;
 		} else {
-			this.cashBalance -= ammount;
+			success = false;
 		}
+		return success;
 	}
 
 	public void depositCash(double ammount){
@@ -289,7 +297,7 @@ public class Account implements Steppable {
 		long end = this.endStep > 0 ? this.endStep : AMLSim.getNumOfSteps();
 		this.balanceHistory.removeFirst();
 		this.balanceHistory.addLast(this.balance);
-
+		
 		if (!this.isSAR) {
 			// Handle salary, if 25th of the month, deposit salary
 			if (currentStep % 28 == 25) {
@@ -301,28 +309,26 @@ public class Account implements Steppable {
         		double amt = tn.sample();
 				AMLSim.handleIncome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
 			}
-			if (this.balance >= 100.0) {
-				// Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
-				if (currentStep == this.stepMonthlyOutcome) {
-					AMLSim.handleOutcome(currentStep, "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
-					int diff = this.stepMonthlyOutcome % 28 - 25;
-					diff = diff < 0 ? 3 : diff;
-					this.stepMonthlyOutcome = this.stepMonthlyOutcome + 28 - diff + random.nextInt(4);
-				}
-				// Handle outcome
-				double meanBalance = 0.0;
-				for (double balance : balanceHistory) {
-					meanBalance += balance / 28;
-				}
-				//System.out.println("meanBalance = " + meanBalance + ", balance = " + this.balance + ", inital balance = " + balanceHistory[0]);
-				double x = (this.balance - meanBalance) / meanBalance;
-				double sigmoid = 1 / (1 + Math.exp(-x));
-				if (this.random.nextDouble() < sigmoid) {
-					TruncatedNormal tn = new TruncatedNormal(this.meanOutcome, this.stdOutcome, 0.0, 0.9*this.balance); 
-					double amt = tn.sample();
-					if (this.balance > amt) {
-						AMLSim.handleOutcome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
-					}
+			// Handle monthly outcome, if 26th to 28th of the month, pay monthly expense
+			if (currentStep == this.stepMonthlyOutcome) {
+				AMLSim.handleOutcome(currentStep, "TRANSFER", this.monthlyOutcome, this, this.isSAR, (long) -1, (long) 11);
+				int diff = this.stepMonthlyOutcome % 28 - 25;
+				diff = diff < 0 ? 3 : diff;
+				this.stepMonthlyOutcome = this.stepMonthlyOutcome + 28 - diff + random.nextInt(4);
+			}
+			// Handle outcome
+			double meanBalance = 0.0;
+			for (double balance : balanceHistory) {
+				meanBalance += balance / 28;
+			}
+			//System.out.println("meanBalance = " + meanBalance + ", balance = " + this.balance + ", inital balance = " + balanceHistory[0]);
+			double x = (this.balance - meanBalance) / meanBalance;
+			double sigmoid = 1 / (1 + Math.exp(-x));
+			if (this.random.nextDouble() < sigmoid) {
+				TruncatedNormal tn = new TruncatedNormal(this.meanOutcome, this.stdOutcome, 0.0, 0.9*this.balance); 
+				double amt = tn.sample();
+				if (this.balance > amt && amt > 0.0 && this.balance >= 100.0) {
+					AMLSim.handleOutcome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
 				}
 			}
 		} else {
@@ -360,13 +366,13 @@ public class Account implements Steppable {
 				if (this.random.nextDouble() < probSpendCash) {
 					TruncatedNormal tn = new TruncatedNormal(this.meanOutcomeSar, this.stdOutcomeSar, 0.0, this.cashBalance); // TODO: handle lb better, maybe define in conf.json?
 					double amt = tn.sample();
-					if (this.cashBalance > amt) {
+					if (this.cashBalance > amt && amt > 0.0) {
 						AMLSim.handleOutcome(currentStep, "CASH", amt, this, this.isSAR, (long) -1, (long) 0);
 					}
 				} else {
 					TruncatedNormal tn = new TruncatedNormal(this.meanOutcomeSar, this.stdOutcomeSar, 0.0, 0.9*this.balance); // TODO: handle lb better, maybe define in conf.json?
 					double amt = tn.sample();
-					if (this.balance > amt) {
+					if (this.balance > amt && amt > 0.0 && this.balance >= 100.0) {
 						AMLSim.handleOutcome(currentStep, "TRANSFER", amt, this, this.isSAR, (long) -1, (long) 0);
 					}
 				}
