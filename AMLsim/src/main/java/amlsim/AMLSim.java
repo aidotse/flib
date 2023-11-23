@@ -173,6 +173,7 @@ public class AMLSim extends SimState {
 		}
 
 		// Parameters of Cash Transactions
+		/* TODO: remove?
 		int norm_in_int = simProp.getCashTxInterval(true, false); // Interval of cash-in transactions for normal account
 		int suspicious_in_int = simProp.getCashTxInterval(true, true); // Interval of cash-in transactions for
 																		// suspicious account
@@ -201,7 +202,7 @@ public class AMLSim extends SimState {
 																			// for suspicious account
 		CashOutModel.setParam(norm_out_int, suspicious_out_int, norm_out_min, norm_out_max, suspicious_out_min,
 				suspicious_out_max);
-
+				
 		// Create branches (for cash transactions)
 		this.numBranches = simProp.getNumBranches();
 		if (this.numBranches <= 0) {
@@ -210,15 +211,16 @@ public class AMLSim extends SimState {
 		for (int i = 0; i < this.numBranches; i++) {
 			this.branches.add(new Branch(i));
 		}
+		*/
 
 		this.accountFile = simProp.getInputAcctFile();
 		this.transactionFile = simProp.getInputTxFile();
 		this.normalModelsFile = simProp.getNormalModelsFile();
 		this.alertMemberFile = simProp.getInputAlertMemberFile();
-		this.counterFile = simProp.getCounterLogFile();
-		this.diameterFile = simProp.getDiameterLogFile();
-		this.computeDiameter = simProp.isComputeDiameter();
-
+		//this.counterFile = simProp.getCounterLogFile();
+		//this.diameterFile = simProp.getDiameterLogFile();
+		//this.computeDiameter = simProp.isComputeDiameter();
+		/*
 		if (computeDiameter && diameterFile != null) {
 			try {
 				BufferedWriter writer = new BufferedWriter(new FileWriter(diameterFile));
@@ -233,6 +235,7 @@ public class AMLSim extends SimState {
 				logger.info("Transaction graph diameter computation is disabled");
 			}
 		}
+		*/
 	}
 
 	private static Map<String, Integer> getColumnIndices(String header) {
@@ -272,7 +275,7 @@ public class AMLSim extends SimState {
 					simProp.getMeanOutcomeSar(), simProp.getStdOutcomeSar());
 
 			int index = this.getAccounts().size();
-			account.setBranch(this.branches.get(index % this.numBranches));
+			//account.setBranch(this.branches.get(index % this.numBranches));
 			this.getAccounts().add(account);
 			this.idMap.put(accountID, index);
 			this.schedule.scheduleRepeating(account);
@@ -509,7 +512,7 @@ public class AMLSim extends SimState {
 			}
 		}
 		txs.flushLog();
-		txs.writeCounterLog(numOfSteps, counterFile);
+		//txs.writeCounterLog(numOfSteps, counterFile);
 		System.out.println(" - Finished running " + step + " steps ");
 
 		// Finishing the simulation
@@ -631,7 +634,7 @@ public class AMLSim extends SimState {
 		 */
 
 		// Loading configuration JSON file instead of parsing command line arguments
-		//String confFile = args[0];
+		// String confFile = args[0];
 		String paramFiles = "10K_accts";
 		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 

@@ -46,6 +46,7 @@ public class MutualTransactionModel extends AbstractTransactionModel {
         if (scheduleID == FIXED_INTERVAL) {
             ;
         } else if (scheduleID == RANDOM_INTERVAL || scheduleID == UNORDERED) {
+            this.startStep = generateFromInterval(range) + (int) this.startStep;
             this.interval = generateFromInterval(range) + (int) this.startStep;
         } else if (scheduleID == SIMULTANEOUS || range < 2) {
             this.interval = 1;

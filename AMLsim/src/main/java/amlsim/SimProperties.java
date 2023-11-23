@@ -86,9 +86,9 @@ public class SimProperties {
         probIncome = defaultProp.getDouble("prob_income");
         meanIncome = defaultProp.getDouble("mean_income");
         stdIncome = defaultProp.getDouble("std_income");
-        probIncome = defaultProp.getDouble("prob_income_sar");
-        meanIncome = defaultProp.getDouble("mean_income_sar");
-        stdIncome = defaultProp.getDouble("std_income_sar");
+        probIncomeSAR = defaultProp.getDouble("prob_income_sar");
+        meanIncomeSAR = defaultProp.getDouble("mean_income_sar");
+        stdIncomeSAR = defaultProp.getDouble("std_income_sar");
         meanOutcome = defaultProp.getDouble("mean_outcome");
         stdOutcome = defaultProp.getDouble("std_outcome");
         meanOutcomeSar = defaultProp.getDouble("mean_outcome_sar");
@@ -97,8 +97,8 @@ public class SimProperties {
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
 
-        cashInProp = defaultProp.getJSONObject("cash_in");
-        cashOutProp = defaultProp.getJSONObject("cash_out");
+        //cashInProp = defaultProp.getJSONObject("cash_in"); // TODO: remove?
+        //cashOutProp = defaultProp.getJSONObject("cash_out"); // TODO: remove?
         marginRatio = defaultProp.getDouble("margin_ratio");
 
         String envSeed = System.getenv("RANDOM_SEED");

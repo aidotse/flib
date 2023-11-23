@@ -356,7 +356,7 @@ public class Account implements Steppable {
 				meanBalance += balance / 28;
 			}
 			meanBalance = meanBalance <= 100.0 ? 1000.0 : meanBalance;
-			double x = (this.balance - meanBalance) / meanBalance;
+			double x = (this.balance + cashBalance - meanBalance) / meanBalance;
 			double sigmoid = 1 / (1 + Math.exp(-x));
 			if (this.random.nextDouble() < sigmoid) {
 				double probSpendCash = -1.0;

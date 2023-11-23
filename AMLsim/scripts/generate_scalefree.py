@@ -92,7 +92,7 @@ if __name__ == "__main__":
     print("Number of vertices: %d" % g.number_of_nodes())  # Number of vertices (accounts)
     print("Number of edges: %d" % g.number_of_edges())  # Number of edges (transactions)
 
-    #out_deg = Counter(g.out_degree().values())
+    #out_deg = Counter(g.out_degree().values()) # TODO: fix so degree.csv has aggretgates
     #in_deg = Counter(g.in_degree().values())
 
     #keys = set(sorted(list(in_deg.keys()) + list(out_deg.keys())))

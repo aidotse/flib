@@ -33,6 +33,11 @@ public class AccountGroup {
             this.endStep = endStep;
         }
 
+        if (scheduleID == 2) {
+            this.startStep = startStep;
+            this.endStep = endStep;
+        }
+
         this.scheduleID = scheduleID;
         this.interval = interval;
         this.members = new ArrayList<>();

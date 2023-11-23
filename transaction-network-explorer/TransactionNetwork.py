@@ -200,7 +200,8 @@ class TransactionNetwork():
         df1['amount'] = -df1['amount']
         df = pd.concat([df1, df2]).reset_index(drop=True)
         df = df.sort_values(by=['step'])
-        df['balance'] = df.groupby('name')['amount'].cumsum()
+        gb = df.groupby('name')
+        df['balance'] = gb['amount'].cumsum()
         '''
         
         df1 = self.df[self.df['nameOrig'].isin(names)][['nameOrig', 'step', 'newbalanceOrig']]
