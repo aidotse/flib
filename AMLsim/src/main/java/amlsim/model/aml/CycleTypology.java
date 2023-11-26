@@ -60,7 +60,16 @@ public class CycleTypology extends AMLTypology {
                 }
                 steps[length - 1] = endStep;
             }
-        } else if (modelID == RANDOM_INTERVAL || modelID == UNORDERED) { // Random interval
+        } else if (modelID == RANDOM_INTERVAL) { // TODO: verfiy this works
+            period = (int) (endStep - startStep);
+            int maxInterval = period / length;
+            this.interval = random.nextInt(maxInterval) + 1;
+            int d = period - interval * length;
+            d = random.nextInt(d + 1);
+            for (int i = 0; i < length - 1; i++) {
+                steps[i] = startStep + d + interval * i;
+            }
+        } else if (modelID == UNORDERED) {
             this.interval = 1;
             // Ensure the specified period
             steps[0] = startStep;
@@ -68,10 +77,14 @@ public class CycleTypology extends AMLTypology {
             for (int i = 2; i < length; i++) {
                 steps[i] = getRandomStep();
             }
-            if (modelID == RANDOM_INTERVAL) {
-                Arrays.sort(steps); // Ordered
-            }
+            Arrays.sort(steps); // TODO: should be unordered?
         }
+
+        System.out.println("cycle");
+        for (int i = 0; i < length; i++) {
+            System.out.print(steps[i] + " ");
+        }
+        System.out.println(" ");
         
         // Set transaction amount
         TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 

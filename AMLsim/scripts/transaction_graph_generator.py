@@ -1542,7 +1542,6 @@ class TransactionGenerator:
                     values = [normal_model.id, normal_model.type, account_id, is_main, False, schedule_id, start_step, end_step] # TODO: check if the scheduleID should be 2
                     writer.writerow(values)
 
-
     def count__patterns(self, threshold=2):
         """Count the number of fan-in and fan-out patterns in the generated transaction graph
         """
@@ -1570,7 +1569,7 @@ if __name__ == "__main__":
     argv = sys.argv
     
     # debug: 
-    PARAM_FILES = '10K_accts'
+    PARAM_FILES = '1bank'
     argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
     
     argc = len(argv)

@@ -18,12 +18,12 @@ class TransactionNetwork():
         self.N_STEPS = self.END_STEP - self.START_STEP + 1
         self.LEGIT_MODEL_NAMES = ['single', 'fan-out', 'fan-in', 'forward', 'mutal', 'periodical']
         self.LEGIT_MODEL_IDS = self.df_edges[self.df_edges['is_sar']==0]['model_type'].unique()
-        self.LAUND_MODEL_NAMES = ['fan-out', 'fan-in', 'cycle', 'bipartite', 'stacked', 'random', 'gather-scatter', 'scatter-gather']
+        self.LAUND_MODEL_NAMES = ['fan-out', 'fan-in', 'cycle', 'bipartite', 'stacked', 'random', 'scatter-gather', 'gather-scatter']
         self.LAUND_MODEL_IDS = self.df_edges[self.df_edges['is_sar']==1]['model_type'].unique()
         self.HOMOPHILY_EDGE, self.HOMOPHILY_NODE, self.HOMOPHILY_CLASS = self.calc_homophily()
         
         self.legitimate_type_map = {'single': 0, 'fan-out': 1, 'fan-in': 2,  'forward': 9, 'mutal': 10, 'periodical': 11}
-        self.laundering_type_map = {'fan-out': 21, 'fan-in': 22, 'cycle': 23, 'bipartite': 24, 'stacked': 25, 'random': 26, 'gather-scatter': 27, 'scatter-gather': 28}
+        self.laundering_type_map = {'fan-out': 21, 'fan-in': 22, 'cycle': 23, 'bipartite': 24, 'stacked': 25, 'random': 26, 'scatter-gather': 27, 'gather-scatter': 28}
         
         self.nodes = hv.Points(self.df_nodes, ['x', 'y'], ['name'])
         

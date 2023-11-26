@@ -7,7 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from modules import GCN
-from data import EllipticDataset
+from data import EllipticDataset, AmlsimDataset
 
 def define_gcn(trial):
     n_layers = trial.suggest_int("n_layers", 2, 5)
@@ -101,9 +101,50 @@ def eval_gcn(device):
     print(f"\t pre: {pre}")
     print(f"\t rec: {rec}")
 
+def train_gcn(device):
+    # data
+    traindata = AmlsimDataset(node_file='data/1bank/bank/trainset/nodes.csv', edge_file='data/1bank/bank/trainset/edges.csv').get_data()
+    testdata = AmlsimDataset(node_file='data/1bank/bank/testset/nodes.csv', edge_file='data/1bank/bank/testset/edges.csv').get_data()
+    traindata = traindata.to(device)
+    testdata = testdata.to(device)
+    
+    # model
+    input_dim = 10
+    hidden_dim = 16
+    output_dim = 2
+    n_layers = 2
+    dropout = 0.3
+    model = GCN(input_dim, hidden_dim, output_dim, n_layers, dropout)
+    model.to(device)
+    
+    # optimizer
+    lr = 0.01
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    
+    # loss function
+    criterion = torch.nn.BCELoss()
+    
+    for epoch in range(100):
+        model.train()
+        optimizer.zero_grad()
+        out = model(traindata)
+        loss = criterion(out, traindata.y)
+        loss.backward()
+        optimizer.step()
+        
+        print(loss.item())
+        
+        if epoch % 10 == 0:
+            model.eval()
+            with torch.no_grad():
+                out = model(testdata)
+                loss = criterion(out, testdata.y) # TODO: some out values are nan 
+                print(f"epoch: {epoch}, loss: {loss}")
+
 def main():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    eval_gcn(device)
+    device = torch.device("cpu")
+    #eval_gcn(device)
+    train_gcn(device)
 
 if __name__ == "__main__":
     main()

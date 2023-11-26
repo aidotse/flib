@@ -49,7 +49,6 @@ class GCNLPA(torch.nn.Module):
 class GCN(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout):
         super(GCN, self).__init__()
-        
         convs = [GCNConv(input_dim, hidden_dim)] + [GCNConv(hidden_dim, hidden_dim) for _ in range(num_layers-2)] + [GCNConv(hidden_dim, output_dim)]
         self.convs = torch.nn.ModuleList(convs)
         self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])

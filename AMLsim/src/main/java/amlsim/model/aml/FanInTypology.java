@@ -45,9 +45,9 @@ public class FanInTypology extends AMLTypology {
 
         // Set transaction schedule
         int numOrigs = origList.size();
-        int totalStep = (int) (endStep - startStep + 1);
-        int defaultInterval = Math.max(totalStep / numOrigs, 1);
-        this.startStep = generateFromInterval(defaultInterval); // decentralize the first transaction step
+        //int totalStep = (int) (endStep - startStep + 1);
+        //int defaultInterval = Math.max(totalStep / numOrigs, 1);
+        //this.startStep = generateFromInterval(defaultInterval); // decentralize the first transaction step
 
         steps = new long[numOrigs];
         if (schedulingID == SIMULTANEOUS) {
@@ -71,6 +71,12 @@ public class FanInTypology extends AMLTypology {
                 steps[i] = getRandomStep();
             }
         }
+
+        System.out.println("fan-in");
+        for (int i = 0; i < numOrigs; i++) {
+            System.out.print(steps[i] + " ");
+        }
+        System.out.println(" ");
 
         // Set transaction amounts
         amounts = new double[numOrigs];

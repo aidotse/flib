@@ -3,6 +3,7 @@ import torch
 from torch_geometric.data import Data
 import numpy as np
 from sklearn.model_selection import train_test_split
+import os
 
 class EllipticDataset():
     def __init__(self, data_folder, val_size=0.2, test_size=0.2, seed=42):
@@ -61,3 +62,26 @@ class EllipticDataset():
     
     def get_data(self):
         return self.data, self.train_indices, self.val_indices, self.test_indices, self.train_labels, self.val_labels, self.test_labels
+
+
+class AmlsimDataset():
+    def __init__(self, node_file:str, edge_file:str):
+        self.data = self.load_data(node_file, edge_file)
+        
+    def load_data(self, node_file, edge_file):
+        nodes = pd.read_csv(node_file)
+        edges = pd.read_csv(edge_file)
+        edge_index = torch.tensor(edges[['src', 'dst']].values, dtype=torch.long)
+        edge_index = edge_index.t().contiguous()
+        x = torch.tensor(nodes[['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9', 'x10']].values, dtype=torch.float)
+        y = torch.tensor(nodes['y'].values, dtype=torch.float)
+        y = torch.nn.functional.one_hot(y.type(torch.long), num_classes=2).type(torch.float)
+        data = Data(x=x, edge_index=edge_index, y=y)
+        return data
+
+    def get_data(self):
+        return self.data
+
+#trainset = AmlsimDataset('data/1bank/bank/trainset/nodes.csv', 'data/1bank/bank/trainset/edges.csv')
+#traindata = trainset.get_data()
+#print(traindata.num_features)

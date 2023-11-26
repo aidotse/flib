@@ -166,17 +166,19 @@ public abstract class AMLTypology extends AbstractTransactionModel {
         // Set step for reciving illicit funds
         if (this.sourceType.equals("TRANSFER")) {
             if (this.startStep < 25) { // TODO: change this when inital balance is set as a transaction on step 0, if ML pattern starts before step 25 we'll assume the funds are in the inital balance.  
-                this.startStep = this.startStep + 25;
-                this.endStep = this.endStep + 25;
-            }
-            long s = this.startStep % 28;
-            long d;
-            if (s < 25) {
-                d = s + 3;
+                //this.startStep = this.startStep + 25;
+                //this.endStep = this.endStep + 25;
+                this.stepReciveFunds = 0;
             } else {
-                d = s - 25;
+                long s = this.startStep % 28;
+                long d;
+                if (s < 25) {
+                    d = s + 3;
+                } else {
+                    d = s - 25;
+                }
+                this.stepReciveFunds = this.startStep - d;
             }
-            this.stepReciveFunds = this.startStep - d;
         } else {
             this.stepReciveFunds = this.startStep; // TODO: implement some randomization, and multiple steps if several origs
         }

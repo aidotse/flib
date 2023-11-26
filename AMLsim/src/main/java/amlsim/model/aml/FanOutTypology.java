@@ -42,12 +42,8 @@ public class FanOutTypology extends AMLTypology {
                 beneList.add(bene);
         }
 
-        // Set schedule
         int numBenes = beneList.size();
-        int totalStep = (int) (endStep - startStep + 1);
-        int defaultInterval = Math.max(totalStep / numBenes, 1);
-        this.startStep = generateFromInterval(defaultInterval); // decentralize the first transaction step
-
+        
         steps = new long[numBenes];
         if (scheduleID == SIMULTANEOUS) {
             long step = getRandomStep();
@@ -77,6 +73,11 @@ public class FanOutTypology extends AMLTypology {
             TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
             amounts[i] = transactionAmount.doubleValue();
         }
+        System.out.println("fan-out");
+        for (int i = 0; i < numBenes; i++) {
+            System.out.print(steps[i] + " ");
+        }
+        System.out.println(" ");
     }
 
     @Override

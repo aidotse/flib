@@ -635,7 +635,7 @@ public class AMLSim extends SimState {
 
 		// Loading configuration JSON file instead of parsing command line arguments
 		// String confFile = args[0];
-		String paramFiles = "10K_accts";
+		String paramFiles = "1bank";
 		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 
 		try {
