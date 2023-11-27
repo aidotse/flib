@@ -7,8 +7,8 @@ This is the repsitory for all the code in the project.
 ## Currently containing
 
 # AMLsim
-AMLsim is a simulator for generating transaction networks used in anti-money laundering research. It is based on the simulator by IBM (TODO: add link) and is extended to utilize distributions and model behavioural features. In short, it has two parts: a python part for generating the transaction network and a java part for simulating the behaviour of the agents. The simulation is controlled by 6 parameter files. 
-* A json file, which defines behviours of accounts and some paths varibles used during the simulation. 
+AMLsim is a simulator for generating transaction networks used in anti-money laundering research. It is based on the simulator by IBM (TODO: add link) and is extended to utilize distributions and model behavioural features. In short, it has two parts: a python part for generating the transaction network and a java part for simulating the behaviour of the agents. The simulation is controlled by 6 parameter files:
+* 1 json file, which defines behviours of accounts and some paths varibles used during the simulation. 
 * 5 csv files, which defines some inital condtions and together defines the structure of the transaction network.
 
 ## Dependencies
