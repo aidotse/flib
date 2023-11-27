@@ -51,7 +51,7 @@ def cal_node_features(df:pd.DataFrame) -> pd.DataFrame:
     sums = gb['amount'].sum()
     means = gb['amount'].mean()
     medians = gb['amount'].median()
-    stds = gb['amount'].std()
+    stds = gb['amount'].std().fillna(0.0)
     maxs = gb['amount'].max()
     mins = gb['amount'].min()
     in_degrees = gb['amount'].apply(lambda x: (x>0).sum())

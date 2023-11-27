@@ -74,8 +74,8 @@ class AmlsimDataset():
         edge_index = torch.tensor(edges[['src', 'dst']].values, dtype=torch.long)
         edge_index = edge_index.t().contiguous()
         x = torch.tensor(nodes[['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9', 'x10']].values, dtype=torch.float)
-        y = torch.tensor(nodes['y'].values, dtype=torch.float)
-        y = torch.nn.functional.one_hot(y.type(torch.long), num_classes=2).type(torch.float)
+        y = torch.tensor(nodes['y'].values, dtype=torch.long)
+        #y = torch.nn.functional.one_hot(y.type(torch.long), num_classes=2).type(torch.float)
         data = Data(x=x, edge_index=edge_index, y=y)
         return data
 
