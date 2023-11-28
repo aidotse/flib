@@ -155,11 +155,20 @@ The conf.json file contains parameters for the generel behaviour of the accounts
 ### account.csv
 The accounts.csv file contains the initial conditions for the accounts. It has the following columns:
 * **count**: (int) The number of accounts to generate.
-* **min_balance**: (int) The minimum inital balance of the accounts.
-* **max_balance**: (int) The maximum inital balance of the accounts.
+* **min_balance, max_balance**: (int) The minimum and maximum inital balance of the accounts. The inital balance is sampled from a uniform distribution.
 * **country**: (string) The country of the accounts. 
 * **business_type**: (string) The type of business of the accounts, OBS: currently only "I" is supported.
 * **bank**: (string) The bank of the accounts. Can be left blank. 
+Below is an example where 1000 accounts are generated in two banks with there different groups of inital balances:
+``` 
+count,min_balance,max_balance,country,business_type,bank
+200,1000,10000,SWE,I,bank_a
+200,10000,100000,SWE,I,bank_a
+100,100000,200000,SWE,I,bank_a
+200,1000,10000,SWE,I,bank_b
+200,10000,100000,SWE,I,bank_b
+100,100000,200000,SWE,I,bank_b
+```
 
 ### normalModels.csv
 
