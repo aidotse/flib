@@ -262,6 +262,7 @@ TRANSFER,1
 ```
 
 ## Pattern definitions
+To be added.
 
 ## Schedule definitions
 The schedual id is used to specify how a pattern will occur in the temporal dimension. A pattern with more the one transaction can happen over several steps, and there could be a temporal pattern in how the transactions are placed. The schedule id is used to specify this pattern. Below is the four different schedules:
