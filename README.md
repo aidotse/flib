@@ -13,6 +13,14 @@ AMLsim is a simulator for generating transaction networks used in anti-money lau
 
 The output of the simulation is a csv file with all the transactions.
 
+## Accronyms and definitions
+* SAR: Suspicious Activity Report - accounts or transactions that are labeled as suspisious by the bank
+* SWISH: Swedish Instant Payment System - a payment system used in Sweden
+* AML: Anti-Money Laundering - the process of detecting and preventing money laundering
+* Transaction: A SWISH transaction between two accounts
+* Income: A transaction from a source to and an account (not a SWISH transaction)
+* Outcome: A transaction from an account to a sink (not a SWISH transaction)
+
 ## Dependencies
 
 ### Alternative 1: Docker
@@ -115,8 +123,14 @@ The name of the simulation, used for naming the tmp and output folder.
 ##### total_steps
 The total number of steps in the simulation. Each step is one day, but could be vewied as some other time unit.
 
-##### min_amount, max_amount, mean_amount, std_amount
-The min and max amount of a transaction, and the mean and standard deviation of the truncated normal distribution used to sample the amount of a transaction. The distribution is truncated to zero and current blanace of the account.
+##### min_amount, max_amount, mean_amount, std_amount, mean_amount_sar, std_amount_sar
+The min and max amount of a transaction, and the mean and standard deviation of the truncated normal distribution used to sample the amount of a transaction. The distribution is truncated to zero and current blanace of the account. Mean and std are specifed for normal and SAR transactions.
+
+##### prob_income, mean_income, std_income, prob_income_sar, mean_income_sar, std_income_sar
+The probability for an account to recive income on a given step, and the mean and standard deviation of the truncated normal distribution used to sample the amount of the income.Mean and std are specifed for normal and SAR transactions.
+
+##### mean_outcome, std_outcome, mean_outcome_sar, std_outcome_sar
+The mean and standard deviation of the truncated normal distribution used to sample the amount of the outcome. Mean and std are specifed for normal and SAR transactions. The probability of an outcome calculated form a sigmoid function: $p_i = sigmoid( 1/N \sum_{j=i-N}^{i} balance_j )$
 
 # Transaction Network Explorer
 
