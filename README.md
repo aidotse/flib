@@ -15,7 +15,7 @@ The output of the simulation is a csv file with all the transactions.
 
 ## Accronyms and definitions
 * SAR: Suspicious Activity Report - accounts or transactions that are labeled as suspisious by the bank
-* SWISH: Swedish Instant Payment System - a payment system used in Sweden
+* SWISH: Swedish Instant Payment System - a mobile payment system used in Sweden
 * AML: Anti-Money Laundering - the process of detecting and preventing money laundering
 * Transaction: A SWISH transaction between two accounts
 * Income: A transaction from a source to and an account (not a SWISH transaction)
@@ -45,9 +45,9 @@ Dependencies: python3.7, java, maven
 5. In the simulation folder, create these files: conf.json, accounts.csv, normalModels.csv, alertPatterns.csv, degree.csv and transactionTypes.csv
 6. Specify the parameters in the files (see below)
 
-### Specify parameters (with examples)
+## Specify parameters (with examples)
 
-#### conf.json
+### conf.json
 The conf.json file contains parameters for the generel behaviour of the accounts and paths to the other files, the paths are relative to the conf.json file. A example looks like this:
 ```
 {
@@ -151,6 +151,18 @@ The mean and standard deviation of the number of steps between a bank change for
 **margin_ratio**
 
 The margin a SAR account takes when passing money through it. 
+
+### account.csv
+
+akjsbcak
+
+### normalModels.csv
+
+### alertPatterns.csv
+
+### degree.csv
+
+### transactionType.csv
 
 # Transaction Network Explorer
 
