@@ -161,7 +161,7 @@ The accounts.csv file contains the initial conditions for the accounts. It has t
 * **country**: (string) The country of the accounts. 
 * **business_type**: (string) The type of business of the accounts, OBS: currently only "I" is supported.
 * **bank**: (string) The bank of the accounts. Can be left blank. 
-Below is an example where 1000 accounts are generated in two banks with there different groups of inital balances:
+Below is an example where 1000 accounts are generated in two banks with there different groups of inital balances.
 ``` 
 count,min_balance,max_balance,country,business_type,bank
 200,1000,10000,SWE,I,bank_a
@@ -175,10 +175,27 @@ count,min_balance,max_balance,country,business_type,bank
 ### normalModels.csv
 
 normalModels.csv contains the normal transaction patterns of the accounts. It has the following columns:
-* **counts**: (int) The number of patterns to generate.
-* **type**: (string) The type of the pattern. Can be "single", "fan_out", "fan_in", "forward", "mutual" or "periodical". Se below for pattern definitions.
+* **count**: (int) The number of patterns to generate.
+* **type**: (string) The type of the pattern. Can be single, fan_out, fan_in, forward, mutual or periodical. Se below for pattern definitions.
 * **schedule_id**: (int) The id of the schedule to use for the pattern. Can be 0, 1, 2 or 3. Se below for schedule definitions.
 * **min_accounts, max_accounts**: (int) The minimum and maximum number of accounts in the pattern. The simulator will find subsets of accounts where the pattern fitts and sample from these. The number of subsets will depend on the min and max and on the structure of the network, defined in degree.csv. Some patterns has a fixed number of accounts, se pattern definition for more information.
+* **min_period, max_period**: (int) The minimum and maximum period of the pattern. The period is the number of steps for a pattern to complet. The period is sampled from a uniform distribution.
+* **bank_id**: (int) If specified, the patterns will only include accounts from that bank. If left blank, the patterns can include accounts from all banks.
+Below is an example where 2000 different patterns are generated with varying number of accounts and periods. Some patterns are restricted to a specific bank, while others can include several banks.
+```
+count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id
+100,single,2,2,1,84,bank_a
+100,fan_out,6,10,7,14,bank_a
+100,periodical,2,2,1,84,bank_a
+100,single,2,2,1,84,bank_b
+100,fan_in,6,8,21,21,bank_b
+100,periodical,2,2,1,84,bank_b
+100,forward,3,3,2,4,
+100,mutual,2,2,1,10,
+100,fan_out,12,16,28,56,
+100,fan_in,10,20,56,84
+```
+
 
 ### alertPatterns.csv
 
