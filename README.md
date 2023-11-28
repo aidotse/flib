@@ -118,17 +118,17 @@ The conf.json file contains parameters for the generel behaviour of the accounts
 
     The random seed is used to make the simulation reproducable.
 
-**simulation_name**
+* **simulation_name**
 
-The name of the simulation, used for naming the tmp and output folder.
+    The name of the simulation, used for naming the tmp and output folder.
 
-**total_steps**
+* **total_steps**
 
-The total number of steps in the simulation. Each step is one day, but could be vewied as some other time unit.
+    The total number of steps in the simulation. Each step is one day, but could be vewied as some other time unit.
 
-**min_amount, max_amount, mean_amount, std_amount, mean_amount_sar, std_amount_sar**
+* **min_amount, max_amount, mean_amount, std_amount, mean_amount_sar, std_amount_sar**
 
-The min and max amount of a transaction, and the mean and standard deviation of the truncated normal distribution used to sample the amount of a transaction. The distribution is truncated to zero and current blanace of the account. Mean and std are specifed for normal and SAR transactions.
+    The min and max amount of a transaction, and the mean and standard deviation of the truncated normal distribution used to sample the amount of a transaction. The distribution is truncated to zero and current blanace of the account. Mean and std are specifed for normal and SAR transactions.
 
 **prob_income, mean_income, std_income, prob_income_sar, mean_income_sar, std_income_sar**
 
