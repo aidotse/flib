@@ -178,30 +178,51 @@ normalModels.csv contains the normal transaction patterns of the accounts. It ha
 * **count**: (int) The number of patterns to generate.
 * **type**: (string) The type of the pattern. Can be single, fan_out, fan_in, forward, mutual or periodical. Se below for pattern definitions.
 * **schedule_id**: (int) The id of the schedule to use for the pattern. Can be 0, 1, 2 or 3. Se below for schedule definitions.
-* **min_accounts, max_accounts**: (int) The minimum and maximum number of accounts in the pattern. The simulator will find subsets of accounts where the pattern fitts and sample from these. The number of subsets will depend on the min and max and on the structure of the network, defined in degree.csv. Some patterns has a fixed number of accounts, se pattern definition for more information.
+* **min_accounts, max_accounts**: (int) The minimum and maximum number of accounts in the pattern. The simulator will find subsets of accounts where the pattern fits and sample from these. The number of subsets will depend on the min and max and on the structure of the network, defined in degree.csv. Some patterns has a fixed number of accounts, se pattern definition for more information.
 * **min_period, max_period**: (int) The minimum and maximum period of the pattern. The period is the number of steps for a pattern to complet. The period is sampled from a uniform distribution.
 * **bank_id**: (int) If specified, the patterns will only include accounts from that bank. If left blank, the patterns can include accounts from all banks.
 
 Below is an example where 2000 different patterns are generated with varying number of accounts and periods. Some patterns are restricted to a specific bank, while others can include several banks.
 ```
 count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id
-100,single,2,2,1,84,bank_a
-100,fan_in,6,8,21,21,bank_a
-100,fan_out,6,10,7,14,bank_a
-100,periodical,2,2,1,84,bank_a
-100,single,2,2,1,84,bank_b
-100,fan_in,6,8,21,21,bank_b
-100,fan_out,6,10,7,14,bank_b
-100,periodical,2,2,1,84,bank_b
-300,forward,3,3,2,4,
-300,mutual,2,2,1,10,
-300,fan_out,12,16,28,56,
-300,fan_in,10,20,56,84
+100,single,0,2,2,1,84,bank_a
+100,fan_in,1,6,8,21,21,bank_a
+100,fan_out,2,6,10,7,14,bank_a
+100,periodical,3,2,2,1,84,bank_a
+100,single,0,2,2,1,84,bank_b
+100,fan_in,1,6,8,21,21,bank_b
+100,fan_out,2,6,10,7,14,bank_b
+100,periodical,3,2,2,1,84,bank_b
+300,forward,2,3,3,2,4,
+300,mutual,2,2,2,1,10,
+300,fan_out,2,12,16,28,56,
+300,fan_in,2,10,20,56,84
 ```
 
-
 ### alertPatterns.csv
+alertPatterns.csv contains the suspisious transaction patterns of the accounts. In contrast to normal models, the alert patterns will be place on top of the normal model transaction network. First the normal models will build a graph according to the degree.csv. Alert patterns will then be add into the graph, completly ignoring the degree.csv file. See (TODO: add section that clarifies this) for more information. alertPatterns.csv has the following columns:
+* **count**: (int) The number of patterns to generate.
+* **type**: (string) The type of the pattern. Can be fan_out, fan_in, cycle, random, bipartite, stack, gather_scatter or scatter_gather. Se below for pattern definitions.
+* **schedule_id**: (int) The id of the schedule to use for the pattern. Can be 0, 1, 2 or 3. Se below for schedule definitions.
+* **min_accounts, max_accounts**: (int) The minimum and maximum number of accounts in the pattern sampled from a uniform distribution. Some patterns has a minumum number of accounts, se pattern definition for more information. 
+* **min_amount, max_amount**: (int) OBS: not used! 
+* **min_period, max_period**: (int) The minimum and maximum period of the pattern. The period is the number of steps for a pattern to complet. The period is sampled from a uniform distribution.
+* **bank_id**: (int) If specified, the patterns will only include accounts from that bank. If left blank, the patterns can include accounts from all banks.
+* **is_sar**: (string) Can be true or false. If true, the pattern will be labeled as suspisious. If false, the pattern will be labeled as normal.
+* **source_type**: (string) Can be CASH or TRANSFER. See (TODO: add section that clarifies this) for more information.
 
+Below is an example with 8 alert patterns:
+```
+count,type,schedule_id,min_accounts,max_accounts,min_amount,max_amount,min_period,max_period,bank_id,is_sar,source_type
+1,fan_out,2,7,14,100,1000,1,168,bank_a,True,CASH
+1,fan_in,2,14,28,100,1000,1,168,bank_b,True,TRANSFER
+1,cycle,2,7,7,100,1000,1,168,,True,TRANSFER
+1,random,2,7,7,100,1000,1,168,,True,CASH
+1,bipartite,2,7,7,100,1000,1,168,,True,TRANSFER
+1,stack,2,7,7,100,1000,1,168,,True,TRANSFER
+1,gather_scatter,2,7,7,100,1000,1,168,,True,CASH
+1,scatter_gather,2,7,7,100,1000,1,168,,True,CASH
+```
 ### degree.csv
 
 ### transactionType.csv
