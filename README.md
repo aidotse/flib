@@ -214,16 +214,34 @@ alertPatterns.csv contains the suspisious transaction patterns of the accounts. 
 Below is an example with 8 alert patterns:
 ```
 count,type,schedule_id,min_accounts,max_accounts,min_amount,max_amount,min_period,max_period,bank_id,is_sar,source_type
-1,fan_out,2,7,14,100,1000,1,168,bank_a,True,CASH
-1,fan_in,2,14,28,100,1000,1,168,bank_b,True,TRANSFER
-1,cycle,2,7,7,100,1000,1,168,,True,TRANSFER
-1,random,2,7,7,100,1000,1,168,,True,CASH
-1,bipartite,2,7,7,100,1000,1,168,,True,TRANSFER
-1,stack,2,7,7,100,1000,1,168,,True,TRANSFER
-1,gather_scatter,2,7,7,100,1000,1,168,,True,CASH
-1,scatter_gather,2,7,7,100,1000,1,168,,True,CASH
+1,fan_out,2,10,20,100,1000,14,28,bank_a,True,CASH
+1,fan_in,2,110,20,100,1000,14,28,bank_b,True,TRANSFER
+1,cycle,2,10,20,100,1000,14,28,,True,TRANSFER
+1,random,2,10,20,100,1000,14,28,,True,CASH
+1,bipartite,2,10,20,100,1000,14,28,,True,TRANSFER
+1,stack,2,10,20,100,1000,14,28,,True,TRANSFER
+1,gather_scatter,2,10,20,100,1000,14,28,,True,CASH
+1,scatter_gather,2,10,20,100,1000,14,28,,True,CASH
 ```
+
 ### degree.csv
+The degree.csv file defines the structure of the transaction network. It has the following columns:
+* **count**: (int) The number of nodes, aka accounts.
+* **In-degree**: (int) The in-degree of the nodes.
+* **Out-degree**: (int) The out-degree of the nodes.
+The graph needs to be complet, i.e. the sum of the in-degree and out-degree of all nodes needs to be equal. Further, the total count needs to be equal to the number of accounts in the accounts.csv file. Below is an example for a graph with 1000 nodes. 
+```
+count,In-degree,Out-degree
+512,10,10
+256,20,20
+128,30,30
+64,40,40
+32,50,50
+16,60,60
+8,70,70
+4,80,80
+2,90,90
+```
 
 ### transactionType.csv
 
