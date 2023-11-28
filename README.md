@@ -10,6 +10,7 @@ This is the repsitory for all the code in the project.
 AMLsim is a simulator for generating transaction networks used in anti-money laundering research. It is based on the simulator by IBM (TODO: add link) and is extended to utilize distributions and model behavioural features. This version is designed to generate SWISH data of personal accounts. It can simulate income and outcome for accounts, as well as known transactions patterns of normal and suspisious behaviour. In short, it has two parts: a python part for generating the transaction network and a java part for simulating the behaviour of the agents. The simulation is controlled by 6 parameter files:
 * 1 json file, which defines behviours of accounts and some paths varibles used during the simulation. 
 * 5 csv files, which defines some inital condtions and together defines the structure of the transaction network.
+
 The output of the simulation is a csv file with all the transactions.
 
 ## Dependencies
@@ -39,8 +40,72 @@ Dependencies: python3.7, java, maven
 ### Specify parameters (with examples)
 
 #### conf.json
-
-
+The conf.json file contains parameters for the generel behaviour of the accounts and paths to the other files, the paths are relative to the conf.json file. A example looks like this:
+```
+{
+  "general": {
+    "random_seed": 0,
+    "simulation_name": "simulation1",
+    "total_steps": 86
+  },
+  "default": {
+    "min_amount": 1,
+    "max_amount": 150000,
+    "mean_amount": 637,
+    "std_amount": 1000,
+    "mean_amount_sar": 2000,
+    "std_amount_sar": 1000,
+    "prob_income": 0.05,
+    "mean_income": 500.0,
+    "std_income": 1000.0,
+    "prob_income_sar": 0.05,
+    "mean_income_sar": 500.0,
+    "std_income_sar": 1000.0,
+    "mean_outcome": 200.0,
+    "std_outcome": 500.0,
+    "mean_outcome_sar": 200.0,
+    "std_outcome_sar": 500.0,
+    "mean_phone_change_frequency": 1460,
+    "std_phone_change_frequency": 365,
+    "mean_phone_change_frequency_sar": 365,
+    "std_phone_change_frequency_sar": 182,
+    "mean_bank_change_frequency": 1460,
+    "std_bank_change_frequency": 365,
+    "mean_bank_change_frequency_sar": 365,
+    "std_bank_change_frequency_sar": 182,
+    "margin_ratio": 0.1
+  },
+  "input": {
+    "directory": "paramFiles/simulation1",
+    "schema": "schema.json",
+    "accounts": "accounts.csv",
+    "alert_patterns": "alertPatterns.csv",
+    "normal_models": "normalModels.csv",
+    "degree": "degree.csv",
+    "transaction_type": "transactionType.csv",
+    "is_aggregated_accounts": true
+  },
+  "temporal": {
+    "directory": "tmp",
+    "transactions": "transactions.csv",
+    "accounts": "accounts.csv",
+    "alert_members": "alert_members.csv",
+    "normal_models": "normal_models.csv"
+  },
+  "output": {
+    "directory": "outputs",
+    "transaction_log": "tx_log.csv"
+  },
+  "graph_generator": {
+    "degree_threshold": 1
+  },
+  "simulator": {
+    "transaction_limit": 100000,
+    "transaction_interval": 7,
+    "sar_interval": 7
+  }
+}
+```
 # Transaction Network Explorer
 
 # Federated Learning
