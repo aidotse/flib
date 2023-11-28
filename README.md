@@ -1,10 +1,15 @@
 # FLIB: Federated Learning in Banking
 
-** OBS: under construction, most code dont run right away... **
+**OBS: under construction!**
 
 This is the repsitory for all the code in the project.
 
-## Currently containing
+**Currently containing**
+* AMLsim: A simulator for generating transaction networks used in anti-money laundering research.
+* transaction-network-explorer: A tool for exploring transaction networks.
+* federated-learning: A framework for training a model on a distributed dataset.
+* gnn: graph neural network models for transaction networks.
+* tab-ddpm: A ml model for generating sythetic tabular data.* 
 
 # AMLsim
 AMLsim is a simulator for generating transaction networks used in anti-money laundering research. It is based on the simulator by IBM (TODO: add link) and is extended to utilize distributions and model behavioural features. This version is designed to generate SWISH data of personal accounts. It can simulate income and outcome for accounts, as well as known transactions patterns of normal and suspisious behaviour. In short, it has two parts: a python part for generating the transaction network and a java part for simulating the behaviour of the agents. The simulation is controlled by 6 parameter files:
@@ -245,7 +250,6 @@ count,In-degree,Out-degree
 ```
 
 ### transactionType.csv
-
 transactionType.csv defines avalible transaction types. OBS: CURRENTLY ONLY ONE TYPE IS IMPLEMENTED! It has the following columns:
 * **Type**: (string) The type of the transaction. Can only be TRANSFER. 
 * **Frequency**: (int) The frequency of the transaction type used in the transaction network.
@@ -254,6 +258,10 @@ Write this in the transactionType.csv file:
 Type,Frequency
 TRANSFER,1
 ```
+
+## Pattern definitions
+
+## Schedule definitions
 
 # Transaction Network Explorer
 
