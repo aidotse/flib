@@ -265,10 +265,10 @@ TRANSFER,1
 
 ## Schedule definitions
 The schedual id is used to specify how a pattern will occur in the temporal dimension. A pattern with more the one transaction can happen over several steps, and there could be a temporal pattern in how the transactions are placed. The schedule id is used to specify this pattern. Below is the four different schedules:
-* **Fixed interval**: id: 0. Each transactions in the pattern will occur after one and the other with the fixed interval specified in the conf.json file. 
-* **Random interval**: id: 1. A random interval will be generated, uniformly from zero to the biggest possible interval where the pattern fits in its maximum period. Each transactions in the pattern will then occur after one and the other with this interval. 
-* **Unorderd**: id: 2. The transactions in the pattern will be placed in a random order over the period of the pattern.
-* **Simultaneous**: id: 3. All transactions in the pattern will occur at the same step.
+* **Fixed interval**: id = 0. Each transactions in the pattern will occur after one and the other with the fixed interval specified in the conf.json file. 
+* **Random interval**: id = 1. A random interval will be generated, uniformly from zero to the biggest possible interval where the pattern fits in its maximum period. Each transactions in the pattern will then occur after one and the other with this interval. 
+* **Unorderd**: id = 2. The transactions in the pattern will be placed in a random order over the period of the pattern.
+* **Simultaneous**: id = 3. All transactions in the pattern will occur at the same step.
 
 # Transaction Network Explorer
 
