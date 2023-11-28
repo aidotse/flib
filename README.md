@@ -270,9 +270,3 @@ The schedual id is used to specify how a pattern will occur in the temporal dime
 * **Random interval**: id = 1. A random interval will be generated, uniformly from zero to the biggest possible interval where the pattern fits in its maximum period. Each transactions in the pattern will then occur after one and the other with this interval. 
 * **Unorderd**: id = 2. The transactions in the pattern will be placed in a random order over the period of the pattern.
 * **Simultaneous**: id = 3. All transactions in the pattern will occur at the same step.
-
-# Transaction Network Explorer
-
-# Federated Learning
-
-# TabDDPM
