@@ -235,6 +235,7 @@ The degree.csv file defines the structure of the transaction network. It has the
 * **count**: (int) The number of nodes, aka accounts.
 * **In-degree**: (int) The in-degree of the nodes.
 * **Out-degree**: (int) The out-degree of the nodes.
+
 The graph needs to be complet, i.e. the sum of the in-degree and out-degree of all nodes needs to be equal. Further, the total count needs to be equal to the number of accounts in the accounts.csv file. Below is an example for a graph with 1000 nodes. 
 ```
 count,In-degree,Out-degree
@@ -253,6 +254,7 @@ count,In-degree,Out-degree
 transactionType.csv defines avalible transaction types. OBS: CURRENTLY ONLY ONE TYPE IS IMPLEMENTED! It has the following columns:
 * **Type**: (string) The type of the transaction. Can only be TRANSFER. 
 * **Frequency**: (int) The frequency of the transaction type used in the transaction network.
+
 Write this in the transactionType.csv file:
 ```
 Type,Frequency
@@ -262,6 +264,11 @@ TRANSFER,1
 ## Pattern definitions
 
 ## Schedule definitions
+The schedual id is used to specify how a pattern will occur in the temporal dimension. A pattern with more the one transaction can happen over several steps, and there could be a temporal pattern in how the transactions are placed. The schedule id is used to specify this pattern. Below is the four different schedules:
+* **Fixed interval**: id: 0. Each transactions in the pattern will occur after one and the other with the fixed interval specified in the conf.json file. 
+* **Random interval**: id: 1. A random interval will be generated, uniformly from zero to the biggest possible interval where the pattern fits in its maximum period. Each transactions in the pattern will then occur after one and the other with this interval. 
+* **Unorderd**: id: 2. The transactions in the pattern will be placed in a random order over the period of the pattern.
+* **Simultaneous**: id: 3. All transactions in the pattern will occur at the same step.
 
 # Transaction Network Explorer
 
