@@ -114,9 +114,9 @@ The conf.json file contains parameters for the generel behaviour of the accounts
   }
 }
 ```
-**random_seed**
+* **random_seed**
 
-The random seed is used to make the simulation reproducable.
+    The random seed is used to make the simulation reproducable.
 
 **simulation_name**
 
