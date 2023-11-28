@@ -115,24 +115,42 @@ The conf.json file contains parameters for the generel behaviour of the accounts
 }
 ```
 **random_seed**
+
 The random seed is used to make the simulation reproducable.
 
 **simulation_name**
+
 The name of the simulation, used for naming the tmp and output folder.
 
 **total_steps**
+
 The total number of steps in the simulation. Each step is one day, but could be vewied as some other time unit.
 
 **min_amount, max_amount, mean_amount, std_amount, mean_amount_sar, std_amount_sar**
+
 The min and max amount of a transaction, and the mean and standard deviation of the truncated normal distribution used to sample the amount of a transaction. The distribution is truncated to zero and current blanace of the account. Mean and std are specifed for normal and SAR transactions.
 
 **prob_income, mean_income, std_income, prob_income_sar, mean_income_sar, std_income_sar**
+
 The probability for an account to recive income on a given step, and the mean and standard deviation of the truncated normal distribution used to sample the amount of the income.Mean and std are specifed for normal and SAR transactions.
 
 **mean_outcome, std_outcome, mean_outcome_sar, std_outcome_sar**
+
 The mean and standard deviation of the truncated normal distribution used to sample the amount of the outcome. Mean and std are specifed for normal and SAR transactions. The probability of an outcome in step $i$ is calculated from a sigmoid function: $p_i = 1 / (1 + e^{-x_i})$ where 
 $$x_i = \left( b_i - \frac{1}{N}\sum_{j=i-N}^{i} b_j  \right) \text{\huge/} \frac{1}{N}\sum_{j=i-N}^{i} b_j$$
 and $b_i$ is the balance of the account in step $i$ and $N$ is the number of steps in the past to consider.
+
+**mean_phone_change_frequency, std_phone_change_frequency, mean_phone_change_frequency_sar, std_phone_change_frequency_sar**
+
+The mean and standard deviation of the number of steps between a phone number change for an account. Mean and std are specifed for normal and SAR transactions. 
+
+**mean_bank_change_frequency, std_bank_change_frequency, mean_bank_change_frequency_sar, std_bank_change_frequency_sar**
+
+The mean and standard deviation of the number of steps between a bank change for an account. Mean and std are specifed for normal and SAR transactions.
+
+**margin_ratio**
+
+The margin a SAR account takes when passing money through it. 
 
 # Transaction Network Explorer
 
