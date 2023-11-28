@@ -160,7 +160,8 @@ The accounts.csv file contains the initial conditions for the accounts. It has t
 * **min_balance, max_balance**: (int) The minimum and maximum inital balance of the accounts. The inital balance is sampled from a uniform distribution.
 * **country**: (string) The country of the accounts. 
 * **business_type**: (string) The type of business of the accounts, OBS: currently only "I" is supported.
-* **bank**: (string) The bank of the accounts. Can be left blank. 
+* **bank**: (string) The bank of the accounts.
+
 Below is an example where 1000 accounts are generated in two banks with there different groups of inital balances.
 ``` 
 count,min_balance,max_balance,country,business_type,bank
@@ -244,6 +245,15 @@ count,In-degree,Out-degree
 ```
 
 ### transactionType.csv
+
+transactionType.csv defines avalible transaction types. OBS: CURRENTLY ONLY ONE TYPE IS IMPLEMENTED! It has the following columns:
+* **Type**: (string) The type of the transaction. Can only be TRANSFER. 
+* **Frequency**: (int) The frequency of the transaction type used in the transaction network.
+Write this in the transactionType.csv file:
+```
+Type,Frequency
+TRANSFER,1
+```
 
 # Transaction Network Explorer
 
