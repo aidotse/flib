@@ -130,8 +130,8 @@ The min and max amount of a transaction, and the mean and standard deviation of 
 The probability for an account to recive income on a given step, and the mean and standard deviation of the truncated normal distribution used to sample the amount of the income.Mean and std are specifed for normal and SAR transactions.
 
 ##### mean_outcome, std_outcome, mean_outcome_sar, std_outcome_sar
-The mean and standard deviation of the truncated normal distribution used to sample the amount of the outcome. Mean and std are specifed for normal and SAR transactions. The probability of an outcome calculated form a sigmoid function: 
-$$p_i = sigmoid( 1/N \sum_{j=i-N}^{i} balance_j )$$
+The mean and standard deviation of the truncated normal distribution used to sample the amount of the outcome. Mean and std are specifed for normal and SAR transactions. The probability of an outcome calculated form a sigmoid function: $p_i = \text{sigmoid}(x)$ where 
+$$x = \left( \frac{1}{N}\sum_{j=i-N}^{i}balance_j - balance_i \right) / \frac{1}{N}\sum_{j=i-N}^{i}balance_j$$
 
 # Transaction Network Explorer
 
