@@ -48,6 +48,7 @@ Dependencies: python3.7, java, maven
 ## Specify parameters (with examples)
 
 ### conf.json
+
 The conf.json file contains parameters for the generel behaviour of the accounts and paths to the other files, the paths are relative to the conf.json file. A example looks like this:
 ```
 {
@@ -153,6 +154,7 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     The margin a SAR account takes when passing money through it. 
 
 ### account.csv
+
 The accounts.csv file contains the initial conditions for the accounts. It has the following columns:
 * **count**: (int) The number of accounts to generate.
 * **min_balance, max_balance**: (int) The minimum and maximum inital balance of the accounts. The inital balance is sampled from a uniform distribution.
@@ -171,6 +173,12 @@ count,min_balance,max_balance,country,business_type,bank
 ```
 
 ### normalModels.csv
+
+normalModels.csv contains the normal transaction patterns of the accounts. It has the following columns:
+* **counts**: (int) The number of patterns to generate.
+* **type**: (string) The type of the pattern. Can be "single", "fan_out", "fan_in", "forward", "mutual" or "periodical". Se below for pattern definitions.
+* **schedule_id**: (int) The id of the schedule to use for the pattern. Can be 0, 1, 2 or 3. Se below for schedule definitions.
+* **min_accounts, max_accounts**: (int) The minimum and maximum number of accounts in the pattern. The simulator will find subsets of accounts where the pattern fitts and sample from these. The number of subsets will depend on the min and max and on the structure of the network, defined in degree.csv. Some patterns has a fixed number of accounts, se pattern definition for more information.
 
 ### alertPatterns.csv
 
