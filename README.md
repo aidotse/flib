@@ -261,6 +261,18 @@ Type,Frequency
 TRANSFER,1
 ```
 
+## Run
+
+### Alternative 1: Docker
+Run the docker image with the following command:
+```
+docker run -v /path/to/paramFiles:/app/paramFiles -v /path/to/outputs:/app/outputs thecoldice/amlsim:latest /path/to/conf.json
+```
+
+### Alternative 2: Manual
+1. Run the python script: `python scripts/transaction_graph_generator.py /path/to/conf.json`
+2. Run the java program: `java -jar target/AMLSim-1.0-SNAPSHOT.jar /path/to/conf.json` (unclear if this is will work...)
+
 ## Pattern definitions
 To be added.
 
@@ -270,3 +282,4 @@ The schedual id is used to specify how a pattern will occur in the temporal dime
 * **Random interval**: id = 1. A random interval will be generated, uniformly from zero to the biggest possible interval where the pattern fits in its maximum period. Each transactions in the pattern will then occur after one and the other with this interval. 
 * **Unorderd**: id = 2. The transactions in the pattern will be placed in a random order over the period of the pattern.
 * **Simultaneous**: id = 3. All transactions in the pattern will occur at the same step.
+
