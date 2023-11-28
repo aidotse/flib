@@ -186,15 +186,17 @@ Below is an example where 2000 different patterns are generated with varying num
 ```
 count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id
 100,single,2,2,1,84,bank_a
+100,fan_in,6,8,21,21,bank_a
 100,fan_out,6,10,7,14,bank_a
 100,periodical,2,2,1,84,bank_a
 100,single,2,2,1,84,bank_b
 100,fan_in,6,8,21,21,bank_b
+100,fan_out,6,10,7,14,bank_b
 100,periodical,2,2,1,84,bank_b
-100,forward,3,3,2,4,
-100,mutual,2,2,1,10,
-100,fan_out,12,16,28,56,
-100,fan_in,10,20,56,84
+300,forward,3,3,2,4,
+300,mutual,2,2,1,10,
+300,fan_out,12,16,28,56,
+300,fan_in,10,20,56,84
 ```
 
 
