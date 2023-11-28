@@ -153,8 +153,13 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     The margin a SAR account takes when passing money through it. 
 
 ### account.csv
-
-akjsbcak
+The accounts.csv file contains the initial conditions for the accounts. It has the following columns:
+* **count**: (int) The number of accounts to generate.
+* **min_balance**: (int) The minimum inital balance of the accounts.
+* **max_balance**: (int) The maximum inital balance of the accounts.
+* **country**: (string) The country of the accounts. 
+* **business_type**: (string) The type of business of the accounts, OBS: currently only "I" is supported.
+* **bank**: (string) The bank of the accounts. Can be left blank. 
 
 ### normalModels.csv
 
