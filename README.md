@@ -181,6 +181,7 @@ normalModels.csv contains the normal transaction patterns of the accounts. It ha
 * **min_accounts, max_accounts**: (int) The minimum and maximum number of accounts in the pattern. The simulator will find subsets of accounts where the pattern fitts and sample from these. The number of subsets will depend on the min and max and on the structure of the network, defined in degree.csv. Some patterns has a fixed number of accounts, se pattern definition for more information.
 * **min_period, max_period**: (int) The minimum and maximum period of the pattern. The period is the number of steps for a pattern to complet. The period is sampled from a uniform distribution.
 * **bank_id**: (int) If specified, the patterns will only include accounts from that bank. If left blank, the patterns can include accounts from all banks.
+
 Below is an example where 2000 different patterns are generated with varying number of accounts and periods. Some patterns are restricted to a specific bank, while others can include several banks.
 ```
 count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id
