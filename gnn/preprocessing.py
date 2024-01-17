@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 import os
+import multiprocessing as mp
 
 def load_data(path:str) -> pd.DataFrame:
     df = pd.read_csv(path)
@@ -37,9 +39,11 @@ def get_nodes(df:pd.DataFrame) -> pd.DataFrame:
     nodes = cal_node_features(df)
     return nodes
 
-def get_edges(df:pd.DataFrame) -> pd.DataFrame:
-    edges = df[['nameOrig', 'nameDest']].rename(columns={'nameOrig': 'src', 'nameDest': 'dst'})
-    edges.drop_duplicates(inplace=True)
+def get_edges(df:pd.DataFrame, aggregated:bool=True, directional:bool=False) -> pd.DataFrame:
+    if aggregated:
+        edges = cal_edge_features(df, directional)
+    elif not aggregated:
+        edges = df[['step', 'nameOrig', 'nameDest', 'amount', 'isSAR']].rename(columns={'step': 't', 'nameOrig': 'src', 'nameDest': 'dst', 'isSAR': 'is_sar'})
     return edges
     
 def cal_node_features(df:pd.DataFrame) -> pd.DataFrame:
@@ -48,25 +52,70 @@ def cal_node_features(df:pd.DataFrame) -> pd.DataFrame:
     df2['amount'] = df2['amount'] * -1
     df = pd.concat([df1, df2])
     gb = df.groupby(['account'])
-    sums = gb['amount'].sum()
-    means = gb['amount'].mean()
-    medians = gb['amount'].median()
-    stds = gb['amount'].std().fillna(0.0)
-    maxs = gb['amount'].max()
-    mins = gb['amount'].min()
-    in_degrees = gb['amount'].apply(lambda x: (x>0).sum())
-    out_degrees = gb['amount'].apply(lambda x: (x<0).sum())
-    unique_in_degrees = gb.apply(lambda x: x[x['amount']>0]['counterpart'].nunique())
-    unique_out_degrees = gb.apply(lambda x: x[x['amount']<0]['counterpart'].nunique())
-    y = gb['is_sar'].max()
-    df = pd.concat([sums, means, medians, stds, maxs, mins, in_degrees, out_degrees, unique_in_degrees, unique_out_degrees, y], axis=1)
-    df.columns = [f'x{i}' for i in range(1, 11)] + ['y']
+    sums = gb['amount'].sum().rename('sum')
+    means = gb['amount'].mean().rename('mean')
+    medians = gb['amount'].median().rename('median')
+    stds = gb['amount'].std().fillna(0.0).fillna(0.0).rename('std') 
+    maxs = gb['amount'].max().rename('max')
+    mins = gb['amount'].min().rename('min')
+    in_degrees = gb['amount'].apply(lambda x: (x>0).sum()).rename('in_degree')
+    out_degrees = gb['amount'].apply(lambda x: (x<0).sum()).rename('out_degree')
+    n_unique_in = gb.apply(lambda x: x[x['amount']>0]['counterpart'].nunique()).rename('n_unique_in')
+    n_unique_out = gb.apply(lambda x: x[x['amount']<0]['counterpart'].nunique()).rename('n_unique_out')
+    is_sar = gb['is_sar'].max().rename('is_sar')
+    df = pd.concat([sums, means, medians, stds, maxs, mins, in_degrees, out_degrees, n_unique_in, n_unique_out, is_sar], axis=1)
     return df
 
-def cal_label(df:pd.DataFrame) -> pd.DataFrame:
-    gb = df.groupby(['account'])
-    is_sar = gb['is_sar'].max().to_frame()
-    return is_sar
+def cal_edge_features(df:pd.DataFrame, directional:bool=False) -> pd.DataFrame:
+    df = df[['step', 'nameOrig', 'nameDest', 'amount', 'isSAR']].rename(columns={'nameOrig': 'src', 'nameDest': 'dst', 'isSAR': 'is_sar'})
+    if not directional:
+        df[['src', 'dst']] = np.sort(df[['src', 'dst']], axis=1)
+    gb = df.groupby(['src', 'dst'])
+    sums = gb['amount'].sum().rename('sum')
+    means = gb['amount'].mean().rename('mean')
+    medians = gb['amount'].median().rename('median')
+    stds = gb['amount'].std().fillna(0.0).rename('std') 
+    maxs = gb['amount'].max().rename('max')
+    mins = gb['amount'].min().rename('min')
+    counts = gb['amount'].count().rename('count')
+    is_sar = gb['is_sar'].max().rename('is_sar')
+    df = pd.concat([sums, means, medians, stds, maxs, mins, counts, is_sar], axis=1)
+    df.reset_index(inplace=True)          
+    return df
+
+def compare(input:tuple) -> tuple:
+    name, df = input
+    n_rows = df.shape[0]
+    columns = df.columns[1:].to_list()
+    anomalies = {column: 0.0 for column in columns}
+    for column in columns:
+        for row in range(n_rows):
+            value = df.iloc[row, :][column]
+            df_tmp = df.drop(df.index[row])
+            tenth_percentile = df_tmp[column].quantile(0.05)
+            ninetieth_percentile = df_tmp[column].quantile(0.95)
+            if value < tenth_percentile or value > ninetieth_percentile:
+                anomalies[column] += 1 / n_rows
+    return name[0], anomalies
+
+def compare_mp(df:pd.DataFrame, n_workers:int=mp.cpu_count()) -> list[tuple]:
+    dfs = list(df.groupby(['account']))
+    with mp.Pool(processes=n_workers) as pool:
+        results = pool.map(compare, dfs)
+    return results
+
+def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> pd.DataFrame:
+    if range:
+        df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
+    df = df.loc[df['counterpart']==-2]
+    df['interval_group'] = df['step'] // interval
+    df['amount'] = df['amount'].abs()
+    gb = df.groupby(['account', 'interval_group'])
+    df_bundled = pd.concat([gb['amount'].sum().rename('volume'), gb['amount'].count().rename('count')], axis=1).reset_index().drop(columns=['interval_group'])
+    list_spending_behavior = compare_mp(df_bundled)
+    list_spending_behavior = [(name, d['volume'], d['count']) for name, d in list_spending_behavior]
+    df_speding_behavior = pd.DataFrame(list_spending_behavior, columns=['account', 'volume', 'count'])
+    return df_speding_behavior
 
 def main():
     DATASET = '1bank'
@@ -80,24 +129,25 @@ def main():
         split_step = (df_bank['step'].max() - df_bank['step'].min()) * (1 - test_size) + df_bank['step'].min()
         
         df_bank_train = df_bank[df_bank['step'] <= split_step]
-        df_bank_test = df_bank[df_bank['step'] > split_step]
+        df_bank_test = df_bank #[df_bank['step'] > split_step]
         
         df_nodes_train = get_nodes(df_bank_train)
-        df_edges_train = get_edges(df_bank_train)
+        df_edges_train = get_edges(df_bank_train, aggregated=True, directional=False)
         df_nodes_test = get_nodes(df_bank_test)
-        df_edges_test = get_edges(df_bank_test)
+        df_edges_test = get_edges(df_bank_test, aggregated=True, directional=False)
         
         df_nodes_test.reset_index(inplace=True)
         node_to_index = pd.Series(df_nodes_test.index, index=df_nodes_test['account']).to_dict()
         df_edges_test['src'] = df_edges_test['src'].map(node_to_index)
         df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
+        df_nodes_test.drop(columns=['account'], inplace=True)
         
         os.makedirs(f'data/{DATASET}/{bank}/trainset', exist_ok=True)
         os.makedirs(f'data/{DATASET}/{bank}/testset', exist_ok=True)
         
-        df_nodes_train.to_csv(f'data/{DATASET}/{bank}/trainset/nodes.csv')
+        df_nodes_train.to_csv(f'data/{DATASET}/{bank}/trainset/nodes.csv', index=False)
         df_edges_train.to_csv(f'data/{DATASET}/{bank}/trainset/edges.csv', index=False)
-        df_nodes_test.to_csv(f'data/{DATASET}/{bank}/testset/nodes.csv')
+        df_nodes_test.to_csv(f'data/{DATASET}/{bank}/testset/nodes.csv', index=False)
         df_edges_test.to_csv(f'data/{DATASET}/{bank}/testset/edges.csv', index=False)
 
 if __name__ == "__main__":
