@@ -72,12 +72,6 @@ public class FanInTypology extends AMLTypology {
             }
         }
 
-        System.out.println("fan-in");
-        for (int i = 0; i < numOrigs; i++) {
-            System.out.print(steps[i] + " ");
-        }
-        System.out.println(" ");
-
         // Set transaction amounts
         amounts = new double[numOrigs];
         for (int i = 0; i < numOrigs; i++) {

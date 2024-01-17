@@ -11,7 +11,24 @@ MAX_HEAP=4g
 
 CONF_JSON=$1
 
+# get directory name from conf.json
+DIR=$(jq -r '.input.directory' "${CONF_JSON}")
+
+# get degree distribution file from conf.json
+DEGREE=$(jq -r '.input.degree' "${CONF_JSON}")
+
+# check if degree distribution file exists
+if [[ ! -f "${DIR}/${DEGREE}" ]]; then
+    echo "degree distribution file not found: ${DIR}/${DEGREE}"
+    echo "creating degree distribution file..."
+    # create degree distribution file
+    python3 scripts/generate_scalefree.py "${CONF_JSON}"
+    echo "done"
+fi
+
+echo "generating transaction graph..."
 python3 scripts/transaction_graph_generator.py "${CONF_JSON}"
+echo "done"
 
 if ! command -v mvn
 then

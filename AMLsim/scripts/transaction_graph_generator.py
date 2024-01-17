@@ -1569,8 +1569,8 @@ if __name__ == "__main__":
     argv = sys.argv
     
     # debug: 
-    PARAM_FILES = '1bank'
-    argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
+    # PARAM_FILES = '1bank'
+    # argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
     
     argc = len(argv)
     if argc < 2:

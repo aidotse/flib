@@ -64,15 +64,6 @@ public class GatherScatterTypology extends AMLTypology {
         for (int i = 1; i < numBeneMembers; i++) {
             scatterSteps[i] = getRandomStepRange(middleStep + 1, endStep);
         }
-        
-        System.out.println("gather-scatter");
-        for (int i = 0; i < numOrigMembers; i++) {
-            System.out.print(gatherSteps[i] + " ");
-        }
-        for (int i = 0; i < numBeneMembers; i++) {
-            System.out.print(scatterSteps[i] + " ");
-        }
-        System.out.println(" ");
 
         // Set transactions amounts
         amounts = new double[numOrigMembers];

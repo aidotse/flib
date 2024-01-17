@@ -135,11 +135,6 @@ public class StackTypology extends AMLTypology {
 			}
             start = end;
         }
-        System.out.println("stacked");
-        for (int i = 0; i < numTxs; i++) {
-            System.out.print(steps[i] + " ");
-        }
-        System.out.println(" ");
 
         // Set transaction amounts
         amounts = new double[numTxs];

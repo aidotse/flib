@@ -79,11 +79,6 @@ public class BipartiteTypology extends AMLTypology {
             long step = generateFromInterval(range) + this.startStep;
             Arrays.fill(steps, step);
         }
-        System.out.println("bipartite");
-        for (int i = 0; i < numTxs; i++) {
-            System.out.print(steps[i] + " ");
-        }
-        System.out.println(" ");
 
         // Set transaction amounts
         amounts = new double[numTxs];

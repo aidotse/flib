@@ -8,9 +8,9 @@
     "min_amount": 1,
     "max_amount": 150000,
     "mean_amount": 637,
-    "std_amount": 200,
-    "mean_amount_sar": 2000,
-    "std_amount_sar": 200,
+    "std_amount": 500,
+    "mean_amount_sar": 1000,
+    "std_amount_sar": 500,
     "prob_income": 0.0,
     "mean_income": 0.0,
     "std_income": 0.0,
@@ -29,7 +29,8 @@
     "std_bank_change_frequency": 1,
     "mean_bank_change_frequency_sar": 1460,
     "std_bank_change_frequency_sar": 1,
-    "margin_ratio": 0.1
+    "margin_ratio": 0.1,
+    "gamma": 2.0
   },
   "input": {
     "directory": "paramFiles/1bank",

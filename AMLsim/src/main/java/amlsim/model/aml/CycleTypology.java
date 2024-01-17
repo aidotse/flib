@@ -79,12 +79,6 @@ public class CycleTypology extends AMLTypology {
             }
             Arrays.sort(steps); // TODO: should be unordered?
         }
-
-        System.out.println("cycle");
-        for (int i = 0; i < length; i++) {
-            System.out.print(steps[i] + " ");
-        }
-        System.out.println(" ");
         
         // Set transaction amount
         TargetedTransactionAmount transactionAmount= new TargetedTransactionAmount(100000, random, true); // TODO: Handle max illicit fund init 
