@@ -9,6 +9,7 @@ import csv
 import sys
 import json
 import os
+from scipy import stats
 
 def kronecker_generator(scale, edge_factor):
     """Kronecker graph generator
@@ -97,11 +98,23 @@ def get_edge_factor(conf_file):
         edge_factor = conf["default"]["edge_factor"]
     return edge_factor
 
-def get_gamma(conf_file):
+def get_scale_free_params(conf_file):
     with open(conf_file, "r") as rf:
         conf = json.load(rf)
-        gamma = conf["default"]["gamma"]
-    return gamma
+        scale_free_params = conf["scale-free"]
+        if "gamma" in scale_free_params:
+            gamma = scale_free_params["gamma"]
+        else:
+            gamma = 2.0
+        if "loc" in scale_free_params:
+            loc = scale_free_params["loc"]
+        else:
+            loc = 1.0
+        if "scale" in scale_free_params:
+            scale = scale_free_params["scale"]
+        else:
+            scale = 1.0
+    return gamma, loc, scale
 
 def plot_powerlaw_degree_distrubution(n, gamma=2, edge_factor=20, scale=1.0, min_degree=1, values=None, counts=None, alp=None, bet=None, gam=None):
     
@@ -172,9 +185,10 @@ def plot_powerlaw_degree_distrubution(n, gamma=2, edge_factor=20, scale=1.0, min
     # save plot
     plt.savefig('degree_distributions.png')
 
-def powerlaw_degree_distrubution(n, gamma=2.0, scale=1.0, min_degree=1):
+def powerlaw_degree_distrubution(n, gamma=2.0, loc=1.0, scale=1.0):
     
-    degrees = (min_degree + scale * np.random.pareto(gamma, n)).round()
+    degrees = stats.pareto.rvs(gamma, loc=loc, scale=scale, size=n).round()
+    
     # if degree sum is odd, add one to a random degree
     if degrees.sum() % 2 == 1:
         degrees[np.random.randint(n)] += 1
@@ -186,11 +200,11 @@ def powerlaw_degree_distrubution(n, gamma=2.0, scale=1.0, min_degree=1):
     iters = 0
     while in_degrees.sum() != out_degrees.sum() and iters < 10000:
         if in_degrees.sum() > out_degrees.sum():
-            idx = np.random.choice(np.where(in_degrees > min_degree)[0])
+            idx = np.random.choice(np.where(in_degrees > 1.0)[0])
             in_degrees[idx] -= 1
             out_degrees[np.random.randint(n)] += 1
         else:
-            idx = np.random.choice(np.where(out_degrees > min_degree)[0])
+            idx = np.random.choice(np.where(out_degrees > 1.0)[0])
             in_degrees[np.random.randint(n)] += 1
             out_degrees[idx] -= 1
         iters += 1
@@ -219,7 +233,7 @@ if __name__ == "__main__":
         # get number of accounts from conf.json
         n = get_n(conf_file)
         # get egde factor from conf.json
-        gamma = get_gamma(conf_file)
+        gamma, loc, scale = get_scale_free_params(conf_file)
         # get directory from conf.json
         with open(conf_file, "r") as rf:
             conf = json.load(rf)
@@ -230,38 +244,14 @@ if __name__ == "__main__":
     elif len(argv) == 1:
         deg_file_path = "degree.csv"
         # parameters for pareto sampling
-        n = 100000
+        n = 10000
         gamma = 2.0
-        scale = 1.0
-        min_degree = 1
-        # parameters for barabasi-albert
-        edge_factor = 20
-        # parameters for scale_free_graph (from networkx)
-        alp = 0.41
-        bet = 0.05
-        gam = 0.54
-    
+        loc = 1.0
+        
     values, counts = powerlaw_degree_distrubution(n, gamma)
-    #plot_powerlaw_degree_distrubution(n=n, gamma=gamma, edge_factor=edge_factor, scale=scale, min_degree=min_degree, values=values.sum(axis=1), counts=counts)
-    #plot_powerlaw_degree_distrubution(n=n, gamma=gamma, edge_factor=edge_factor, scale=scale, min_degree=min_degree, alp=alp, bet=bet, gam=gam)
-
-    '''
-    print("Number of vertices: %d" % g.number_of_nodes())  # Number of vertices (accounts)
-    print("Number of edges: %d" % g.number_of_edges())  # Number of edges (transactions)
-    out_deg = Counter(g.out_degree().values()) # TODO: fix so degree.csv has aggretgates
-    in_deg = Counter(g.in_degree().values())
-    keys = set(sorted(list(in_deg.keys()) + list(out_deg.keys())))
-    in_deg = g.in_degree()
-    out_deg = g.out_degree()
-    keys = sorted(in_deg.keys())
-    '''
     
     with open(deg_file_path, "w") as wf:
         writer = csv.writer(wf)
         writer.writerow(["Count", "In-degree", "Out-degree"])
-        #for k in keys:
-        #    # Degree, number of vertices for in-degree, number of vertices for out-degree
-        #    # writer.writerow([k, in_deg[k], out_deg[k]])
-        #    writer.writerow([1, in_deg[k], out_deg[k]])
         for value, count in zip(values, counts):
             writer.writerow([count, int(value[0]), int(value[1])])
