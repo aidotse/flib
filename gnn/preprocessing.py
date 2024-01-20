@@ -118,7 +118,7 @@ def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> p
     return df_speding_behavior
 
 def main():
-    DATASET = '1bank'
+    DATASET = '100K_accts'
     path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     df = load_data(path)
     banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
@@ -142,13 +142,13 @@ def main():
         df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
         df_nodes_test.drop(columns=['account'], inplace=True)
         
-        os.makedirs(f'data/{DATASET}/{bank}/trainset', exist_ok=True)
-        os.makedirs(f'data/{DATASET}/{bank}/testset', exist_ok=True)
+        os.makedirs(f'data/{DATASET}/{bank}/train', exist_ok=True)
+        os.makedirs(f'data/{DATASET}/{bank}/test', exist_ok=True)
         
-        df_nodes_train.to_csv(f'data/{DATASET}/{bank}/trainset/nodes.csv', index=False)
-        df_edges_train.to_csv(f'data/{DATASET}/{bank}/trainset/edges.csv', index=False)
-        df_nodes_test.to_csv(f'data/{DATASET}/{bank}/testset/nodes.csv', index=False)
-        df_edges_test.to_csv(f'data/{DATASET}/{bank}/testset/edges.csv', index=False)
+        df_nodes_train.to_csv(f'data/{DATASET}/{bank}/train/nodes.csv', index=False)
+        df_edges_train.to_csv(f'data/{DATASET}/{bank}/train/edges.csv', index=False)
+        df_nodes_test.to_csv(f'data/{DATASET}/{bank}/test/nodes.csv', index=False)
+        df_edges_test.to_csv(f'data/{DATASET}/{bank}/test/edges.csv', index=False)
 
 if __name__ == "__main__":
     main()
