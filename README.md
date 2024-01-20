@@ -117,6 +117,11 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     "transaction_limit": 100000,
     "transaction_interval": 7,
     "sar_interval": 7
+  },
+  "scale-free": {
+    "gamma": 2.0,
+    "loc": 1.0,
+    "scale": 1.0
   }
 }
 ```
