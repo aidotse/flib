@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import multiprocessing as mp
+import time
 
 def load_data(path:str) -> pd.DataFrame:
     df = pd.read_csv(path)
@@ -34,6 +35,40 @@ def get_nodes_and_edges(df:pd.DataFrame, bank:str) -> pd.DataFrame:
     df_nodes.rename(columns={'account': 'node_id', 'is_sar': 'y'}, inplace=True)
     df_edges = df[['nameOrig', 'nameDest', 'amount']].rename(columns={'nameOrig': 'src', 'nameDest': 'dst', 'amount': 'x1'})
     return df_nodes, df_edges
+
+def compare(input:tuple) -> tuple:
+    name, df = input
+    n_rows = df.shape[0]
+    columns = df.columns[1:].to_list()
+    anomalies = {column: 0.0 for column in columns}
+    for column in columns:
+        for row in range(n_rows):
+            value = df.iloc[row, :][column]
+            df_tmp = df.drop(df.index[row])
+            tenth_percentile = df_tmp[column].quantile(0.05)
+            ninetieth_percentile = df_tmp[column].quantile(0.95)
+            if value < tenth_percentile or value > ninetieth_percentile:
+                anomalies[column] += 1 / n_rows
+    return name[0], anomalies
+
+def compare_mp(df:pd.DataFrame, n_workers:int=mp.cpu_count()) -> list[tuple]:
+    dfs = list(df.groupby(['account']))
+    with mp.Pool(processes=n_workers) as pool:
+        results = pool.map(compare, dfs)
+    return results
+
+def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> pd.DataFrame:
+    if range:
+        df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
+    df = df.loc[df['counterpart']==-2]
+    df['interval_group'] = df['step'] // interval
+    df['amount'] = df['amount'].abs()
+    gb = df.groupby(['account', 'interval_group'])
+    df_bundled = pd.concat([gb['amount'].sum().rename('volume'), gb['amount'].count().rename('count')], axis=1).reset_index().drop(columns=['interval_group'])
+    list_spending_behavior = compare_mp(df_bundled)
+    list_spending_behavior = [(name, d['volume'], d['count']) for name, d in list_spending_behavior]
+    df_speding_behavior = pd.DataFrame(list_spending_behavior, columns=['account', 'volume', 'count'])
+    return df_speding_behavior
 
 def get_nodes(df:pd.DataFrame) -> pd.DataFrame:
     nodes = cal_node_features(df)
@@ -83,42 +118,11 @@ def cal_edge_features(df:pd.DataFrame, directional:bool=False) -> pd.DataFrame:
     df.reset_index(inplace=True)          
     return df
 
-def compare(input:tuple) -> tuple:
-    name, df = input
-    n_rows = df.shape[0]
-    columns = df.columns[1:].to_list()
-    anomalies = {column: 0.0 for column in columns}
-    for column in columns:
-        for row in range(n_rows):
-            value = df.iloc[row, :][column]
-            df_tmp = df.drop(df.index[row])
-            tenth_percentile = df_tmp[column].quantile(0.05)
-            ninetieth_percentile = df_tmp[column].quantile(0.95)
-            if value < tenth_percentile or value > ninetieth_percentile:
-                anomalies[column] += 1 / n_rows
-    return name[0], anomalies
-
-def compare_mp(df:pd.DataFrame, n_workers:int=mp.cpu_count()) -> list[tuple]:
-    dfs = list(df.groupby(['account']))
-    with mp.Pool(processes=n_workers) as pool:
-        results = pool.map(compare, dfs)
-    return results
-
-def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> pd.DataFrame:
-    if range:
-        df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    df = df.loc[df['counterpart']==-2]
-    df['interval_group'] = df['step'] // interval
-    df['amount'] = df['amount'].abs()
-    gb = df.groupby(['account', 'interval_group'])
-    df_bundled = pd.concat([gb['amount'].sum().rename('volume'), gb['amount'].count().rename('count')], axis=1).reset_index().drop(columns=['interval_group'])
-    list_spending_behavior = compare_mp(df_bundled)
-    list_spending_behavior = [(name, d['volume'], d['count']) for name, d in list_spending_behavior]
-    df_speding_behavior = pd.DataFrame(list_spending_behavior, columns=['account', 'volume', 'count'])
-    return df_speding_behavior
-
 def main():
-    DATASET = '100K_accts'
+    
+    t = time.time()
+    
+    DATASET = '200K_accts'
     path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     df = load_data(path)
     banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
@@ -147,7 +151,7 @@ def main():
         df_edges_test['src'] = df_edges_test['src'].map(node_to_index)
         df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
         df_nodes_test.drop(columns=['account'], inplace=True)
-        
+
         os.makedirs(f'data/{DATASET}/{bank}/train', exist_ok=True)
         os.makedirs(f'data/{DATASET}/{bank}/test', exist_ok=True)
         
@@ -155,6 +159,9 @@ def main():
         df_edges_train.to_csv(f'data/{DATASET}/{bank}/train/edges.csv', index=False)
         df_nodes_test.to_csv(f'data/{DATASET}/{bank}/test/nodes.csv', index=False)
         df_edges_test.to_csv(f'data/{DATASET}/{bank}/test/edges.csv', index=False)
+    
+    t = time.time() - t
+    print(f'Preprocessing finished in {t:.4f} seconds.')
 
 if __name__ == "__main__":
     main()
