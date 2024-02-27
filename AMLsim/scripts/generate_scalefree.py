@@ -247,9 +247,8 @@ if __name__ == "__main__":
         n = 10000
         gamma = 2.0
         loc = 1.0
-        scale = 1.0
         
-    values, counts = powerlaw_degree_distrubution(n, gamma, loc, scale)
+    values, counts = powerlaw_degree_distrubution(n, gamma)
     
     with open(deg_file_path, "w") as wf:
         writer = csv.writer(wf)
