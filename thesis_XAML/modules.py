@@ -106,5 +106,5 @@ class GraphSAGE(torch.nn.Module):
         x = F.dropout(x, p=self.dropout)
         
         x = self.classifier(x)
-        return torch.softmax(x, dim=-1)
+        return x#torch.softmax(x, dim=-1)
 
