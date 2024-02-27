@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 import torch_geometric
-from torch_geometric.nn import GCNConv, SAGEConv, GINEConv, BatchNorm, Linear
+from torch_geometric.nn import GCNConv, SAGEConv, GINEConv, GATConv, BatchNorm, Linear
 from torch_geometric.data import Data
 
 
@@ -108,3 +108,25 @@ class GraphSAGE(torch.nn.Module):
         x = self.classifier(x)
         return torch.softmax(x, dim=-1)
 
+
+# (Written by Tomas & Agnes)
+class GAT(torch.nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels, num_heads, dropout=0.3):
+        super(GAT, self).__init__()
+        self.dropout = dropout
+        self.conv1 = GATConv(in_channels, hidden_channels, heads=num_heads, dropout=dropout)
+        self.conv2 = GATConv(hidden_channels * num_heads, hidden_channels, heads=num_heads, dropout=dropout)
+        self.conv3 = GATConv(hidden_channels * num_heads, out_channels, heads=1, concat = False, dropout=dropout)
+
+    def forward(self, x, edge_index):
+        x, attention_weights1 = self.conv1(x, edge_index, return_attention_weights=True)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x, attention_weights2 = self.conv2(x, edge_index, return_attention_weights=True)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x, attention_weights3 = self.conv3(x, edge_index, return_attention_weights=True)
+        
+        #Note: When using CrossEntropyLoss, the softmax function is included in the loss function
+        #out = self.softmax(x)
+        return x, attention_weights1, attention_weights2, attention_weights3
