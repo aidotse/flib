@@ -30,6 +30,15 @@ echo "generating transaction graph..."
 python3 scripts/transaction_graph_generator.py "${CONF_JSON}"
 echo "done"
 
+# check if insert patterns file exists
+INSERTPATTERNS=$(jq -r '.input.insert_patterns' "${CONF_JSON}")
+if [[ -f "${DIR}/${INSERTPATTERNS}" ]]; then
+    echo "found patterns to insert: ${DIR}/${INSERTPATTERNS}"
+    echo "inserting patterns..."
+    python3 scripts/insert_patterns.py "${CONF_JSON}"
+    echo "done"
+fi
+
 if ! command -v mvn
 then
     echo 'maven not installed. proceeding.'
