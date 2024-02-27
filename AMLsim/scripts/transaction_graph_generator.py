@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import logging
+import time
 
 import cProfile
 
@@ -662,6 +663,7 @@ class TransactionGenerator:
                 if count > 0:
                     self.choose_normal_model(type)
                     self.normal_model_id += 1
+                    #print(self.normal_model_id)
         logger.info("Generated %d normal models." % len(self.normal_models))
         logger.info("Normal model counts %s", self.nominator.used_count_dict)
         
@@ -778,8 +780,8 @@ class TransactionGenerator:
         
         succ_ids = self.g.successors(node_id) # find the accounts connected to this node_id
         # find the first account that is not in a single relationship with this node_id
-        succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
-
+        succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id})) # TODO: this takes a lot of time... 
+        
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id) # create a normal model with the node_id and the connected account
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.single_index]
@@ -1566,19 +1568,14 @@ class TransactionGenerator:
                         % (th, num_fan_in, num_fan_out))
 
 if __name__ == "__main__":
+    
     argv = sys.argv
-    
-    # debug: 
-    # PARAM_FILES = '100K_accts'
-    # argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
-    
-    argc = len(argv)
-    if argc < 2:
-        print("Usage: python3 %s [ConfJSON]" % argv[0])
-        exit(1)
+    if len(argv) < 2:
+        PARAM_FILES = '100K_accts_250K_txs'
+        argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]
-    _sim_name = argv[2] if argc >= 3 else None
+    _sim_name = argv[2] if len(argv) >= 3 else None
 
     # Validation option for graph contractions
     deg_param = os.getenv("DEGREE")

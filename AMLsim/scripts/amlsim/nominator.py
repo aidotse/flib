@@ -15,7 +15,7 @@ class Nominator:
         self.alt_fan_out_candidates = []
         self.forward_candidates = self.get_forward_candidates()
         self.single_candidates = self.get_single_candidates()
-        self.mutual_candidates = self.single_candidates.copy()
+        self.mutual_candidates = self.single_candidates.copy() # TODO: this isn't correct, should find pairs of connected nodes 
         self.periodical_candidates = self.single_candidates.copy()
         self.empty_list_message = 'pop from empty list'
 
@@ -60,6 +60,7 @@ class Nominator:
             key=lambda n: self.g.out_degree(n)
         )
 
+
     def get_fan_out_candidates(self):
         """Returns a list of node ids that have at least degree_threshold outgoing edges.
 
@@ -70,6 +71,7 @@ class Nominator:
             (n for n in self.g.nodes() if self.is_fan_out_candidate(n)),
             key=lambda n: self.g.in_degree(n)
         )
+
 
     def is_fan_in_candidate(self, node_id):
         """Returns True if node_id has at least degree_threshold incoming edges.
@@ -82,6 +84,7 @@ class Nominator:
         """        
         return self.g.in_degree(node_id) >= self.degree_threshold
 
+
     def is_fan_out_candidate(self, node_id):
         """Returns True if node_id has at least degree_threshold outgoing edges.
 
@@ -92,6 +95,7 @@ class Nominator:
             bool: True if node_id has at least degree_threshold outgoing edges
         """        
         return self.g.out_degree(node_id) >= self.degree_threshold
+
 
     def number_unused(self):
         """Returns the number of unused nodes in the graph.
@@ -104,6 +108,7 @@ class Nominator:
             count += self.remaining_count_dict[type]
         return count
 
+
     def has_more(self):
         """Returns True if there are more unused nodes in the graph.
 
@@ -111,6 +116,7 @@ class Nominator:
             bool: True if there are more unused nodes in the graph
         """        
         return self.number_unused() > 0
+
 
     def next(self, type):
         """Returns the next node id of a given type.
@@ -313,7 +319,6 @@ class Nominator:
                 self.alt_fan_out_candidates.append(candidate)
         else:
             self.fan_in_index += 1
-
 
 
     def post_alt_fan_in(self, node_id, type):
