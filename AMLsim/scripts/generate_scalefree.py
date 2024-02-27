@@ -242,11 +242,11 @@ if __name__ == "__main__":
         # build degree file path
         deg_file_path = os.path.join(directory, deg_file)
     elif len(argv) == 1:
-        deg_file_path = "degree.csv"
-        # parameters for pareto sampling
-        n = 10000
-        gamma = 2.0
+        deg_file_path = "paramFiles/100K_accts_250K_txs/degree.csv"
+        n = 100000
+        gamma = 1.5
         loc = 1.0
+        scale = 1.0
         
     values, counts = powerlaw_degree_distrubution(n, gamma)
     
@@ -255,3 +255,5 @@ if __name__ == "__main__":
         writer.writerow(["Count", "In-degree", "Out-degree"])
         for value, count in zip(values, counts):
             writer.writerow([count, int(value[0]), int(value[1])])
+
+
