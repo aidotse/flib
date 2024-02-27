@@ -626,18 +626,14 @@ public class AMLSim extends SimState {
 
 	public static void main(String[] args) {
 
-		/*
-		 * if (args.length < 1) {
-		 * System.err.println("Usage: java amlsim.AMLSim [ConfFile]");
-		 * System.exit(1);
-		 * }
-		 */
-
-		// Loading configuration JSON file instead of parsing command line arguments
-		String confFile = args[0];
-		//String paramFiles = "100K_accts";
-		//String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
-
+		String confFile;
+		if (args.length < 1) {
+			String paramFiles = "100K_accts_inserted_alerts";
+			confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
+		} else {
+			confFile = args[0];
+		}
+		
 		try {
 			simProp = new SimProperties(confFile);
 		} catch (IOException e) {
