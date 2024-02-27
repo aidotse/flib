@@ -26,8 +26,10 @@ def train_gcn(device):
     set_random_seed(42)
     
     # data
-    traindata = AmlsimDataset(node_file='data/1bank/bank/trainset/nodes.csv', edge_file='data/1bank/bank/trainset/edges.csv').get_data()
-    testdata = AmlsimDataset(node_file='data/1bank/bank/testset/nodes.csv', edge_file='data/1bank/bank/testset/edges.csv').get_data()
+    traindata = AmlsimDataset(node_file='data/simulation2/swedbank/train/nodes.csv', edge_file='data/simulation2/swedbank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    testdata = AmlsimDataset(node_file='data/simulation2/swedbank/test/nodes.csv', edge_file='data/simulation2/swedbank/test/edges.csv', node_features=True, node_labels=True).get_data()
+    print(type(traindata))
+    print(type(testdata))
     traindata = traindata.to(device)
     testdata = testdata.to(device)
     
@@ -77,10 +79,10 @@ def train_logistic_regressor():
     
     # set device
     device = torch.device('cuda:0')
-    
+
     # data
-    traindata = AmlsimDataset(node_file='data/1bank/bank/trainset/nodes.csv', edge_file='data/1bank/bank/trainset/edges.csv', node_features=True, node_labels=True).get_data()
-    testdata = AmlsimDataset(node_file='data/1bank/bank/testset/nodes.csv', edge_file='data/1bank/bank/testset/edges.csv', node_features=True, node_labels=True).get_data()
+    traindata = AmlsimDataset(node_file='home/agnes/desktop/flib/data/simtest/swedbank/train/nodes.csv', edge_file='home/agnes/desktop/flib/data/simtest/swedbank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    testdata = AmlsimDataset(node_file='home/agnes/desktop/flib/data/simtest/swedbank/test/nodes.csv', edge_file='home/agnes/desktop/flib/data/simtest/swedbank/test/edges.csv', node_features=True, node_labels=True).get_data()
     traindata = traindata.to(device)
     testdata = testdata.to(device)
     
@@ -124,6 +126,7 @@ def train_logistic_regressor():
                 recall = recall_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
                 f1 = f1_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
                 print(f'epoch: {epoch + 1}, loss: {loss:.4f}, accuracy: {accuracy:.4f}, balanced_accuracy: {balanced_accuracy:.4f}, precision: {precision:.4f}, recall: {recall:.4f}, f1: {f1:.4f}')
+    return model 
 
 def train_graph_sage():
     # set seed
@@ -133,8 +136,8 @@ def train_graph_sage():
     device = torch.device('cuda:0')
     
     # data
-    traindata = AmlsimDataset(node_file='data/1bank/bank/trainset/nodes.csv', edge_file='data/1bank/bank/trainset/edges.csv', node_features=True, node_labels=True).get_data()
-    testdata = AmlsimDataset(node_file='data/1bank/bank/testset/nodes.csv', edge_file='data/1bank/bank/testset/edges.csv', node_features=True, node_labels=True).get_data()
+    traindata = AmlsimDataset(node_file='thesis_XAML/data/simulation2/swedbank/train/nodes.csv', edge_file='thesis_XAML/data/simulation2/swedbank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    testdata = AmlsimDataset(node_file='thesis_XAML/data/simulation2/swedbank/test/nodes.csv', edge_file='thesis_XAML/data/simulation2/swedbank/test/edges.csv', node_features=True, node_labels=True).get_data()
     traindata = traindata.to(device)
     testdata = testdata.to(device)
     
@@ -149,6 +152,9 @@ def train_graph_sage():
     trainloader = DataLoader(traindata, batch_size=batch_size, shuffle=True)
     testloader = DataLoader(testdata, batch_size=batch_size, shuffle=False)
     
+    #print train_loader
+    print(len(trainloader))
+
     # model
     input_dim = 10
     hidden_dim = 65
@@ -485,9 +491,9 @@ def main():
     #trainer = GINeTrainer(seed=seed, device=device, train_node_file=train_node_file, train_edge_file=train_edge_file, test_node_file=test_node_file, test_edge_file=test_edge_file)
     #trainer.optimize_hyperparameters(direction=direction, n_trials=n_trials)
     
-    print('training logreg')
-    train_logistic_regressor()
-    print()
+    #print('training logreg')
+    #train_logistic_regressor()
+    #print()
     
     print('training graphsage')
     train_graph_sage()
