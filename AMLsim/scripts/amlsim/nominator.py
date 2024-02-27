@@ -15,11 +15,11 @@ class Nominator:
         self.alt_fan_out_candidates = []
         self.forward_candidates = self.get_forward_candidates()
         self.single_candidates = self.get_single_candidates()
+        self.single_candidate_neighbors = {n: self.g.successors(n) for n in self.single_candidates}
         self.mutual_candidates = self.single_candidates.copy() # TODO: this isn't correct, should find pairs of connected nodes 
         self.periodical_candidates = self.single_candidates.copy()
         self.empty_list_message = 'pop from empty list'
 
-      
         self.type_index = 0
         self.forward_index = 0
         self.fan_in_index = 0
@@ -303,10 +303,14 @@ class Nominator:
             node_id (int): node_id of node to check
             type (string): type of relationship to check
         """        
-        if self.is_done(node_id, type): # if all successors have a type relationship with node_id
-            self.single_candidates.pop(self.single_index) # remove from single candidates
+        #if self.is_done(node_id, type): # if all successors have a type relationship with node_id
+        #    self.single_candidates.pop(self.single_index) # remove from single candidates
+        #else:
+        #    self.single_index += 1 # otherwise increment index
+        if self.single_candidate_neighbors[node_id]:
+            self.single_index += 1
         else:
-            self.single_index += 1 # otherwise increment index
+            self.single_candidates.pop(self.single_index)
 
 
     def post_fan_in(self, node_id, type):
@@ -604,3 +608,13 @@ class Nominator:
             return candidates
         
 
+    def next_single_neighbor(self, node_id):
+        """Return the next single neighbor of the node_id.
+
+        Args:
+            node_id (int): The node id.
+
+        Returns:
+            int: The next single neighbor of the node_id.
+        """        
+        return self.single_candidate_neighbors[node_id].pop()

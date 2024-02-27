@@ -778,9 +778,11 @@ class TransactionGenerator:
         if node_id is None:
             return
         
-        succ_ids = self.g.successors(node_id) # find the accounts connected to this node_id
+        # succ_ids = self.g.successors(node_id) # find the accounts connected to this node_id
         # find the first account that is not in a single relationship with this node_id
-        succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id})) # TODO: this takes a lot of time... 
+        # succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id})) # TODO: this takes a lot of time... 
+        
+        succ_id = self.nominator.next_single_neighbor(node_id)
         
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id) # create a normal model with the node_id and the connected account
