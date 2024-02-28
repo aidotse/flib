@@ -1,5 +1,3 @@
-# FLIB: Federated Learning in Banking
-
 **OBS: under construction!**
 
 This is the repsitory for all the code in the project.
@@ -135,35 +133,71 @@ The conf.json file contains parameters for the generel behaviour of the accounts
 
 * **total_steps**
 
-    The total number of steps in the simulation. Each step is one day, but could be vewied as some other time unit.
+    The total number of steps in the simulation. A step is not tied to a specific time unit. However, we typically view one step as a day.
 
 * **min_amount, max_amount, mean_amount, std_amount, mean_amount_sar, std_amount_sar**
 
-    The min and max amount of a transaction, and the mean and standard deviation of the truncated normal distribution used to sample the amount of a transaction. The distribution is truncated to zero and current blanace of the account. Mean and std are specifed for normal and SAR transactions.
+    The min and max amount of a transaction, and the mean and standard deviation of the truncated normal distribution used to sample the amount of a transaction, see Fig. 1. The distribution is truncated to zero and current blanace of the account. Mean and std are specifed for normal and SAR transactions, respectively.
+
+    <div align="center">
+    <img src="https://github.com/aidotse/flib/blob/main/resources/gaussian.jpeg" alt="Fig 1. Truncated Gaussian distribution" width="500" height="300">
+    <br>
+    <em>Fig 1. Truncated Gaussian distribution.</em>
+    </div>
 
 * **prob_income, mean_income, std_income, prob_income_sar, mean_income_sar, std_income_sar**
 
-    The probability for an account to recive income on a given step, and the mean and standard deviation of the truncated normal distribution used to sample the amount of the income.Mean and std are specifed for normal and SAR transactions.
+    * These variables are used to set the in-flux of money to the network beyond salaries.  
+  
+    * The probability for an account to recive a transaction in a given time step is given by **prob_income**.
+    Note that this transaction is coming from the source.
+
+    * The size of the transaction is sampled from a truncated Gaussian distribution with mean **mean_income** and standard deviation **std_income**, see Fig. 1.
+ 
+    * Influx of money to SAR accounts are handled similarly via **prob_income_sar**, **mean_income_sar**, and **std_income_sar**
+ 
+    
 
 * **mean_outcome, std_outcome, mean_outcome_sar, std_outcome_sar**
+  * The **mean_outcome** and **std_outcome** denote the parameters for a truncated Gaussian distribution used to sample the size of the spending transactions, i.e., transactions going to the sink.
+  * **mean_outcome_sar** and **std_outcome_sar** are similarly parametrizing the sampling distribution for spendings of SAR accounts.
+  * Each account behave individually depending on its balance history. In particular, for each account, the probability of spending in step $t$ is obtained by first deciding if the account is "feeling rich or poor" as
+    $$d_t = \left( x_i - \frac{1}{N}\sum_{j=i-N}^{i} x_j  \right) \text{\huge/} \frac{1}{N}\sum_{j=i-N}^{t} x_j$$
+    where $x_t$ is the account balance in the current time step $t$ and $N$ is the number of past steps considered.
+    The spending probability is then obtained from a Sigmoid function as $p_t = 1 / (1 + e^{-d_t})$ whereafter a transaction to the sink is performed if $y=1$ where $y\sim\mathrm{Ber}(p_t)$. See Fig. 2 for an illustration of the procedure.
 
-    The mean and standard deviation of the truncated normal distribution used to sample the amount of the outcome. Mean and std are specifed for normal and SAR transactions. The probability of an outcome in step $i$ is calculated from a sigmoid function: $p_i = 1 / (1 + e^{-x_i})$ where 
-    $$x_i = \left( b_i - \frac{1}{N}\sum_{j=i-N}^{i} b_j  \right) \text{\huge/} \frac{1}{N}\sum_{j=i-N}^{i} b_j$$
-    and $b_i$ is the balance of the account in step $i$ and $N$ is the number of steps in the past to consider.
-
-  ![alt text](https://github.com/aidotse/flib/blob/main/resources/gaussian.jpeg)
+     <div align="center">
+    <img src="https://github.com/aidotse/flib/blob/main/resources/spending.jpeg" alt="Fig 1. Truncated Gaussian distribution" width="400" height="300">
+    <br>
+    <em>Fig 2. Spending behavior.</em>
+    </div>
 
 * **mean_phone_change_frequency, std_phone_change_frequency, mean_phone_change_frequency_sar, std_phone_change_frequency_sar**
 
-    The mean and standard deviation of the number of steps between a phone number change for an account. Mean and std are specifed for normal and SAR transactions. 
+  * **mean_phone_change_frequency** and **std_phone_change_frequency** are used to sample from a truncated Gaussian distribution (rounded to nearest integer) to decide the number of days before an account will change the phone number.
+  * **mean_phone_change_frequency_sar** and **std_phone_change_frequency_sar** serve a similar function as above but for SAR accounts.
 
 * **mean_bank_change_frequency, std_bank_change_frequency, mean_bank_change_frequency_sar, std_bank_change_frequency_sar**
 
-    The mean and standard deviation of the number of steps between a bank change for an account. Mean and std are specifed for normal and SAR transactions.
+  * **mean_bank_change_frequency** and **std_bank_change_frequency**  are used to sample from a truncated Gaussian distribution (rounded to nearest integer) to decide the number of days before an account will change bank.
+ 
+  * **mean_bank_change_frequency_sar** and **std_bank_change_frequency_sar** serve a similar function as above but for SAR accounts.
 
 * **margin_ratio**
 
-    The margin a SAR account takes when passing money through it. 
+    * Whenever an account engages in money laundering, it takes a cut (percentage) of the money given by **margin_ratio**. 
+
+* **gamma**, **loc**, and **scale**
+  * These parameters are used to generate a [scale-free network](https://en.wikipedia.org/wiki/Scale-free_network)
+  * For large degrees $d$, a scale-free network obeys $\mathrm{Pr}[\text{node degree}=d] \propto d^{-\gamma}$ where $\gamma$ is given by **gamma**
+  * **loc** and **scale** are used to control the degree distribution for smaller values of $d$, i.e., before the power law kicks in
+  * See Fig. 3 for a visualization.
+  <div align="center">
+  <img src="https://github.com/aidotse/flib/blob/main/resources/degree.jpeg" alt="Fig 1. Truncated Gaussian distribution" width="400" height="300">
+  <br>
+  <em>Fig 3. Parameters for the scale-free network.</em>
+  </div>
+    
 
 ### account.csv
 
@@ -174,7 +208,7 @@ The accounts.csv file contains the initial conditions for the accounts. It has t
 * **business_type**: (string) The type of business of the accounts, OBS: currently only "I" is supported.
 * **bank**: (string) The bank of the accounts.
 
-Below is an example where 1000 accounts are generated in two banks with there different groups of inital balances.
+Below is an example where 1000 accounts are generated in two banks with groups of users starting with different initial balances.
 ``` 
 count,min_balance,max_balance,country,business_type,bank
 200,1000,10000,SWE,I,bank_a
@@ -187,13 +221,13 @@ count,min_balance,max_balance,country,business_type,bank
 
 ### normalModels.csv
 
-normalModels.csv contains the normal transaction patterns of the accounts. It has the following columns:
+normalModels.csv contains the normal transaction-patterns of the accounts. It has the following columns:
 * **count**: (int) The number of patterns to generate.
 * **type**: (string) The type of the pattern. Can be single, fan_out, fan_in, forward, mutual or periodical. Se below for pattern definitions.
 * **schedule_id**: (int) The id of the schedule to use for the pattern. Can be 0, 1, 2 or 3. Se below for schedule definitions.
 * **min_accounts, max_accounts**: (int) The minimum and maximum number of accounts in the pattern. The simulator will find subsets of accounts where the pattern fits and sample from these. The number of subsets will depend on the min and max and on the structure of the network, defined in degree.csv. Some patterns has a fixed number of accounts, se pattern definition for more information.
 * **min_period, max_period**: (int) The minimum and maximum period of the pattern. The period is the number of steps for a pattern to complet. The period is sampled from a uniform distribution.
-* **bank_id**: (int) If specified, the patterns will only include accounts from that bank. If left blank, the patterns can include accounts from all banks.
+* **bank_id**: (int) If specified, the patterns will only include accounts from that bank. If left blank, the patterns can include accounts from any bank specified within accounts.csv.
 
 Below is an example where 2000 different patterns are generated with varying number of accounts and periods. Some patterns are restricted to a specific bank, while others can include several banks.
 ```
@@ -238,12 +272,12 @@ count,type,schedule_id,min_accounts,max_accounts,min_amount,max_amount,min_perio
 ```
 
 ### degree.csv
-The degree.csv file defines the structure of the transaction network. It has the following columns:
+The degree.csv file defines the structure of the transaction network and can be automatically generated by the script generate_scalefree.py. It has the following columns:
 * **count**: (int) The number of nodes, aka accounts.
 * **In-degree**: (int) The in-degree of the nodes.
 * **Out-degree**: (int) The out-degree of the nodes.
 
-The graph needs to be complet, i.e. the sum of the in-degree and out-degree of all nodes needs to be equal. Further, the total count needs to be equal to the number of accounts in the accounts.csv file. Below is an example for a graph with 1000 nodes. 
+The graph needs to be complete, i.e. the sum of the in-degree and out-degree of all nodes needs to be equal. Further, the total count needs to be equal to the number of accounts in the accounts.csv file. Below is an example for a graph with 1000 nodes.
 ```
 count,In-degree,Out-degree
 512,10,10
@@ -268,7 +302,20 @@ Type,Frequency
 TRANSFER,1
 ```
 
+### Network creation
+The network is created according to the following procedure:
+  * **degree.csv** is used as a blueprint for the transaction network
+  * The patterns defined in **normalModels.csv** are iterated and injected into the bluepring network.
+  * Once all the normal transactions are injected into the network, the alert patterns in **alertPatterns.csv** are injected by randomly assigning nodes to become SAR accounts.
+  Note that nodes that are not included in a pattern will be discarded. See Fig. 4 for an illustration of the procedure.
+    <div align="center">
+    <img src="https://github.com/aidotse/flib/blob/main/resources/pattern.jpeg" alt="Fig 4. Truncated Gaussian distribution" width="600" height="300">
+    <br>
+    <em>Fig 4. Network creation.</em>
+    </div>
+
 ## Run
+
 
 ### Alternative 1: Docker
 Run the docker image with the following command:
@@ -284,9 +331,9 @@ docker run -v /path/to/paramFiles:/app/paramFiles -v /path/to/outputs:/app/outpu
 To be added.
 
 ## Schedule definitions
-The schedual id is used to specify how a pattern will occur in the temporal dimension. A pattern with more the one transaction can happen over several steps, and there could be a temporal pattern in how the transactions are placed. The schedule id is used to specify this pattern. Below is the four different schedules:
-* **Fixed interval**: id = 0. Each transactions in the pattern will occur after one and the other with the fixed interval specified in the conf.json file. 
-* **Random interval**: id = 1. A random interval will be generated, uniformly from zero to the biggest possible interval where the pattern fits in its maximum period. Each transactions in the pattern will then occur after one and the other with this interval. 
+The schedual id is used to specify how transactions within a pattern will occur in the temporal dimension. A pattern with more the one transaction can happen over several steps according to a predefined pattern. The schedule id is used to specify this pattern. Below are the four different schedules:
+* **Fixed interval**: id = 0. Each transactions in the pattern will occur sequentially every $k$ time step where $k$ is given by the interval specified in the conf.json file. 
+* **Random interval**: id = 1. A random interval will be generated uniformly within the provided period. Each transactions in the pattern will then occur sequentially.
 * **Unorderd**: id = 2. The transactions in the pattern will be placed in a random order over the period of the pattern.
-* **Simultaneous**: id = 3. All transactions in the pattern will occur at the same step.
+* **Simultaneous**: id = 3. All transactions in the pattern will occur at the same time step.
 
