@@ -185,9 +185,9 @@ def plot_powerlaw_degree_distrubution(n, gamma=2, edge_factor=20, scale=1.0, min
     # save plot
     plt.savefig('degree_distributions.png')
 
-def powerlaw_degree_distrubution(n, gamma=2.0, loc=1.0, scale=1.0):
+def powerlaw_degree_distrubution(n, gamma=2.0, loc=1.0, scale=1.0, seed=0):
     
-    degrees = stats.pareto.rvs(gamma, loc=loc, scale=scale, size=n).round()
+    degrees = stats.pareto.rvs(gamma, loc=loc, scale=scale, size=n, random_state=seed).round()
     
     # if degree sum is odd, add one to a random degree
     if degrees.sum() % 2 == 1:
@@ -210,12 +210,14 @@ def powerlaw_degree_distrubution(n, gamma=2.0, loc=1.0, scale=1.0):
         iters += 1
     if in_degrees.sum() > out_degrees.sum():
         diff = in_degrees.sum() - out_degrees.sum()
-        in_degrees[np.argmax(in_degrees)] -= diff
-        out_degrees[np.argmax(out_degrees)] += diff
+        assert diff % 2 == 0
+        in_degrees[np.argmax(in_degrees)] -= diff / 2
+        out_degrees[np.argmax(out_degrees)] += diff / 2
     elif in_degrees.sum() < out_degrees.sum():
         diff = out_degrees.sum() - in_degrees.sum()
-        in_degrees[np.argmax(in_degrees)] += diff
-        out_degrees[np.argmax(out_degrees)] -= diff
+        assert diff % 2 == 0
+        in_degrees[np.argmax(in_degrees)] += diff / 2
+        out_degrees[np.argmax(out_degrees)] -= diff / 2
     
     degrees = np.column_stack((in_degrees,out_degrees))
     
@@ -239,16 +241,18 @@ if __name__ == "__main__":
             conf = json.load(rf)
             directory = conf["input"]["directory"]
             deg_file = conf["input"]["degree"]
+            seed = conf["general"]["random_seed"]
         # build degree file path
         deg_file_path = os.path.join(directory, deg_file)
     elif len(argv) == 1:
-        deg_file_path = "paramFiles/100K_accts_250K_txs/degree.csv"
+        deg_file_path = "paramFiles/100K_accts/degree.csv"
         n = 100000
-        gamma = 1.5
+        gamma = 2.0
         loc = 1.0
         scale = 1.0
+        seed = 0
         
-    values, counts = powerlaw_degree_distrubution(n, gamma)
+    values, counts = powerlaw_degree_distrubution(n, gamma, loc, scale, seed)
     
     with open(deg_file_path, "w") as wf:
         writer = csv.writer(wf)
