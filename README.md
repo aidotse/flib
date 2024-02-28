@@ -151,6 +151,8 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     $$x_i = \left( b_i - \frac{1}{N}\sum_{j=i-N}^{i} b_j  \right) \text{\huge/} \frac{1}{N}\sum_{j=i-N}^{i} b_j$$
     and $b_i$ is the balance of the account in step $i$ and $N$ is the number of steps in the past to consider.
 
+  ![alt text](https://github.com/aidotse/flib/blob/main/resources/gaussian.jpeg)
+
 * **mean_phone_change_frequency, std_phone_change_frequency, mean_phone_change_frequency_sar, std_phone_change_frequency_sar**
 
     The mean and standard deviation of the number of steps between a phone number change for an account. Mean and std are specifed for normal and SAR transactions. 
