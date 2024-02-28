@@ -33,6 +33,9 @@ public class CycleTypology extends AMLTypology {
      */
     public void setParameters(int modelID) {
 
+        // set seed
+        random.setSeed((long) modelID);
+
         List<Account> members = alert.getMembers(); // All members
         int length = members.size(); // Number of members (total transactions)
         steps = new long[length];
