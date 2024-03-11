@@ -130,3 +130,124 @@ class GAT(torch.nn.Module):
         #Note: When using CrossEntropyLoss, the softmax function is included in the loss function
         #out = self.softmax(x)
         return x, attention_weights1, attention_weights2, attention_weights3
+
+
+class GCN_LIME(torch.nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout):
+        super(GCN_LIME, self).__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        convs = [GCNConv(input_dim, hidden_dim)] + [GCNConv(hidden_dim, hidden_dim) for _ in range(num_layers-2)] + [GCNConv(hidden_dim, output_dim)]
+        self.convs = torch.nn.ModuleList(convs)
+        self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])
+        self.dropout = dropout
+        self.softmax = torch.nn.Softmax(dim=1)
+        self.testdata = []
+        self.node_to_explain = []
+
+    def reset_parameters(self):
+        for conv in self.convs:
+            conv.reset_parameters()
+        for bn in self.bns:
+            bn.reset_parameters()
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        for i, layer in enumerate(self.convs):
+          x = layer(x, edge_index)
+          if i < len(self.convs)-1:
+            x = self.bns[i](x)
+            x = F.relu(x)
+            x = F.dropout(x, p=self.dropout, training=self.training)
+            
+        #Note: When using CrossEntropyLoss, the softmax function is included in the loss function
+        #out = self.softmax(x)
+        out = x
+        return out
+    
+    # Adaption for LIME tabular compatibility
+    def set_test_data(self, testdata):
+        self.testdata = testdata
+    
+    def set_node_to_explain(self, node_to_explain):
+        self.node_to_explain = node_to_explain
+    
+    def forward_LIME(self, node_feature_vec):
+        print('Starting forward_LIME...')
+        node_feature_vec = node_feature_vec.reshape(-1,self.input_dim)
+        out = torch.zeros((node_feature_vec.shape[0],2))
+        for i in range(node_feature_vec.shape[0]):
+            self.testdata.x[self.node_to_explain] = node_feature_vec[i,:]
+            with torch.no_grad():
+                out_tmp = self.softmax(self.forward(self.testdata))
+                out[i] = out_tmp[self.node_to_explain]
+            if i % 100 == 0:
+                print('LIME progress: ', i, '/', node_feature_vec.shape[0])
+        return out
+
+
+# (Written by Edvin, edited by Tomas & Agnes)
+class GCN_GNNExplainer(torch.nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout):
+        super(GCN_GNNExplainer, self).__init__()
+        self.output_dim = output_dim
+        convs = [GCNConv(input_dim, hidden_dim)] + [GCNConv(hidden_dim, hidden_dim) for _ in range(num_layers-2)] + [GCNConv(hidden_dim, output_dim)]
+        self.convs = torch.nn.ModuleList(convs)
+        self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])
+        self.dropout = dropout
+        self.softmax = torch.nn.Softmax(dim=1)
+
+    def reset_parameters(self):
+        for conv in self.convs:
+            conv.reset_parameters()
+        for bn in self.bns:
+            bn.reset_parameters()
+
+    def forward(self, x, edge_index):
+        x, edge_index = x, edge_index
+        for i, layer in enumerate(self.convs):
+          x = layer(x, edge_index)
+          if i < len(self.convs)-1:
+            x = self.bns[i](x)
+            x = F.relu(x)
+            x = F.dropout(x, p=self.dropout, training=self.training)
+            
+        #Note: When using CrossEntropyLoss, the softmax function is included in the loss function
+        #out = self.softmax(x)
+        out = x
+            
+        return out
+
+
+# (Written by Edvin, edited by Tomas & Agnes)
+class GCN_GraphSVX(torch.nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout):
+        super(GCN_GraphSVX, self).__init__()
+        self.output_dim = output_dim
+        convs = [GCNConv(input_dim, hidden_dim)] + [GCNConv(hidden_dim, hidden_dim) for _ in range(num_layers-2)] + [GCNConv(hidden_dim, output_dim)]
+        self.convs = torch.nn.ModuleList(convs)
+        self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])
+        self.dropout = dropout
+        self.softmax = torch.nn.Softmax(dim=1)
+
+    def reset_parameters(self):
+        for conv in self.convs:
+            conv.reset_parameters()
+        for bn in self.bns:
+            bn.reset_parameters()
+
+    def forward(self, x, edge_index):
+        x, edge_index = x, edge_index
+        for i, layer in enumerate(self.convs):
+          x = layer(x, edge_index)
+          if i < len(self.convs)-1:
+            x = self.bns[i](x)
+            x = F.relu(x)
+            x = F.dropout(x, p=self.dropout, training=self.training)
+            
+        #Note: When using softmax function in the final layer we need
+        #to use NLLLoss instead of cross entropy loss
+        out = self.softmax(x)
+        #out = x
+            
+        return out
