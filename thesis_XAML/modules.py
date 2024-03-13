@@ -4,7 +4,9 @@ from torch.nn import functional as F
 import torch_geometric
 from torch_geometric.nn import GCNConv, SAGEConv, GINEConv, GATConv, BatchNorm, Linear
 from torch_geometric.data import Data
-
+#from dgl.nn.pytorch.conv import GATConv
+import numpy as np 
+from collections import deque
 
 # (Written by Tomas & Agnes)
 class LogisticRegressor(torch.nn.Module):
@@ -182,8 +184,11 @@ class GCN_LIME(torch.nn.Module):
                 out_tmp = self.softmax(self.forward(self.testdata))
                 out[i] = out_tmp[self.node_to_explain]
             if i % 100 == 0:
-                print('LIME progress: ', i, '/', node_feature_vec.shape[0])
+               print('LIME progress: ', i, '/', node_feature_vec.shape[0])
+
         return out
+
+
 
 
 # (Written by Edvin, edited by Tomas & Agnes)
