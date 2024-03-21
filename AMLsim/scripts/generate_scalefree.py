@@ -219,6 +219,45 @@ def powerlaw_degree_distrubution(n, gamma=2.0, loc=1.0, scale=1.0, seed=0):
         in_degrees[np.argmax(in_degrees)] += diff / 2
         out_degrees[np.argmax(out_degrees)] -= diff / 2
     
+    '''
+    in_degrees = stats.pareto.rvs(gamma, loc=loc, scale=scale, size=n, random_state=42).round()
+    out_degrees = stats.pareto.rvs(gamma, loc=loc, scale=scale, size=n, random_state=43).round()
+    in_degrees = in_degrees // 2
+    out_degrees = out_degrees // 2 
+    
+    if (in_degrees.sum() + out_degrees.sum()) % 2 != 0:
+        if in_degrees.sum() > out_degrees.sum():
+            rand_idx = np.random.choice(np.where(in_degrees > 0)[0])
+            in_degrees[rand_idx] -= 1
+        else:
+            rand_idx = np.random.choice(np.where(out_degrees > 0)[0])
+            out_degrees[rand_idx] -= 1
+    
+    i = 0
+    while in_degrees.sum() != out_degrees.sum() and i < 100000:
+        if in_degrees.sum() > out_degrees.sum():
+            rand_idx = np.random.choice(np.where(in_degrees > 1)[0])
+            in_degrees[rand_idx] -= 1
+            out_degrees[rand_idx] += 1
+        else:
+            rand_idx = np.random.choice(np.where(out_degrees > 1)[0])
+            in_degrees[rand_idx] += 1
+            out_degrees[rand_idx] -= 1
+        i += 1
+    
+    if in_degrees.sum() != out_degrees.sum():
+        if in_degrees.sum() > out_degrees.sum():
+            diff = in_degrees.sum() - out_degrees.sum()
+            assert diff % 2 == 0
+            in_degrees[np.argmax(in_degrees)] -= diff / 2
+            out_degrees[np.argmax(out_degrees)] += diff / 2
+        elif in_degrees.sum() < out_degrees.sum():
+            diff = out_degrees.sum() - in_degrees.sum()
+            assert diff % 2 == 0
+            in_degrees[np.argmax(in_degrees)] += diff / 2
+            out_degrees[np.argmax(out_degrees)] -= diff / 2
+    '''
+    
     degrees = np.column_stack((in_degrees,out_degrees))
     
     values, counts = np.unique(degrees, return_counts=True, axis=0)
