@@ -35,10 +35,10 @@ public class Alert {
      */
     void registerTransactions(long step, Account acct){
         if(model.isValidStep(step)){
-            // TODO: set seed from alert id 
-            // long numSteps = this.amlsim.getNumOfSteps();
-            // steps
-            // alertID
+            // TODO: fix this
+            int seed = amlsim.getSeed();
+            int totalSteps = (int)amlsim.getNumOfSteps();
+            seed = seed + (int)alertID;
             model.sendTransactions(step, acct);
         }
     }

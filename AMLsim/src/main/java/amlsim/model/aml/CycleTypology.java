@@ -34,7 +34,7 @@ public class CycleTypology extends AMLTypology {
     public void setParameters(int modelID) {
 
         // set seed
-        random.setSeed((long) modelID);
+        random.setSeed(AMLSim.getSeed() + modelID);
 
         List<Account> members = alert.getMembers(); // All members
         int length = members.size(); // Number of members (total transactions)

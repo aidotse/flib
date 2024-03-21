@@ -78,6 +78,10 @@ public class AMLSim extends SimState {
 		return rand;
 	}
 
+	public static int getSeed() {
+		return simProp.getSeed();
+	}
+
 	public static Logger getLogger() {
 		return logger;
 	}
@@ -628,7 +632,7 @@ public class AMLSim extends SimState {
 
 		String confFile;
 		if (args.length < 1) {
-			String paramFiles = "100K_accts_inserted_alerts";
+			String paramFiles = "100K_accts";
 			confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 		} else {
 			confFile = args[0];
