@@ -57,7 +57,7 @@ class Server():
             weights = [weight/sum(weights) for weight in weights]
         else:
             weights = [1.0/len(models) for _ in models]
-        avg_models = OrderedDict([(key, 0.0) for key in models[0].keys()])
+        avg_models = OrderedDict([(key, 0.0) for key in models[0].keys()]) # TODO: change this to a deepcopy!!
         for key in models[0].keys():
             for model, weight in zip(models, weights):
                 avg_models[key] += torch.mul(model[key], weight) 
