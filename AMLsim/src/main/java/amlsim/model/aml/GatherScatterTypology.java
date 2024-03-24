@@ -22,12 +22,16 @@ public class GatherScatterTypology extends AMLTypology {
     private double scatterAmount = 0.0; // Scatter transaction amount will be defined after gather transactions
     private Random random = AMLSim.getRandom();
 
-    GatherScatterTypology(double minAmount, double maxAmount, int startStep, int endStep, String sourceType) {
-        super(minAmount, maxAmount, startStep, endStep, sourceType);
+    GatherScatterTypology(double minAmount, double maxAmount, int startStep, int endStep, int scheduleID, int interval, String sourceType) {
+        super(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
     }
 
     @Override
-    public void setParameters(int modelID) {
+    public void setParameters(long seedD) {
+
+        // Set seed
+        random.setSeed(AMLSim.getSeed() + seedD);
+        
         middleStep = (startStep + endStep) / 2;
         // System.out.println(startStep + " " + middleStep + " " + endStep);
 

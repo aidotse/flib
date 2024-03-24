@@ -41,17 +41,21 @@ public class StackTypology extends AMLTypology {
         // }
         
     StackTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval, String sourceType) {
-        super(minAmount, maxAmount, minStep, maxStep, sourceType);
+        super(minAmount, maxAmount, minStep, maxStep, scheduleID, interval, sourceType);
 
-        this.startStep = minStep; //alert.getStartStep();
-        this.endStep = maxStep; //alert.getEndStep();
-        this.scheduleID = scheduleID; //alert.getScheduleID();
-        this.interval = interval; //alert.getInterval();
+        //this.startStep = minStep; //alert.getStartStep();
+        //this.endStep = maxStep; //alert.getEndStep();
+        //this.scheduleID = scheduleID; //alert.getScheduleID();
+        //this.interval = interval; //alert.getInterval();
 
     }
         
     @Override
-    public void setParameters(int modelID) {
+    public void setParameters(long seed) {
+
+        // set seed
+        random.setSeed(AMLSim.getSeed() + seed);
+        
         members = alert.getMembers();
         int numMembers = members.size();
         

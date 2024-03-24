@@ -55,18 +55,17 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      *                  this step)
      * @return AML typology model object
      */
-    public static AMLTypology createTypology(int modelID, double minAmount, double maxAmount,
-            int startStep, int endStep, int scheduleID, int interval, String sourceType) {
+    public static AMLTypology createTypology(int modelID, double minAmount, double maxAmount, int startStep, int endStep, int scheduleID, int interval, String sourceType) {
         AMLTypology model;
         switch (modelID) {
             case AML_FAN_OUT:
-                model = new FanOutTypology(minAmount, maxAmount, startStep, endStep, sourceType);
+                model = new FanOutTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
                 break;
             case AML_FAN_IN:
-                model = new FanInTypology(minAmount, maxAmount, startStep, endStep, sourceType);
+                model = new FanInTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
                 break;
             case CYCLE:
-                model = new CycleTypology(minAmount, maxAmount, startStep, endStep, sourceType);
+                model = new CycleTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
                 break;
             case BIPARTITE:
                 model = new BipartiteTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
@@ -75,13 +74,13 @@ public abstract class AMLTypology extends AbstractTransactionModel {
                 model = new StackTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
                 break;
             case RANDOM:
-                model = new RandomTypology(minAmount, maxAmount, startStep, endStep, sourceType);
+                model = new RandomTypology(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
                 break;
             case SCATTER_GATHER:
-                model = new ScatterGatherTypology(minAmount, maxAmount, startStep, endStep, sourceType);
+                model = new ScatterGatherTypology(minAmount, maxAmount, startStep, scheduleID, interval, endStep, sourceType);
                 break;
             case GATHER_SCATTER:
-                model = new GatherScatterTypology(minAmount, maxAmount, startStep, endStep, sourceType);
+                model = new GatherScatterTypology(minAmount, maxAmount, startStep, scheduleID, interval, endStep, sourceType);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown typology model ID: " + modelID);
@@ -101,7 +100,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      * 
      * @param modelID Scheduling model ID
      */
-    public abstract void setParameters(int modelID);
+    public abstract void setParameters(long seed);
 
     // /**
     // * Get the number of total transactions in this alert
@@ -157,11 +156,13 @@ public abstract class AMLTypology extends AbstractTransactionModel {
      * @param endStep   End simulation step of alert transactions (any transactions
      *                  cannot be carried out after this step)
      */
-    public AMLTypology(double minAmount, double maxAmount, int startStep, int endStep, String sourceType) {
+    public AMLTypology(double minAmount, double maxAmount, int startStep, int endStep, int scheduleID, int interval, String sourceType) {
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
         this.startStep = startStep;
         this.endStep = endStep;
+        this.scheduleID = scheduleID;
+        this.interval = interval;
         this.sourceType = sourceType;
         // Set step for reciving illicit funds
         if (this.sourceType.equals("TRANSFER")) {

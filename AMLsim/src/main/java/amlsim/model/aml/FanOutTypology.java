@@ -24,15 +24,19 @@ public class FanOutTypology extends AMLTypology {
     private long[] steps;
     private double[] amounts;
     
-    FanOutTypology(double minAmount, double maxAmount, int minStep, int maxStep, String sourceType) {
-        super(minAmount, maxAmount, minStep, maxStep, sourceType);
+    FanOutTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval, String sourceType) {
+        super(minAmount, maxAmount, minStep, maxStep, scheduleID, interval, sourceType);
     }
 
     public int getNumTransactions() {
         return alert.getMembers().size() - 1;
     }
 
-    public void setParameters(int scheduleID) {
+    public void setParameters(long seed) {
+
+        // Set seed
+        random.setSeed(AMLSim.getSeed() + seed);
+        
         // Set members
         List<Account> members = alert.getMembers();
         Account mainAccount = alert.getMainAccount();

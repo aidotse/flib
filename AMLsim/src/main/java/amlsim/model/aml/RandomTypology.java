@@ -23,7 +23,11 @@ public class RandomTypology extends AMLTypology { // TODO: review this pattern, 
     private Account nextOrig; // Originator account for the next transaction
 
     @Override
-    public void setParameters(int modelID) {
+    public void setParameters(long seed) {
+
+        // set seed
+        random.setSeed(AMLSim.getSeed() + seed);
+        
         int numMembers = alert.getMembers().size();
         for (int i = 0; i < numMembers; i++) {
             steps.add(getRandomStep());
@@ -36,8 +40,8 @@ public class RandomTypology extends AMLTypology { // TODO: review this pattern, 
     // return alert.getMembers().size();
     // }
 
-    RandomTypology(double minAmount, double maxAmount, int minStep, int maxStep, String sourceType) {
-        super(minAmount, maxAmount, minStep, maxStep, sourceType);
+    RandomTypology(double minAmount, double maxAmount, int minStep, int maxStep, int scheduleID, int interval, String sourceType) {
+        super(minAmount, maxAmount, minStep, maxStep, scheduleID, interval, sourceType);
     }
 
     @Override

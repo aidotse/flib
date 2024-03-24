@@ -22,8 +22,8 @@ public class CycleTypology extends AMLTypology {
     private Random random = AMLSim.getRandom();
 
     
-    CycleTypology(double minAmount, double maxAmount, int startStep, int endStep, String sourceType) {
-        super(minAmount, maxAmount, startStep, endStep, sourceType);
+    CycleTypology(double minAmount, double maxAmount, int startStep, int endStep, int scheduleID, int interval, String sourceType) {
+        super(minAmount, maxAmount, startStep, endStep, scheduleID, interval, sourceType);
     }
 
     /**
@@ -31,10 +31,10 @@ public class CycleTypology extends AMLTypology {
      * 
      * @param modelID Schedule model ID as integer
      */
-    public void setParameters(int modelID) {
+    public void setParameters(long seed) {
 
         // set seed
-        random.setSeed(AMLSim.getSeed() + modelID);
+        random.setSeed(AMLSim.getSeed() + seed);
 
         List<Account> members = alert.getMembers(); // All members
         int length = members.size(); // Number of members (total transactions)
@@ -45,7 +45,7 @@ public class CycleTypology extends AMLTypology {
         this.startStep = generateFromInterval(allStep - period); // decentralize the first transaction step
         this.endStep = Math.min(this.startStep + period, allStep);
 
-        if (modelID == FIXED_INTERVAL) { // Ordered, same interval
+        if (scheduleID == FIXED_INTERVAL) { // Ordered, same interval
             period = (int) (endStep - startStep);
             if (length < period) {
                 this.interval = period / length; // If there is enough number of available steps, make transaction with
@@ -63,7 +63,7 @@ public class CycleTypology extends AMLTypology {
                 }
                 steps[length - 1] = endStep;
             }
-        } else if (modelID == RANDOM_INTERVAL) { // TODO: verfiy this works
+        } else if (scheduleID == RANDOM_INTERVAL) { // TODO: verfiy this works
             period = (int) (endStep - startStep);
             int maxInterval = period / length;
             this.interval = random.nextInt(maxInterval) + 1;
@@ -72,7 +72,7 @@ public class CycleTypology extends AMLTypology {
             for (int i = 0; i < length - 1; i++) {
                 steps[i] = startStep + d + interval * i;
             }
-        } else if (modelID == UNORDERED) {
+        } else if (scheduleID == UNORDERED) {
             this.interval = 1;
             // Ensure the specified period
             steps[0] = startStep;

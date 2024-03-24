@@ -419,6 +419,7 @@ public class AMLSim extends SimState {
 				model.updateMaxAmount(maxAmount);
 				model.updateStartStep(startStep);
 				model.updateEndStep(endStep);
+				// TODO: add updates for scheduleID, normalTxInterval and sourceType
 
 			} else { // Create a new AML typology object
 				AMLTypology model = AMLTypology.createTypology(modelID, minAmount, maxAmount, startStep, endStep, scheduleID, this.normalTxInterval, sourceType); // TODO: add sarTxInterval
@@ -431,11 +432,11 @@ public class AMLSim extends SimState {
 				alert.setMainAccount(account);
 			}
 			account.setSAR(isSAR);
-			scheduleModels.put(alertID, scheduleID);
+			//scheduleModels.put(alertID, scheduleID);
 		}
-		for (long alertID : scheduleModels.keySet()) {
-			int modelID = scheduleModels.get(alertID);
-			alerts.get(alertID).getModel().setParameters(modelID);
+		for (long alertID : alerts.keySet()) {
+			//int scheduleID = scheduleModels.get(alertID);
+			alerts.get(alertID).getModel().setParameters(alertID);
 		}
 		reader.close();
 	}

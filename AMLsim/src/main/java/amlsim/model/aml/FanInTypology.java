@@ -28,11 +28,14 @@ public class FanInTypology extends AMLTypology {
     
     private Random random = AMLSim.getRandom();
 
-    FanInTypology(double minAmount, double maxAmount, int start, int end, String sourceType) {
-        super(minAmount, maxAmount, start, end, sourceType);
+    FanInTypology(double minAmount, double maxAmount, int start, int end, int scheduleID, int interval, String sourceType) {
+        super(minAmount, maxAmount, start, end, scheduleID, interval, sourceType);
     }
 
-    public void setParameters(int schedulingID) {
+    public void setParameters(long seed) {
+
+        // set seed
+        random.setSeed(AMLSim.getSeed() + seed);
 
         // Set members
         List<Account> members = alert.getMembers();
@@ -50,10 +53,10 @@ public class FanInTypology extends AMLTypology {
         //this.startStep = generateFromInterval(defaultInterval); // decentralize the first transaction step
 
         steps = new long[numOrigs];
-        if (schedulingID == SIMULTANEOUS) {
+        if (scheduleID == SIMULTANEOUS) {
             long step = getRandomStep();
             Arrays.fill(steps, step);
-        } else if (schedulingID == FIXED_INTERVAL) {
+        } else if (scheduleID == FIXED_INTERVAL) {
             int range = (int) (endStep - startStep + 1);
             if (numOrigs < range) {
                 interval = range / numOrigs;
@@ -66,7 +69,7 @@ public class FanInTypology extends AMLTypology {
                     steps[i] = startStep + i / batch;
                 }
             }
-        } else if (schedulingID == RANDOM_RANGE) {
+        } else if (scheduleID == RANDOM_RANGE) {
             for (int i = 0; i < numOrigs; i++) {
                 steps[i] = getRandomStep();
             }
