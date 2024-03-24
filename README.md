@@ -159,12 +159,12 @@ The conf.json file contains parameters for the generel behaviour of the accounts
  
     
 
-* **mean_outcome, std_outcome, mean_outcome_sar, std_outcome_sar**
+* **mean_outcome, std_outcome, mean_outcome_sar, std_outcome_sar, n_steps_balance_history**
   * The **mean_outcome** and **std_outcome** denote the parameters for a truncated Gaussian distribution used to sample the size of the spending transactions, i.e., transactions going to the sink.
   * **mean_outcome_sar** and **std_outcome_sar** are similarly parametrizing the sampling distribution for spendings of SAR accounts.
   * Each account behave individually depending on its balance history. In particular, for each account, the probability of spending in step $t$ is obtained by first deciding if the account is "feeling rich or poor" as
     $$d_t = \left( x_i - \frac{1}{N}\sum_{j=i-N}^{i} x_j  \right) \text{\huge/} \frac{1}{N}\sum_{j=i-N}^{t} x_j$$
-    where $x_t$ is the account balance in the current time step $t$ and $N$ is the number of past steps considered.
+    where $x_t$ is the account balance in the current time step $t$ and $N$ (n_steps_balance_history) is the number of past steps considered.
     The spending probability is then obtained from a Sigmoid function as $p_t = 1 / (1 + e^{-d_t})$ whereafter a transaction to the sink is performed if $y=1$ where $y\sim\mathrm{Ber}(p_t)$. See Fig. 2 for an illustration of the procedure.
 
      <div align="center">

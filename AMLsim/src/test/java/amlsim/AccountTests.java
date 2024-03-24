@@ -45,7 +45,7 @@ class AccountTests {
                 try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
                         mocked.when(AMLSim::getRandom).thenReturn(new Random(1));
 
-                        Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
+                        Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random, 28);
                         anAccount.handleAction(amlSim);
 
                         mocked.verify(() -> AMLSim.handleTransaction(1, "TRANSFER", 1000.0f, anAccount, anAccount,
@@ -59,8 +59,8 @@ class AccountTests {
                 long step = 1;
                 when(this.schedule.getSteps()).thenReturn(step);
 
-                Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
-                Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random);
+                Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random, 28);
+                Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random, 28);
 
                 try (MockedStatic<AMLSim> mocked = mockStatic(AMLSim.class)) {
                         mocked.when(AMLSim::getRandom).thenReturn(new Random(1));
@@ -89,8 +89,8 @@ class AccountTests {
                                         Logger.getLogger("AMLSim"));
                         mockey.when(() -> ModelParameters.shouldAddEdge(any(), any())).thenReturn(true);
 
-                        Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
-                        Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random);
+                        Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random, 28);
+                        Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random, 28);
 
                         anAccount.addBeneAcct(beneAccount);
                         anAccount.addTxType(beneAccount, "TRANSFER");
@@ -132,8 +132,8 @@ class AccountTests {
                                         Logger.getLogger("AMLSim"));
                         mockey.when(() -> ModelParameters.shouldAddEdge(any(), any())).thenReturn(true);
 
-                        Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random);
-                        Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random);
+                        Account anAccount = new Account("1", 5, 1000.0f, "bankid", this.random, 28);
+                        Account beneAccount = new Account("2", 5, 1000.0f, "bankid", this.random, 28);
 
                         anAccount.addBeneAcct(beneAccount);
                         anAccount.addTxType(beneAccount, "TRANSFER");

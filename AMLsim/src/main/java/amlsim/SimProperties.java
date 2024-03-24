@@ -54,6 +54,7 @@ public class SimProperties {
     private double stdOutcome;
     private double meanOutcomeSar;
     private double stdOutcomeSar;
+    private int nStepsBalanceHistory;
     private double probSpendCash;
     
     SimProperties(String jsonName) throws IOException {
@@ -94,6 +95,7 @@ public class SimProperties {
         stdOutcome = defaultProp.getDouble("std_outcome");
         meanOutcomeSar = defaultProp.getDouble("mean_outcome_sar");
         stdOutcomeSar = defaultProp.getDouble("std_outcome_sar");
+        nStepsBalanceHistory = defaultProp.getInt("n_steps_balance_history");
         probSpendCash = defaultProp.getDouble("prob_spend_cash");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
@@ -244,9 +246,14 @@ public class SimProperties {
         return stdOutcomeSar;
     }
     
+    public int getNStepsBalanceHistory() {
+        return nStepsBalanceHistory;
+    }
+
     public double getProbSpendCash() {
         return probSpendCash;
     }
+
     public double getMarginRatio() {
         return marginRatio;
     }

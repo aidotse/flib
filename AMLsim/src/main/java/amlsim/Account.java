@@ -78,7 +78,7 @@ public class Account implements Steppable {
 	 * @param start       Start step
 	 * @param end         End step
 	 */
-	public Account(String id, int interval, float initBalance, String bankID, Random rand) {
+	public Account(String id, int interval, float initBalance, String bankID, Random rand, int nStepsBalanceHistory) {
 		this.id = id;
 		this.setBalance(initBalance);
 		this.bankID = bankID;
@@ -103,7 +103,7 @@ public class Account implements Steppable {
 		this.monthlyOutcomeSar = new TruncatedNormal(0.5*this.monthlyIncomeSar, 0.1*this.monthlyIncomeSar, 0.1*this.monthlyIncomeSar, 0.9*this.monthlyIncome).sample();
 
 		// Set balanceHistory
-		for (int i = 0; i < 28; i++) {
+		for (int i = 0; i < nStepsBalanceHistory; i++) {
 			this.balanceHistory.add((double) initBalance);
 		}
 		AMLSim.handleIncome(0, "INITALBALANCE", initBalance, this, false, (long) -1, (long) 11);

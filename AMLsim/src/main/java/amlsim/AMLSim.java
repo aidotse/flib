@@ -264,14 +264,14 @@ public class AMLSim extends SimState {
 			float initBalance = Float.parseFloat(elements[columnIndex.get("INIT_BALANCE")]);
 			String bankID = elements[columnIndex.get("BANK_ID")];
 			AMLSim.bankIDSet.add(bankID); // add the bankID to a list banks available
-
+			int nStepsBalanceHistory = simProp.getNStepsBalanceHistory();
 			Account account;
 			if (isSAR) {
 				account = new SARAccount(accountID, normalTxInterval, initBalance, bankID,
-						getRandom());
+						getRandom(), nStepsBalanceHistory);
 			} else {
 				account = new Account(accountID, normalTxInterval, initBalance, bankID,
-						getRandom());
+						getRandom(), nStepsBalanceHistory);
 			}
 			account.setProp(simProp.getProbIncome(), simProp.getMeanIncome(), simProp.getStdIncome(),
 					simProp.getProbIncomeSAR(), simProp.getMeanIncomeSAR(), simProp.getStdIncomeSAR(),

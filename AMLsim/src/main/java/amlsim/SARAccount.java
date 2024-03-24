@@ -12,8 +12,8 @@ public class SARAccount extends Account {
 
 	private int count = 0;
 
-	SARAccount(String id, int interval, float init_balance, String bankID, Random random) {
-		super(id, interval, init_balance, bankID, random);
+	SARAccount(String id, int interval, float init_balance, String bankID, Random random, int nStepsBalanceHistory) {
+		super(id, interval, init_balance, bankID, random, nStepsBalanceHistory);
 		this.isSAR = true;
 	}
 
