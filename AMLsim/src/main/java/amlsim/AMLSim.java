@@ -276,7 +276,7 @@ public class AMLSim extends SimState {
 			account.setProp(simProp.getProbIncome(), simProp.getMeanIncome(), simProp.getStdIncome(),
 					simProp.getProbIncomeSAR(), simProp.getMeanIncomeSAR(), simProp.getStdIncomeSAR(),
 					simProp.getMeanOutcome(), simProp.getStdOutcome(),
-					simProp.getMeanOutcomeSar(), simProp.getStdOutcomeSar());
+					simProp.getMeanOutcomeSar(), simProp.getStdOutcomeSar(), simProp.getProbSpendCash());
 
 			int index = this.getAccounts().size();
 			//account.setBranch(this.branches.get(index % this.numBranches));

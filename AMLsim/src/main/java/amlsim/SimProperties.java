@@ -54,6 +54,7 @@ public class SimProperties {
     private double stdOutcome;
     private double meanOutcomeSar;
     private double stdOutcomeSar;
+    private double probSpendCash;
     
     SimProperties(String jsonName) throws IOException {
         String jsonStr = loadTextFile(jsonName);
@@ -93,6 +94,7 @@ public class SimProperties {
         stdOutcome = defaultProp.getDouble("std_outcome");
         meanOutcomeSar = defaultProp.getDouble("mean_outcome_sar");
         stdOutcomeSar = defaultProp.getDouble("std_outcome_sar");
+        probSpendCash = defaultProp.getDouble("prob_spend_cash");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
@@ -242,6 +244,9 @@ public class SimProperties {
         return stdOutcomeSar;
     }
     
+    public double getProbSpendCash() {
+        return probSpendCash;
+    }
     public double getMarginRatio() {
         return marginRatio;
     }

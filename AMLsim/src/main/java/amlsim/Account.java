@@ -42,6 +42,7 @@ public class Account implements Steppable {
 	private double stdOutcome; // Standard deviation of outcome
 	private double meanOutcomeSar; // Mean outcome
 	private double stdOutcomeSar; // Standard deviation of outcome
+	private double probSpendCash; // Probability of spending cash
 
 	List<Alert> alerts = new ArrayList<>();
 	List<AccountGroup> accountGroups = new ArrayList<>();
@@ -272,7 +273,7 @@ public class Account implements Steppable {
 		this.accountGroups.add(accountGroup);
 	}
 
-	public void setProp(double probIncome, double meanIncome, double stdIncome, double probIncomeSar, double meanIncomeSar, double stdIncomeSar, double meanOutcome, double stdOutcome, double meanOutcomeSar, double stdOutcomeSar) {
+	public void setProp(double probIncome, double meanIncome, double stdIncome, double probIncomeSar, double meanIncomeSar, double stdIncomeSar, double meanOutcome, double stdOutcome, double meanOutcomeSar, double stdOutcomeSar, double probSpendCash) {
 		this.probIncome = probIncome;
 		this.meanIncome = meanIncome;
 		this.stdIncome = stdIncome;
@@ -283,6 +284,7 @@ public class Account implements Steppable {
 		this.stdOutcome = stdOutcome;
 		this.meanOutcomeSar = meanOutcome;
 		this.stdOutcomeSar = stdOutcome;
+		this.probSpendCash = probSpendCash;
 	}
 	
 	/**
@@ -359,11 +361,7 @@ public class Account implements Steppable {
 			double x = (this.balance + cashBalance - meanBalance) / meanBalance;
 			double sigmoid = 1 / (1 + Math.exp(-x));
 			if (this.random.nextDouble() < sigmoid) {
-				double probSpendCash = -1.0;
-				if (cashBalance > 1.0) {
-					probSpendCash = 0.9; // TODO: add to conf.json
-				}
-				if (this.random.nextDouble() < probSpendCash) {
+				if (cashBalance > 1.0 && this.random.nextDouble() < this.probSpendCash) {
 					TruncatedNormal tn = new TruncatedNormal(this.meanOutcomeSar, this.stdOutcomeSar, 0.0, this.cashBalance); // TODO: handle lb better, maybe define in conf.json?
 					double amt = tn.sample();
 					if (this.cashBalance > amt && amt > 0.0) {
