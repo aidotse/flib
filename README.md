@@ -77,6 +77,7 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     "std_outcome": 500.0,
     "mean_outcome_sar": 200.0,
     "std_outcome_sar": 500.0,
+    "prob_spend_cash": 0.7,
     "mean_phone_change_frequency": 1460,
     "std_phone_change_frequency": 365,
     "mean_phone_change_frequency_sar": 365,
@@ -171,6 +172,10 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     <br>
     <em>Fig 2. Spending behavior.</em>
     </div>
+
+* **prob_spend_cash**
+
+    The probability for an account to spend cash. If an account has cash, **prop_spend_cash** will decide if the account spends cash in a outcome transaction. Only sar accounts can spend cash.
 
 * **mean_phone_change_frequency, std_phone_change_frequency, mean_phone_change_frequency_sar, std_phone_change_frequency_sar**
 
