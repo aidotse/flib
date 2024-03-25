@@ -31,7 +31,8 @@
     "std_bank_change_frequency": 1,
     "mean_bank_change_frequency_sar": 1460,
     "std_bank_change_frequency_sar": 1,
-    "margin_ratio": 0.1
+    "margin_ratio": 0.1,
+    "prob_participate_in_multiple_sars": 0.2
   },
   "input": {
     "directory": "paramFiles/100K_accts",
