@@ -220,7 +220,9 @@ class TransactionGenerator:
         self.default_start_range = parse_int(default_conf.get("start_range"))
         self.default_end_range = parse_int(default_conf.get("end_range"))
         self.default_model = parse_int(default_conf.get("transaction_model"))
-
+        self.defult_prob_sar_participate = parse_float(default_conf.get("prob_participate_in_multiple_sars"))
+        self.sar_participation = {0: []}
+        
         # The ratio of amount intermediate accounts receive
         self.margin_ratio = parse_float(default_conf.get("margin_ratio", DEFAULT_MARGIN_RATIO))
         if not 0.0 <= self.margin_ratio <= 1.0:
@@ -285,12 +287,14 @@ class TransactionGenerator:
 
         self.tx_types = get_types(os.path.join(self.input_dir, self.type_file))
 
+
     def check_hub_exists(self):
         """Validate whether one or more hub accounts exist as main accounts of AML typologies
         """
         if not self.hubs:
             raise ValueError("No main account candidates found. "
                              "Please try again with smaller value of the 'degree_threshold' parameter in conf.json.")
+
 
     def set_main_acct_candidates(self):        
         """ Set self.hubs to be a set of hub nodes
@@ -318,6 +322,7 @@ class TransactionGenerator:
         if not self.g.has_node(aid):
             raise KeyError("Account %s does not exist" % str(aid))
 
+
     def check_account_absent(self, aid):
         """Validate an absence of a specified account
         :param aid: Account ID
@@ -329,11 +334,13 @@ class TransactionGenerator:
         else:
             return True
 
+
     def get_all_bank_ids(self):
         """Get a list of all bank IDs
         :return: Bank ID list
         """
         return list(self.bank_to_accts.keys())
+
 
     def get_typology_members(self, num, bank_id=""):
         """Choose accounts randomly as members of AML typologies from one or multiple banks.
@@ -346,15 +353,44 @@ class TransactionGenerator:
             raise ValueError("The number of members must be more than 1")
 
         if bank_id in self.bank_to_accts:  # Choose members from the same bank as the main account
+            #bank_accts = self.bank_to_accts[bank_id]
+            #main_candidates = self.hubs & bank_accts
+            #main_acct = random.sample(main_candidates, 1)[0]
+            ##self.remove_typology_candidate(main_acct)
+            #sub_accts = random.sample(bank_accts, num - 1)
+            ##for n in sub_accts:
+            ##    self.remove_typology_candidate(n)
+            #
+            #members = [main_acct] + sub_accts
+            #
+            
             bank_accts = self.bank_to_accts[bank_id]
-            main_candidates = self.hubs & bank_accts
-            main_acct = random.sample(main_candidates, 1)[0]
-            #self.remove_typology_candidate(main_acct)
-            sub_accts = random.sample(bank_accts, num - 1)
-            #for n in sub_accts:
-            #    self.remove_typology_candidate(n)
-
-            members = [main_acct] + sub_accts
+            members = []
+            for m in range(num):
+                bin = 0
+                while random.random() < -self.defult_prob_sar_participate**(bin+2)/((bin+2)*np.log(1-self.defult_prob_sar_participate)): # TODO: should be a cumelative probability? 
+                    if bin+1 not in self.sar_participation:
+                        break
+                    elif all([candidate not in bank_accts for candidate in self.sar_participation[bin+1]]):
+                        break
+                    elif all([candidate in members for candidate in self.sar_participation[bin+1]]):
+                        break
+                    else:
+                        bin += 1
+                candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                member = random.sample(candidates, 1)[0]
+                members.append(member)
+            for member in members:
+                bins = list(self.sar_participation.keys())
+                for bin in bins:
+                    if member in self.sar_participation[bin]:
+                        if bin+1 not in self.sar_participation:
+                            self.sar_participation[bin+1] = [member]
+                        else:
+                            self.sar_participation[bin+1].append(member)
+                        self.sar_participation[bin].remove(member)
+                        break
+            main_acct = random.choice(members)
             return main_acct, members
 
         elif bank_id == "":  # Choose members from all accounts
@@ -367,25 +403,52 @@ class TransactionGenerator:
             ##    self.remove_typology_candidate(n)
             #members = [main_acct] + sub_accts
             
-            self.check_hub_exists()
-            sub_accts = random.sample(self.acct_to_bank.keys(), num)
-            main_acct = None
-            for sub_acct in sub_accts:
-                if sub_acct in self.hubs:
-                    main_acct = sub_acct
-                    sub_accts.remove(sub_acct)
-                    break
-            if main_acct is None:
-                main_acct = random.sample(self.hubs, 1)[0]
-            members = [main_acct] + sub_accts
+            #self.check_hub_exists()
+            #sub_accts = random.sample(self.acct_to_bank.keys(), num)
+            #main_acct = None
+            #for sub_acct in sub_accts:
+            #    if sub_acct in self.hubs:
+            #        main_acct = sub_acct
+            #        sub_accts.remove(sub_acct)
+            #        break
+            #if main_acct is None:
+            #    main_acct = random.sample(self.hubs, 1)[0]
+            #members = [main_acct] + sub_accts
             #for member in members:
             #    if member == 181:
             #        print("181")
+            
+            members = []
+            for m in range(num):
+                bin = 0
+                while random.random() < -self.defult_prob_sar_participate**(bin+2)/((bin+2)*np.log(1-self.defult_prob_sar_participate)): # TODO: should be a cumelative probability? 
+                    if bin+1 not in self.sar_participation:
+                        break
+                    elif all([candidate in members for candidate in self.sar_participation[bin+1]]):
+                        break
+                    else:
+                        bin += 1
+                candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members]
+                member = random.sample(candidates, 1)[0]
+                members.append(member)
+            for member in members:
+                bins = list(self.sar_participation.keys())
+                for bin in bins:
+                    if member in self.sar_participation[bin]:
+                        if bin+1 not in self.sar_participation:
+                            self.sar_participation[bin+1] = [member]
+                        else:
+                            self.sar_participation[bin+1].append(member)
+                        self.sar_participation[bin].remove(member)
+                        break
+            main_acct = random.choice(members)
+            
             return main_acct, members
 
         else:
             raise KeyError("No such bank ID: %s" % bank_id)
 
+        
     def load_account_list(self):
         """Load and add account vertices from a CSV file
         """
@@ -393,6 +456,7 @@ class TransactionGenerator:
             self.load_account_list_param()
         else:
             self.load_account_list_raw()
+
 
     def load_account_list_raw(self):
         """Load and add account vertices from a CSV file with raw account info
@@ -474,6 +538,7 @@ class TransactionGenerator:
                 self.add_account(aid, init_balance=init_balance, country=default_country, business=default_acct_type, is_sar=False, **attr)
                 count += 1
 
+
     def set_num_accounts(self):
         """Read the number of accounts from the account list file
         """        
@@ -525,6 +590,7 @@ class TransactionGenerator:
 
         logger.info("Generated %d accounts." % self.num_accounts)
 
+
     def generate_normal_transactions(self):
         """Generate a base directed graph from degree sequences
         TODO: Add options to call scale-free generator functions directly instead of loading degree CSV files
@@ -542,6 +608,7 @@ class TransactionGenerator:
             src = nodes[src_i]
             dst = nodes[dst_i]
             self.add_edge_info(src, dst)  # Add edge info.
+
 
     def add_account(self, acct_id, **attr):
         """Add an account vertex
@@ -563,6 +630,7 @@ class TransactionGenerator:
 
         self.bank_to_accts[attr['bank_id']].add(acct_id)
         self.acct_to_bank[acct_id] = attr['bank_id']
+        self.sar_participation[0].append(acct_id) 
 
 
     def remove_typology_candidate(self, acct):
@@ -573,6 +641,7 @@ class TransactionGenerator:
         bank_id = self.acct_to_bank[acct] 
         del self.acct_to_bank[acct] # remove from bank mapping
         self.bank_to_accts[bank_id].discard(acct)
+
 
     def add_edge_info(self, orig, bene):
         """Adds info to edge. Based on add_transaction.
@@ -587,6 +656,7 @@ class TransactionGenerator:
             raise ValueError("Self loop from/to %s is not allowed for transaction networks" % str(orig))
         self.g.edge[orig][bene]['edge_id'] = self.edge_id
         self.edge_id += 1
+
 
     # Load Custom Topology Files
     def add_subgraph(self, members, topology):
@@ -604,6 +674,7 @@ class TransactionGenerator:
             dst = node_map[e[1]]
             self.g.add_edge(src, dst)
             self.add_edge_info(src, dst)
+
 
     def load_edgelist(self, members, csv_name):
         """Load edgelist and add edges with existing account vertices
@@ -916,6 +987,15 @@ class TransactionGenerator:
                     count += 1
                     if count % 1000 == 0:
                         logger.info("Created %d alerts" % count)
+            # TODO: remove
+            # prints the info regarding sar patterns
+            n_sar_accts = sum([len(self.sar_participation[bin]) for bin in range(1, len(self.sar_participation))])
+            for k in range(1, len(self.sar_participation)):
+                print(f'\nbin: {k}, size: {len(self.sar_participation[k])}, members: {self.sar_participation[k]}')
+                pmf = -self.defult_prob_sar_participate**k / (k * np.log(1-self.defult_prob_sar_participate))
+                frac = len(self.sar_participation[k]) / n_sar_accts
+                print(f'pmf: {pmf}, frac: {frac}\n')
+
 
     def add_aml_typology(self, is_sar, typology_name, num_accounts, min_amount, max_amount, period, bank_id="", schedule=1, source_type='TRANSFER'):
         """Add an AML typology transaction set
@@ -1009,12 +1089,12 @@ class TransactionGenerator:
             else:
                 main_acct, members = self.get_typology_members(num_accounts, bank_id)
             add_node(main_acct, self.acct_to_bank[main_acct])
-            self.remove_typology_candidate(main_acct)
+            #self.remove_typology_candidate(main_acct)
             for member in members:
                 if member == main_acct:
                     continue
                 add_node(member, self.acct_to_bank[member])
-                self.remove_typology_candidate(member)
+                #self.remove_typology_candidate(member)
                 date = random.randrange(start_date, end_date + 1)
                 add_edge(member, main_acct, amount, date)
 
@@ -1047,12 +1127,12 @@ class TransactionGenerator:
             else:
                 main_acct, members = self.get_typology_members(num_accounts, bank_id)
             add_node(main_acct, self.acct_to_bank[main_acct])
-            self.remove_typology_candidate(main_acct)
+            #self.remove_typology_candidate(main_acct)
             for member in members:
                 if member == main_acct:
                     continue
                 add_node(member, self.acct_to_bank[member])
-                self.remove_typology_candidate(member)
+                #self.remove_typology_candidate(member)
                 date = random.randrange(start_date, end_date + 1)
                 add_edge(main_acct, member, amount, date)
 
@@ -1088,7 +1168,7 @@ class TransactionGenerator:
                 main_acct, members = self.get_typology_members(num_accounts, bank_id)
             for member in members:
                 add_node(member, self.acct_to_bank[member])
-                self.remove_typology_candidate(member)
+                #self.remove_typology_candidate(member)
             num_orig_accts = num_accounts // 2  # The former half members are originator accounts
             benes = members[num_orig_accts:]
             origs = members[:num_orig_accts]
@@ -1156,7 +1236,7 @@ class TransactionGenerator:
                 main_acct, members = self.get_typology_members(num_accounts, bank_id)
             for member in members:
                 add_node(member, self.acct_to_bank[member])
-                self.remove_typology_candidate(member)
+                #self.remove_typology_candidate(member)
             layer_sizes = []
             num_accts_left = num_accounts
             while num_accts_left > 0:
@@ -1214,7 +1294,7 @@ class TransactionGenerator:
                 main_acct, members = self.get_typology_members(num_accounts, bank_id)
             for member in members:
                 add_node(member, self.acct_to_bank[member])
-                self.remove_typology_candidate(member)
+                #self.remove_typology_candidate(member)
             members.remove(main_acct)
             for member in members:
                 num_txs = random.randrange(1, num_accounts)
@@ -1274,10 +1354,10 @@ class TransactionGenerator:
             orig = main_acct
             members.remove(main_acct)
             add_node(orig, self.acct_to_bank[orig])
-            self.remove_typology_candidate(orig)
+            #self.remove_typology_candidate(orig)
             for bene, date in zip(members, dates):
                 add_node(bene, self.acct_to_bank[bene])
-                self.remove_typology_candidate(bene)
+                #self.remove_typology_candidate(bene)
                 add_edge(orig, bene, amount, date)
                 orig = bene
                 amount = amount - amount * self.margin_ratio
@@ -1339,7 +1419,7 @@ class TransactionGenerator:
                 main_acct, members = self.get_typology_members(num_accounts, bank_id)
             for member in members:
                 add_node(member, self.acct_to_bank[member])
-                self.remove_typology_candidate(member)
+                #self.remove_typology_candidate(member)
             orig_acct = main_acct
             members.remove(main_acct)
             bene_acct = random.sample(members, 1)[0]
@@ -1416,7 +1496,7 @@ class TransactionGenerator:
                 main_acct, members = self.get_typology_members(num_accounts, bank_id)
             for member in members:
                 add_node(member, self.acct_to_bank[member])
-                self.remove_typology_candidate(member)
+                #self.remove_typology_candidate(member)
             mid_acct = main_acct
             members.remove(main_acct)
             if len(members) % 2 != 0:
@@ -1442,6 +1522,7 @@ class TransactionGenerator:
         sub_g.graph[IS_SAR_KEY] = is_sar  # SAR flag
         self.alert_groups[self.alert_id] = sub_g
         self.alert_id += 1
+
 
     def write_account_list(self):
         """Write account list to a CSV file.
