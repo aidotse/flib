@@ -122,18 +122,21 @@ def main():
     
     t = time.time()
     
-    DATASET = '200K_accts'
+    DATASET = '100K_accts'
     path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     df = load_data(path)
     banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
-    test_size = 0.2
+    overlap = 0.9 # overlap of training and testing data
     
     for bank in banks:
         df_bank = df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
-        split_step = (df_bank['step'].max() - df_bank['step'].min()) * (1 - test_size) + df_bank['step'].min()
+        train_start = df_bank['step'].min()
+        train_end = df_bank['step'].min() + (df_bank['step'].max() - df_bank['step'].min()) * (overlap+(1-overlap)/2)
+        test_start = df_bank['step'].min() + (df_bank['step'].max() - df_bank['step'].min()) * (1-overlap)/2
+        test_end = df_bank['step'].max()
         
-        df_bank_train = df_bank[df_bank['step'] <= split_step]
-        df_bank_test = df_bank #[df_bank['step'] > split_step]
+        df_bank_train = df_bank[(df_bank['step'] >= train_start) & (df_bank['step'] <= train_end)]
+        df_bank_test = df_bank[(df_bank['step'] >= test_start) & (df_bank['step'] <= test_end)]
         
         df_nodes_train = get_nodes(df_bank_train)
         df_edges_train = get_edges(df_bank_train, aggregated=True, directional=False)
