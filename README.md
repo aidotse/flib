@@ -192,6 +192,12 @@ The conf.json file contains parameters for the generel behaviour of the accounts
 
     * Whenever an account engages in money laundering, it takes a cut (percentage) of the money given by **margin_ratio**. 
 
+* **prob_participate_in_multiple_sars**
+
+  * The probability for an sar account to participate in multiple SAR patterns. The number of SAR patterns an account can participate in follows the probability mass function of a Log($p$)-distributed random varible
+    $$\mathrm{Pr}[k] = \frac{-p^k}{k\log(1-p)}$$,
+    where $k$ is the number of SAR patterns an account participates in and $p$ is the parameter **prob_participate_in_multiple_sars**.
+
 * **gamma**, **loc**, and **scale**
   * These parameters are used to generate a [scale-free network](https://en.wikipedia.org/wiki/Scale-free_network)
   * For large degrees $d$, a scale-free network obeys $\mathrm{Pr}[\text{node degree}=d] \propto d^{-\gamma}$ where $\gamma$ is given by **gamma**
