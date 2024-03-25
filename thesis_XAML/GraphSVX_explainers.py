@@ -1330,6 +1330,7 @@ class GraphSVX():
             [tensor]: estimated coefficients of our weighted linear regression - on (z, f(z'))
             Dimension (M * num_classes)
         """
+        
         # Add constant term
         z_ = torch.cat([z_, torch.ones(z_.shape[0], 1)], dim=1)
 

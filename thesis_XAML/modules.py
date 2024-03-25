@@ -7,6 +7,8 @@ from torch_geometric.data import Data
 #from dgl.nn.pytorch.conv import GATConv
 import numpy as np 
 from collections import deque
+import copy
+
 
 # (Written by Tomas & Agnes)
 class LogisticRegressor(torch.nn.Module):
@@ -46,12 +48,15 @@ class LogisticRegressor(torch.nn.Module):
 class GCN(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout):
         super(GCN, self).__init__()
+        self.input_dim = input_dim
         self.output_dim = output_dim
         convs = [GCNConv(input_dim, hidden_dim)] + [GCNConv(hidden_dim, hidden_dim) for _ in range(num_layers-2)] + [GCNConv(hidden_dim, output_dim)]
         self.convs = torch.nn.ModuleList(convs)
         self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])
         self.dropout = dropout
         self.softmax = torch.nn.Softmax(dim=1)
+        self.testdata = []
+        self.node_to_explain = []
 
     def reset_parameters(self):
         for conv in self.convs:
@@ -69,9 +74,50 @@ class GCN(torch.nn.Module):
             x = F.dropout(x, p=self.dropout, training=self.training)
             
         #Note: When using CrossEntropyLoss, the softmax function is included in the loss function
-        #out = self.softmax(x)
         out = x
             
+        return out
+    
+        # Adaption for Node Feature Vector (NFV) input
+    def set_test_data(self, testdata):
+        self.testdata = testdata
+    
+    def set_node_to_explain(self, node_to_explain):
+        self.node_to_explain = node_to_explain
+    
+    def forward_NFVinput(self, node_feature_vec):
+        print('Starting forward_LIME...')
+        num_nodes = self.testdata.x.shape[0]
+        
+        node_feature_vec = node_feature_vec.reshape(-1,self.input_dim)
+        num_samples = node_feature_vec.shape[0]
+        out = torch.zeros((num_samples,2))
+        print(f'Number of samples = {num_samples}')
+        
+        data_list = []
+        
+        print('Loading data...')
+        for i in range(num_samples):
+            new_graph = copy.deepcopy(self.testdata)
+            new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+            data_list.append(new_graph)
+        print(f'number of graphs = {len(data_list)}')
+        
+        print('Loading data into a single batch...')
+        #dataset = CustomDataset(data_list)
+        batch = torch_geometric.data.Batch.from_data_list(data_list)
+        
+        print('Starting forward pass...')
+        with torch.no_grad():
+            out_tmp = self.softmax(self.forward(batch))
+        
+        print(f'out_tmp.shape = {out_tmp.shape}')
+        print('Extracting output...')
+        for i in range(batch.num_graphs):
+            out[i] = out_tmp[self.node_to_explain+i*num_nodes,:]
+            
+        print('Finished.')
+
         return out
 
 
@@ -134,59 +180,97 @@ class GAT(torch.nn.Module):
         return x, attention_weights1, attention_weights2, attention_weights3
 
 
-class GCN_LIME(torch.nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout):
-        super(GCN_LIME, self).__init__()
-        self.input_dim = input_dim
-        self.output_dim = output_dim
-        convs = [GCNConv(input_dim, hidden_dim)] + [GCNConv(hidden_dim, hidden_dim) for _ in range(num_layers-2)] + [GCNConv(hidden_dim, output_dim)]
-        self.convs = torch.nn.ModuleList(convs)
-        self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])
-        self.dropout = dropout
-        self.softmax = torch.nn.Softmax(dim=1)
-        self.testdata = []
-        self.node_to_explain = []
+# class GCN_NFVinput(torch.nn.Module):
+#     def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout):
+#         super(GCN_NFVinput, self).__init__()
+#         self.input_dim = input_dim
+#         self.output_dim = output_dim
+#         convs = [GCNConv(input_dim, hidden_dim)] + [GCNConv(hidden_dim, hidden_dim) for _ in range(num_layers-2)] + [GCNConv(hidden_dim, output_dim)]
+#         self.convs = torch.nn.ModuleList(convs)
+#         self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])
+#         self.dropout = dropout
+#         self.softmax = torch.nn.Softmax(dim=1)
+#         self.testdata = []
+#         self.node_to_explain = []
 
-    def reset_parameters(self):
-        for conv in self.convs:
-            conv.reset_parameters()
-        for bn in self.bns:
-            bn.reset_parameters()
+#     def reset_parameters(self):
+#         for conv in self.convs:
+#             conv.reset_parameters()
+#         for bn in self.bns:
+#             bn.reset_parameters()
 
-    def forward(self, data):
-        x, edge_index = data.x, data.edge_index
-        for i, layer in enumerate(self.convs):
-          x = layer(x, edge_index)
-          if i < len(self.convs)-1:
-            x = self.bns[i](x)
-            x = F.relu(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
+#     def forward(self, data):
+#         x, edge_index = data.x, data.edge_index
+#         for i, layer in enumerate(self.convs):
+#           x = layer(x, edge_index)
+#           if i < len(self.convs)-1:
+#             x = self.bns[i](x)
+#             x = F.relu(x)
+#             x = F.dropout(x, p=self.dropout, training=self.training)
             
-        #Note: When using CrossEntropyLoss, the softmax function is included in the loss function
-        #out = self.softmax(x)
-        out = x
-        return out
+#         #Note: When using CrossEntropyLoss, the softmax function is included in the loss function
+#         #out = self.softmax(x)
+#         out = x
+#         return out
     
-    # Adaption for LIME tabular compatibility
-    def set_test_data(self, testdata):
-        self.testdata = testdata
+#     # Adaption for Node Feature Vector (NFV) input
+#     def set_test_data(self, testdata):
+#         self.testdata = testdata
     
-    def set_node_to_explain(self, node_to_explain):
-        self.node_to_explain = node_to_explain
+#     def set_node_to_explain(self, node_to_explain):
+#         self.node_to_explain = node_to_explain
     
-    def forward_LIME(self, node_feature_vec):
-        print('Starting forward_LIME...')
-        node_feature_vec = node_feature_vec.reshape(-1,self.input_dim)
-        out = torch.zeros((node_feature_vec.shape[0],2))
-        for i in range(node_feature_vec.shape[0]):
-            self.testdata.x[self.node_to_explain] = node_feature_vec[i,:]
-            with torch.no_grad():
-                out_tmp = self.softmax(self.forward(self.testdata))
-                out[i] = out_tmp[self.node_to_explain]
-            if i % 100 == 0:
-               print('LIME progress: ', i, '/', node_feature_vec.shape[0])
+#     def forward_NFVinput(self, node_feature_vec):
+#         print('Starting forward_LIME...')
+#         num_nodes = self.testdata.x.shape[0]
+        
+#         node_feature_vec = node_feature_vec.reshape(-1,self.input_dim)
+#         num_samples = node_feature_vec.shape[0]
+#         out = torch.zeros((num_samples,2))
+        
+#         data_list = []
+        
+#         print('Loading data...')
+#         for i in range(num_samples):
+#             new_graph = copy.deepcopy(self.testdata)
+#             new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+#             data_list.append(new_graph)
+#         print(f'number of graphs = {len(data_list)}')
+        
+#         print('Loading data into a single batch...')
+#         #dataset = CustomDataset(data_list)
+#         batch = torch_geometric.data.Batch.from_data_list(data_list)
+        
+#         print('Starting forward pass...')
+#         with torch.no_grad():
+#             out_tmp = self.softmax(self.forward(batch))
+        
+#         print(f'out_tmp.shape = {out_tmp.shape}')
+#         print('Extracting output...')
+#         for i in range(batch.num_graphs):
+#             out[i] = out_tmp[self.node_to_explain+i*num_nodes,:]
+            
+#         print('Finished.')
 
-        return out
+#         return out
+        
+    # def forward_LIME_OLD(self, node_feature_vec):
+    #     print('Starting forward_LIME...')
+    #     print(f'node_feature_vec type = {type(node_feature_vec)}')
+    #     print(f'node_feature_vec is on device: {node_feature_vec.device}')
+    #     print(f'self.testdata is on device: {self.testdata.x.device}')
+    #     print(node_feature_vec.shape)
+    #     node_feature_vec = node_feature_vec.reshape(-1,self.input_dim)
+    #     print(node_feature_vec.shape)
+    #     out = torch.zeros((node_feature_vec.shape[0],2))
+    #     for i in range(node_feature_vec.shape[0]):
+    #         self.testdata.x[self.node_to_explain] = node_feature_vec[i,:]
+    #         with torch.no_grad():
+    #             out_tmp = self.softmax(self.forward(self.testdata))
+    #             out[i] = out_tmp[self.node_to_explain]
+    #         if i % 100 == 0:
+    #             print('LIME progress: ', i, '/', node_feature_vec.shape[0])
+    #     return out
 
 
 
@@ -233,7 +317,7 @@ class GCN_GraphSVX(torch.nn.Module):
         self.convs = torch.nn.ModuleList(convs)
         self.bns = torch.nn.ModuleList([torch.nn.BatchNorm1d(hidden_dim) for _ in range(num_layers-1)])
         self.dropout = dropout
-        self.softmax = torch.nn.Softmax(dim=1)
+        self.log_softmax = torch.nn.LogSoftmax(dim=1)
 
     def reset_parameters(self):
         for conv in self.convs:
@@ -250,9 +334,43 @@ class GCN_GraphSVX(torch.nn.Module):
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)
             
-        #Note: When using softmax function in the final layer we need
+        #Note: When using LogSoftmax function in the final layer we need
         #to use NLLLoss instead of cross entropy loss
-        out = self.softmax(x)
+        out = self.log_softmax(x)
         #out = x
             
         return out
+
+
+# (Written by Tomas & Agnes)
+class GAT_GraphSVX(torch.nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels, num_heads, dropout=0.3):
+        super(GAT_GraphSVX, self).__init__()
+        self.dropout = dropout
+        self.conv1 = GATConv(in_channels, hidden_channels, heads=num_heads, dropout=dropout)
+        self.conv2 = GATConv(hidden_channels * num_heads, hidden_channels, heads=num_heads, dropout=dropout)
+        self.conv3 = GATConv(hidden_channels * num_heads, out_channels, heads=1, concat = False, dropout=dropout)
+        self.log_softmax = torch.nn.LogSoftmax(dim=1)
+        self.return_attention_weights = False
+    
+    def set_return_attention_weights(self, return_attention_weights):
+        if return_attention_weights == True or return_attention_weights == False:
+            self.return_attention_weights = return_attention_weights
+        else:
+            raise ValueError('return_attention_weights must be either True or False')
+
+
+    def forward(self, x, edge_index):
+        x, attention_weights1 = self.conv1(x, edge_index, return_attention_weights=True)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x, attention_weights2 = self.conv2(x, edge_index, return_attention_weights=True)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x, attention_weights3 = self.conv3(x, edge_index, return_attention_weights=True)
+        x = self.log_softmax(x) #<--- need to use NLLLoss instead of CrossEntropyLoss
+        
+        if self.return_attention_weights:
+            return x, attention_weights1, attention_weights2, attention_weights3
+        else:
+            return x
