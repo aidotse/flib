@@ -12,6 +12,7 @@ import os
 import sys
 import logging
 import time
+from scipy import stats
 
 import cProfile
 
@@ -368,7 +369,7 @@ class TransactionGenerator:
             members = []
             for m in range(num):
                 bin = 0
-                while random.random() < -self.defult_prob_sar_participate**(bin+2)/((bin+2)*np.log(1-self.defult_prob_sar_participate)): # TODO: should be a cumelative probability? 
+                while random.random() > stats.logser.cdf(bin+1, self.defult_prob_sar_participate):
                     if bin+1 not in self.sar_participation:
                         break
                     elif all([candidate not in bank_accts for candidate in self.sar_participation[bin+1]]):
@@ -421,7 +422,7 @@ class TransactionGenerator:
             members = []
             for m in range(num):
                 bin = 0
-                while random.random() < -self.defult_prob_sar_participate**(bin+2)/((bin+2)*np.log(1-self.defult_prob_sar_participate)): # TODO: should be a cumelative probability? 
+                while random.random() > stats.logser.cdf(bin+1, self.defult_prob_sar_participate):
                     if bin+1 not in self.sar_participation:
                         break
                     elif all([candidate in members for candidate in self.sar_participation[bin+1]]):
