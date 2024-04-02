@@ -346,6 +346,8 @@ class GCN_GraphSVX(torch.nn.Module):
 class GAT_GraphSVX(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, num_heads, dropout=0.3):
         super(GAT_GraphSVX, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
         self.dropout = dropout
         self.conv1 = GATConv(in_channels, hidden_channels, heads=num_heads, dropout=dropout)
         self.conv2 = GATConv(hidden_channels * num_heads, hidden_channels, heads=num_heads, dropout=dropout)
@@ -374,3 +376,45 @@ class GAT_GraphSVX(torch.nn.Module):
             return x, attention_weights1, attention_weights2, attention_weights3
         else:
             return x
+    
+    # Adaption for Node Feature Vector (NFV) input
+    def set_test_data(self, testdata):
+        self.testdata = testdata
+    
+    def set_node_to_explain(self, node_to_explain):
+        self.node_to_explain = node_to_explain
+    
+    def forward_NFVinput(self, node_feature_vec):
+        print('Starting forward_LIME...')
+        num_nodes = self.testdata.x.shape[0]
+        
+        node_feature_vec = node_feature_vec.reshape(-1,self.in_channels)
+        num_samples = node_feature_vec.shape[0]
+        out = torch.zeros((num_samples,2))
+        print(f'Number of samples = {num_samples}')
+        
+        data_list = []
+        
+        print('Loading data...')
+        for i in range(num_samples):
+            new_graph = copy.deepcopy(self.testdata)
+            new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+            data_list.append(new_graph)
+        print(f'number of graphs = {len(data_list)}')
+        
+        print('Loading data into a single batch...')
+        #dataset = CustomDataset(data_list)
+        batch = torch_geometric.data.Batch.from_data_list(data_list)
+        
+        print('Starting forward pass...')
+        with torch.no_grad():
+            out_tmp = self.forward(batch.x, batch.edge_index).exp()
+        
+        print(f'out_tmp.shape = {out_tmp.shape}')
+        print('Extracting output...')
+        for i in range(batch.num_graphs):
+            out[i] = out_tmp[self.node_to_explain+i*num_nodes,:]
+            
+        print('Finished.')
+
+        return out

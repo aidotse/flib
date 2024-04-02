@@ -169,7 +169,7 @@ def train_GAT_GraphSVX(hyperparameters = None, verbose = False):
     dropout = 0.3
     lr = 0.005
     epochs = 400
-    class_weights = [1, 2.5]
+    class_weights = [1, 3]
     
     class_weights = torch.tensor(class_weights, dtype=torch.float32).to(device)
     
