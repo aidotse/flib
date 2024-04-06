@@ -1653,7 +1653,7 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
-        PARAM_FILES = '100K_accts'
+        PARAM_FILES = 'test_small'
         argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]
