@@ -9,26 +9,11 @@ class Nominator:
         self.remaining_count_dict = dict()
         self.used_count_dict = dict()
         self.model_params_dict = dict()
-        self.fan_in_candidates = self.get_fan_in_candidates()
-        self.fan_out_candidates = self.get_fan_out_candidates()
-        self.alt_fan_in_candidates = []
-        self.alt_fan_out_candidates = []
-        self.forward_candidates = self.get_forward_candidates()
-        self.single_candidates = self.get_single_candidates()
-        self.mutual_candidates = self.single_candidates.copy() # TODO: this isn't correct, should find pairs of connected nodes 
-        self.periodical_candidates = self.single_candidates.copy()
+        
+        self.type_candidates = dict()
+        self.type_index = dict()
+        
         self.empty_list_message = 'pop from empty list'
-
-      
-        self.type_index = 0
-        self.forward_index = 0
-        self.fan_in_index = 0
-        self.fan_out_index = 0
-        self.alt_fan_in_index = 0
-        self.alt_fan_out_index = 0
-        self.single_index = 0
-        self.mutual_index = 0
-        self.periodical_index = 0
 
 
     def initialize_count(self, type, count, schedule_id, min_accounts, max_accounts, min_period, max_period):
@@ -48,16 +33,46 @@ class Nominator:
             self.model_params_dict[type] = param_list
         self.used_count_dict[type] = 0
         
-
+    
+    def initialize_candidates(self):
+        for type in self.remaining_count_dict:
+            if type == 'fan_in':
+                self.type_candidates[type] = self.get_fan_in_candidates()
+            elif type == 'fan_out':
+                self.type_candidates[type] = self.get_fan_out_candidates()
+            elif type == 'forward':
+                self.type_candidates[type] = self.get_forward_candidates()
+            elif type == 'single':
+                self.type_candidates[type] = self.get_single_candidates()
+            elif type == 'mutual':
+                if self.single_candidates is None:
+                    self.type_candidates[type] = self.get_single_candidates()
+                else:
+                    self.mutual_candidates = self.single_candidates.copy()
+            elif type == 'periodical':
+                if self.single_candidates is None:
+                    self.type_candidates[type] = self.get_single_candidates()
+                else:
+                    self.type_candidates[type] = self.single_candidates.copy()
+            else:
+                raise ValueError('Invalid type: {}'.format(type))
+            
+            self.type_index[type] = 0
+    
     def get_fan_in_candidates(self):
         """Returns a list of node ids that have at least degree_threshold incoming edges.
 
         Returns:
             list: list of node ids that have at least degree_threshold incoming edges
         """        
+        
+        nm_min_requirement = min(self.model_params_dict["fan_in"] , key=lambda x: x[1]) # get the normal model parameters with the smallers minimum number of accounts
+        threshold = nm_min_requirement[1] # get the minimum number of accounts in normal model
+
+        # return a list of nodes with at least enough incoming edges as the minimum number of accounts, sorted with respect to how many in degrees there are
         return sorted(
-            (n for n in self.g.nodes() if self.is_fan_in_candidate(n)),
-            key=lambda n: self.g.out_degree(n)
+            (n for n in self.g.nodes() if self.g.in_degree(n) >= threshold),
+            key=lambda n: self.g.in_degree(n)
         )
 
 
@@ -71,18 +86,6 @@ class Nominator:
             (n for n in self.g.nodes() if self.is_fan_out_candidate(n)),
             key=lambda n: self.g.in_degree(n)
         )
-
-
-    def is_fan_in_candidate(self, node_id):
-        """Returns True if node_id has at least degree_threshold incoming edges.
-
-        Args:
-            node_id (_type_): node id of node to check
-
-        Returns:
-            bool: True if node_id has at least degree_threshold incoming edges
-        """        
-        return self.g.in_degree(node_id) >= self.degree_threshold
 
 
     def is_fan_out_candidate(self, node_id):
@@ -219,16 +222,11 @@ class Nominator:
 
     def next_fan_in(self, type):
         
-        self.fan_in_index, node_id = self.next_node_id(self.fan_in_index, self.fan_in_candidates) # get next node id from fan in candidates
+        _, node_id = self.next_node_id(self.type_index[type], self.type_candidates[type]) # get next node id from fan in candidates
         if node_id is None:
-            return self.next_alt_fan_in(type)
-
-        try:
-            self.fan_out_candidates.remove(node_id) # remove from opposite
-        except ValueError:
-            pass
-        
-        return node_id
+            return self.conclude(type)
+        else:
+            return node_id
 
 
     def next_fan_out(self, type):
@@ -241,14 +239,6 @@ class Nominator:
         except ValueError:
             pass
 
-        return node_id
-
-
-    def next_alt_fan_in(self, type):
-        self.alt_fan_in_index, node_id = self.next_node_id(self.alt_fan_in_index, self.alt_fan_in_candidates)
-
-        if node_id is None:
-            return self.conclude(type)
         return node_id
 
 
@@ -310,22 +300,13 @@ class Nominator:
 
 
     def post_fan_in(self, node_id, type):
-        if not self.fan_in_candidates:
-            return self.post_alt_fan_in(node_id, type)
         
         if self.is_done(node_id, type):
-            candidate = self.fan_in_candidates.pop(self.fan_in_index)
+            candidate = self.type_candidates[type].pop(self.type_index[type])
             if not self.is_done(node_id, 'fan_out'):
                 self.alt_fan_out_candidates.append(candidate)
         else:
             self.fan_in_index += 1
-
-
-    def post_alt_fan_in(self, node_id, type):
-        if self.is_done(node_id, type):
-            self.alt_fan_in_candidates.pop(self.alt_fan_in_index)
-        else:
-            self.alt_fan_in_index += 1
 
     
     def post_alt_fan_out(self, node_id, type):
@@ -432,13 +413,13 @@ class Nominator:
         # num to work with is 
         # fan_ins mod threshold plus those not fan_in
         # if num to work with is less than threshold, ya done.
-        pred_ids = self.g.predecessors(node_id)
-        fan_in_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, pred_id}) for pred_id in pred_ids]
-        num_not = fan_in_or_not_list.count(False)
-        num_fan_in = fan_in_or_not_list.count(True)
-
-        num_to_work_with = (num_fan_in % self.degree_threshold) + num_not #how many can be spared from current fan-in assignments and how many are not assigned fan-in
-        return num_to_work_with < self.degree_threshold
+        pred_ids = self.g.predecessors(node_id) # get node-ids of incoming edges
+        fan_in_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, pred_id}) for pred_id in pred_ids] #get boolean list of whether each predecessor has a fan_in relationship with node_id
+        num_not = fan_in_or_not_list.count(False) # count the number of predecessors that do not have a fan_in relationship with node_id
+        num_fan_in = fan_in_or_not_list.count(True) # count the number of predecessors that do have a fan_in relationship with node_id
+        
+        num_to_work_with = (num_fan_in % self.degree_threshold) + num_not #As we only need to satisfy degree_threshold, we can spare (num_fan_in % self.degree_threshold) nodes and we can also work with num_not
+        return num_to_work_with < self.degree_threshold 
         
 
     def is_done_fan_out(self, node_id, type):
@@ -520,7 +501,7 @@ class Nominator:
         node_ids = set(node_ids)
         normal_models = self.g.node[main_id]['normal_models'] # get the transaction models associated with main_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id) # filter out the normal models that are of the type and have the main_id
-        return [filtered for filtered in filtereds if node_ids.issubset(filtered.node_ids)] # return True if any of the filtered normal models contain the node_ids
+        return [filtered for filtered in filtereds if node_ids.issubset(filtered.node_ids)] # return list of filtered normal models where node_ids are a subset of the node_ids
 
 
     def fan_clumps(self, type, node_id):
@@ -585,13 +566,13 @@ class Nominator:
         fan_clumps = self.fan_clumps(type_, node_id) # get the node_ids that are in a fan relationship with the node_id
         fan_nodes = set()
         for fan_clump in fan_clumps:
-            fan_nodes = fan_nodes | fan_clump # get the union of the fan_clumps
+            fan_nodes = fan_nodes | fan_clump # create a set of all nodes that are in fan relationship with node_id where node_id is main
 
-        candidates = neighbor_ids - fan_nodes # get the set difference between the neighbors and the fan_nodes
+        candidates = neighbor_ids - fan_nodes # subtract the nodes that are already in a fan relationship with node_id from the neighbor_ids
         if len(candidates) >= self.degree_threshold: 
             return candidates
         else:
-            # if there are not enough candidates, then we need to add some from the fan_clumps
+            # if there are not enough candidates, then we need to add some from the nodes already in a fan_in relation
             while (len(candidates) < self.degree_threshold):
                 touched = False
                 for clump in fan_clumps:

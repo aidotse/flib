@@ -724,6 +724,7 @@ class TransactionGenerator:
                 bank_id = self.default_bank_id
 
             self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period)
+        self.nominator.initialize_candidates() # create candidate lists for the types considered
 
 
     def build_normal_models(self):
@@ -771,8 +772,8 @@ class TransactionGenerator:
         if not candidates:
             raise ValueError('should always be candidates')
 
-        normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_in_index]
+        normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id}) # get all the normal fan-in models where node_id is main
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
         for nm in normal_models:
             nm.remove_node_ids(candidates)
             
