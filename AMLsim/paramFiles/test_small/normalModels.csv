@@ -1,0 +1,2 @@
+count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id
+3,fan_in,2,4,4,1,365,
