@@ -24,7 +24,7 @@ jobs:
       - name: provision-with-micromamba
         uses: mamba-org/provision-with-micromamba@main
         with:
-          environment-file: amlsim.yml
+          environment-file: AMLsim/amlsim.yml
           environment-name: amlsim
           cache-downloads: true
       - name: Test with pytest
