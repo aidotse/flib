@@ -1,15 +1,52 @@
 import os
 import json
+import utils
 
 def create_param_files(params:dict, param_file_folder:str):
     if not os.path.exists(param_file_folder):
         os.makedirs(param_file_folder)
+    
+    accounts_params = params['accounts']
+    with open(os.path.join(param_file_folder, 'accounts.csv'), 'w') as f:
+        f.write('count,min_balance,max_balance,country,business_type,bank_id\n')
+        for p in accounts_params:
+            f.write(','.join(map(str, p)) + '\n')
+    
+    alert_patterns_params = params['alertPatterns']
+    with open(os.path.join(param_file_folder, 'alert_patterns.csv'), 'w') as f:
+        f.write('count,type,schedule_id,min_accounts,max_accounts,min_amount,max_amount,min_period,max_period,bank_id,is_sar,source_type\n')
+        for p in alert_patterns_params:
+            f.write(','.join(map(str, p)) + '\n')
+    
     config_params = params['config']
     with open(os.path.join(param_file_folder, 'config.json'), 'w') as f:
         json.dump(config_params, f, indent=2)
-    config_params = params['accounts']
     
-
+    if 'degree' in params:
+        with open(os.path.join(param_file_folder, 'degree.csv'), 'w') as f:
+            f.write('Count,In-degree,Out-degree\n')
+            for p in params['degree']:
+                f.write(','.join(map(str, p)) + '\n')
+    else:
+        n = sum([p[0] for p in params['accounts']])
+        gamma = config_params['scale-free']['gamma']
+        loc = config_params['scale-free']['loc']
+        scale = config_params['scale-free']['scale']
+        values, counts = utils.powerlaw_degree_distrubution(n, gamma, loc, scale)
+        with open(os.path.join(param_file_folder, 'degree.csv'), 'w') as f:
+            f.write('Count,In-degree,Out-degree\n')
+            for v, c in zip(values, counts):
+                f.write(f'{c},{v[0]},{v[1]}\n')
+        
+    normal_models_params = params['normalModels']
+    with open(os.path.join(param_file_folder, 'normal_models.csv'), 'w') as f:
+        f.write('count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id\n')
+        for p in normal_models_params:
+            f.write(','.join(map(str, p)) + '\n')
+    
+    with open(os.path.join(param_file_folder, 'transactionType.csv'), 'w') as f:
+        f.write('Type,Frequency\n')
+        f.write('Transfer,1\n')
 
 params = {
     'config': {
@@ -47,16 +84,38 @@ params = {
             'std_bank_change_frequency_sar': 1, 
             'margin_ratio': 0.1, 
             'prob_participate_in_multiple_sars': 0.2
-        }
+        },
+        'scale-free': {
+            'gamma': 2.5,
+            'loc': 1,
+            'scale': 1
+        },
     },
     'accounts': [
         (27700, 1000, 100000, 'SWE', 'I', 'swedbank'),
         (13480, 1000, 100000, 'SWE', 'I', 'handelsbanken'),
         (58820, 1000, 100000, 'SWE', 'I', 'other')
     ],
-    'normalModels': {
-        ()
-    }
+    'alertPatterns': [
+        (100, 'fan_out', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
+        (100, 'fan_in', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
+        (100, 'cycle', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
+        (100, 'bipartite', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
+        (100, 'stack', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
+        (100, 'scatter_gather', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
+        (100, 'gather_scatter', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
+        (100, 'fan_in', 2, 4, 4, 100, 1000, 1, 365, 'swedbank', True, 'CASH'),
+        (100, 'fan_in', 2, 4, 4, 100, 1000, 1, 365, 'handelsbanken', True, 'CASH'),
+        (100, 'fan_in', 2, 4, 4, 100, 1000, 1, 365, 'others', True, 'CASH'),
+    ],
+    'normalModels': [
+        (100000, 'single', 2, 1, 1, 1, 365),
+        (100000, 'fan_out', 2, 4, 4, 1, 365),
+        (100000, 'fan_in', 2, 4, 4, 1, 365),
+        (50000, 'forward', 2, 3, 3, 1, 365),
+        (100000, 'periodical', 2, 2, 2, 1, 365),
+        (100000, 'mutual', 2, 2, 2, 1, 365)
+    ]
 }
 
 param_file_folder = 'param_files/test'
