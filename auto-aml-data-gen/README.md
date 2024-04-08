@@ -11,3 +11,12 @@ sudo code
     create aml data
     train statistical models
     end if recall and FPR are satisfied
+
+
+TODO:
+- [x] function to generate config files
+- [ ] function to start simulation
+- [ ] function to train and hyperparameter tune models
+- [ ] function to check constrains
+- [ ] function to evaluate FPR
+- [ ] function to suggest new parameters
