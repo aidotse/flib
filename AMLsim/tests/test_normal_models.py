@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts')))
-print(os.getcwd() )
+
 
 import json
 
@@ -35,7 +35,6 @@ def test_small_graph():
     
     # Ensure correct number of models are created
     EXPECTED_NO_OF_MODELS = [2, 2, 2, 2, 2, 2]
-    
     normal_models = dict()
     for type, expected_num in zip(TYPES,EXPECTED_NO_OF_MODELS):
         normal_models[type] = [nm for nm in txg.normal_models if nm.type == type]
@@ -48,8 +47,7 @@ def test_small_graph():
     for nm, expected_num in zip(normal_models["fan_out"], EXPECTED_NO_OF_NODES):
         assert len(nm.node_ids) == expected_num
     
-
-
+    
 # define main 
 if __name__ == "__main__":
     test_small_graph()

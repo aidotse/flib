@@ -249,7 +249,7 @@ class Nominator:
         
         if threshold is None:
             threshold = self.min_fan_in_threshold # get the minimum number of accounts required
-        return num_to_work_with <= threshold
+        return num_to_work_with < threshold
         
 
     def is_done_fan_out(self, node_id, type, threshold = None):
@@ -259,7 +259,7 @@ class Nominator:
 
         if threshold is None:
             threshold = self.min_fan_out_threshold # get the minimum number of accounts required
-        return num_to_work_with <= threshold
+        return num_to_work_with < threshold
         
 
     def is_done_forward(self, node_id, type):

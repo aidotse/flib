@@ -35,7 +35,7 @@
     "prob_participate_in_multiple_sars": 0.2
   },
   "input": {
-    "directory": "paramFiles/test_small",
+    "directory": "tests/parameters/small_test",
     "schema": "schema.json",
     "accounts": "accounts.csv",
     "alert_patterns": "alertPatterns.csv",
