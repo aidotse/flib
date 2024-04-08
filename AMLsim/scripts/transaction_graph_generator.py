@@ -767,16 +767,13 @@ class TransactionGenerator:
         if node_id is None:
             return
 
-        candidates = self.nominator.fan_in_breakdown(type, node_id)
+        candidates = self.nominator.find_available_candidate_neighbors(type, node_id)
 
         if not candidates:
             raise ValueError('should always be candidates')
 
-        normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id}) # get all the normal fan-in models where node_id is main
+        # Create the normal pattern
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
-        for nm in normal_models:
-            nm.remove_node_ids(candidates)
-            
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
@@ -786,7 +783,7 @@ class TransactionGenerator:
 
         self.normal_models.append(normal_model)
         
-        self.nominator.post_fan_in(node_id, type)
+
 
 
     def fan_out_model(self, type):
@@ -795,26 +792,22 @@ class TransactionGenerator:
         if node_id is None:
             return
 
-        candidates = self.nominator.fan_out_breakdown(type, node_id) # get the neighboring nodes that are in a potential fan-out relationship
+        candidates = self.nominator.find_available_candidate_neighbors(type, node_id) # get the neighboring nodes that are in a potential fan-out relationship
 
         if not candidates:
             raise ValueError('should always be candidates')
 
-        normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_out_index]
-        for nm in normal_models:
-            nm.remove_node_ids(candidates)
-
+        schedule_id, _, _, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
         result_ids = candidates | { node_id }
-        # TODO: smaple from candidates according to min max from csv
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
+        
+        self.nominator.post_update(node_id, type)
 
-        self.nominator.post_fan_out(node_id, type)
     
 
     def forward_model(self, type):
@@ -834,15 +827,15 @@ class TransactionGenerator:
         )
         normal_model = NormalModel(self.normal_model_id, type, list(set), pred_ids[0])
         
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.forward_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         
         for id in set:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
-
-        self.nominator.post_forward(node_id, type)
+        
+        self.nominator.post_update(node_id, type)
                 
 
     def single_model(self, type):
@@ -857,14 +850,14 @@ class TransactionGenerator:
         
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id) # create a normal model with the node_id and the connected account
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.single_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model) # add the normal model to the nodes
 
         self.normal_models.append(normal_model)
 
-        self.nominator.post_single(node_id, type)
+        self.nominator.post_update(node_id, type)
 
     
     def periodical_model(self, type):
@@ -878,14 +871,14 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.periodical_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
 
-        self.nominator.post_periodical(node_id, type)
+        self.nominator.post_update(node_id, type)
 
     
     def mutual_model(self, type):
@@ -899,14 +892,14 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.mutual_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
 
-        self.nominator.post_mutual(node_id, type)
+        self.nominator.post_update(node_id, type)
         
 
     def load_alert_patterns(self):

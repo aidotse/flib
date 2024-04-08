@@ -1,20 +1,17 @@
 import networkx as nx
+import random
 
 class Nominator:
     """Class responsible for nominating nodes for transactions.
     """    
     def __init__(self, g, degree_threshold):
         self.g = g
-        self.degree_threshold = degree_threshold
         self.remaining_count_dict = dict()
         self.used_count_dict = dict()
         self.model_params_dict = dict()
         
         self.type_candidates = dict()
         self.type_index = dict()
-        
-        self.empty_list_message = 'pop from empty list'
-
 
     def initialize_count(self, type, count, schedule_id, min_accounts, max_accounts, min_period, max_period):
         """Counts the number of nodes of a given type.
@@ -66,14 +63,12 @@ class Nominator:
             list: list of node ids that have at least degree_threshold incoming edges
         """        
         
-        nm_min_requirement = min(self.model_params_dict["fan_in"] , key=lambda x: x[1]) # get the normal model parameters with the smallers minimum number of accounts
-        threshold = nm_min_requirement[1] # get the minimum number of accounts in normal model
+        nm_min_requirement = min(self.model_params_dict["fan_in"] , key=lambda x: x[1]) # get the normal model parameters with the smallest minimum number of accounts
+        self.min_fan_in_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
 
         # return a list of nodes with at least enough incoming edges as the minimum number of accounts, sorted with respect to how many in degrees there are
-        return sorted(
-            (n for n in self.g.nodes() if self.g.in_degree(n) >= threshold),
-            key=lambda n: self.g.in_degree(n)
-        )
+        candidate_list = [n for n in self.g.nodes() if self.g.in_degree(n) >= self.min_fan_in_threshold]
+        return candidate_list
 
 
     def get_fan_out_candidates(self):
@@ -82,22 +77,10 @@ class Nominator:
         Returns:
             list: list of node ids that have at least degree_threshold outgoing edges
         """        
-        return sorted(
-            (n for n in self.g.nodes() if self.is_fan_out_candidate(n)),
-            key=lambda n: self.g.in_degree(n)
-        )
-
-
-    def is_fan_out_candidate(self, node_id):
-        """Returns True if node_id has at least degree_threshold outgoing edges.
-
-        Args:
-            node_id (_type_): node id of node to check
-
-        Returns:
-            bool: True if node_id has at least degree_threshold outgoing edges
-        """        
-        return self.g.out_degree(node_id) >= self.degree_threshold
+        nm_min_requirement = min(self.model_params_dict["fan_out"] , key=lambda x: x[1]) # get the normal model parameters with the smallest minimum number of accounts
+        self.min_fan_out_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
+        candidate_list = [n for n in self.g.nodes() if self.g.out_degree(n) >= self.min_fan_out_threshold]
+        return candidate_list
 
 
     def number_unused(self):
@@ -129,20 +112,8 @@ class Nominator:
 
         Returns:
             int: node id of next node of given type.
-        """        
-        node_id = None
-        if type == 'fan_in':
-            node_id = self.next_fan_in(type)
-        elif type == 'fan_out':
-            node_id = self.next_fan_out(type)
-        elif type == 'forward':
-            node_id = self.next_forward(type)
-        elif type == 'single':
-            node_id = self.next_single(type)
-        elif type == 'mutual':
-            node_id = self.next_mutual(type)
-        elif type == 'periodical':
-            node_id = self.next_periodical(type)
+        """         
+        _, node_id = self.next_node_id(self.type_index[type], self.type_candidates[type]) # get next node id from fan in candidates
 
         if node_id is None:
             self.conclude(type)
@@ -150,26 +121,6 @@ class Nominator:
             self.decrement(type)
             self.increment_used(type)
         return node_id
-
-
-    def current_type(self):
-        types = list(self.remaining_count_dict)
-        return types[self.type_index]
-
-
-    def increment_type_index(self):
-        if not self.has_more():
-            raise StopIteration
-        count = 0
-        while (count == 0):
-            types = list(self.remaining_count_dict)
-            self.type_index += 1
-            try:
-                types[self.type_index]
-            except IndexError:
-                self.type_index = 0
-            type = types[self.type_index]
-            count = self.remaining_count_dict[type]
 
 
     def types(self):
@@ -220,133 +171,12 @@ class Nominator:
         return self.remaining_count_dict[type]
 
 
-    def next_fan_in(self, type):
+    def post_update(self, node_id, type):
         
-        _, node_id = self.next_node_id(self.type_index[type], self.type_candidates[type]) # get next node id from fan in candidates
-        if node_id is None:
-            return self.conclude(type)
+        if self.is_done(node_id, type): # check if node will be able to be main in other fan_in patterns
+            self.type_candidates[type].pop(self.type_index[type]) # remove node_id from list of candidates (if popped, we dont need to increase index)
         else:
-            return node_id
-
-
-    def next_fan_out(self, type):
-        self.fan_out_index, node_id = self.next_node_id(self.fan_out_index, self.fan_out_candidates)
-        if node_id is None:
-            return self.next_alt_fan_out(type)
-
-        try: 
-            self.fan_in_candidates.remove(node_id) # remove from opposite
-        except ValueError:
-            pass
-
-        return node_id
-
-
-    def next_alt_fan_out(self, type):
-        self.alt_fan_out_index, node_id = self.next_node_id(self.alt_fan_out_index, self.alt_fan_out_candidates)
-
-        if node_id is None:
-            return self.conclude(type)
-        return node_id
-
-
-    def next_forward(self, type):
-        self.forward_index, node_id = self.next_node_id(self.forward_index, self.forward_candidates)
-        if node_id is None:
-            return self.conclude(type)
-        return node_id
-
-    
-    def next_single(self, type):
-        """Returns the next node_id of provided type.
-
-        Args:
-            type (string): type of node to return
-
-        Returns:
-            int: node_id of next node of provided type
-        """        
-        self.single_index, node_id = self.next_node_id(self.single_index, self.single_candidates)
-        if node_id is None:
-            return self.conclude(type)
-        return node_id
-
-
-    def next_periodical(self, type):
-        self.periodical_index, node_id = self.next_node_id(self.periodical_index, self.periodical_candidates)
-        if node_id is None:
-            return self.conclude(type)
-        return node_id
-    
-
-    def next_mutual(self, type):
-        self.mutual_index, node_id = self.next_node_id(self.mutual_index, self.mutual_candidates)
-        if node_id is None:
-            return self.conclude(type)
-        return node_id
-
-
-    def post_single(self, node_id, type):
-        """Removes the node_id from the list of single candidates if all successors have a type relationship with node_id.
-
-        Args:
-            node_id (int): node_id of node to check
-            type (string): type of relationship to check
-        """        
-        if self.is_done(node_id, type): # if all successors have a type relationship with node_id
-            self.single_candidates.pop(self.single_index) # remove from single candidates
-        else:
-            self.single_index += 1 # otherwise increment index
-
-
-    def post_fan_in(self, node_id, type):
-        
-        if self.is_done(node_id, type):
-            candidate = self.type_candidates[type].pop(self.type_index[type])
-            if not self.is_done(node_id, 'fan_out'):
-                self.alt_fan_out_candidates.append(candidate)
-        else:
-            self.fan_in_index += 1
-
-    
-    def post_alt_fan_out(self, node_id, type):
-        if self.is_done(node_id, type):
-            self.alt_fan_out_candidates.pop(self.alt_fan_out_index)
-        else:
-            self.alt_fan_out_index += 1
-
-
-    def post_fan_out(self, node_id, type):
-        if not self.fan_out_candidates:
-            return self.post_alt_fan_out(node_id, type)
-
-        if self.is_done(node_id, type):
-            candidate = self.fan_out_candidates.pop(self.fan_out_index) # remove from fan out candidates
-            if not self.is_done(node_id, 'fan_in'): # check in the other direction
-                self.alt_fan_in_candidates.append(candidate) # add to alt fan in candidates
-        else:
-            self.fan_out_index += 1
-
-
-    def post_mutual(self, node_id, type):
-        if self.is_done(node_id, type):
-            self.mutual_candidates.pop(self.mutual_index)
-        else:
-            self.mutual_index += 1
-
-
-    def post_periodical(self, node_id, type):
-        if self.is_done(node_id, type):
-            self.periodical_candidates.pop(self.periodical_index)
-        else:
-            self.periodical_index += 1
-    
-    
-    def post_forward(self, node_id, type):
-        if self.is_done(node_id, type):
-            self.forward_candidates.pop(self.forward_index)
-        else:
-            self.forward_index += 1
+            self.type_index[type] += 1 # increment index (this is to allow next node considered to be different)
 
 
     def get_forward_candidates(self):
@@ -410,29 +240,19 @@ class Nominator:
 
 
     def is_done_fan_in(self, node_id, type):
-        # num to work with is 
-        # fan_ins mod threshold plus those not fan_in
-        # if num to work with is less than threshold, ya done.
         pred_ids = self.g.predecessors(node_id) # get node-ids of incoming edges
         fan_in_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, pred_id}) for pred_id in pred_ids] #get boolean list of whether each predecessor has a fan_in relationship with node_id
-        num_not = fan_in_or_not_list.count(False) # count the number of predecessors that do not have a fan_in relationship with node_id
-        num_fan_in = fan_in_or_not_list.count(True) # count the number of predecessors that do have a fan_in relationship with node_id
+        num_to_work_with = fan_in_or_not_list.count(False) # count the number of predecessors that do not have a fan_in relationship with node_id
         
-        num_to_work_with = (num_fan_in % self.degree_threshold) + num_not #As we only need to satisfy degree_threshold, we can spare (num_fan_in % self.degree_threshold) nodes and we can also work with num_not
-        return num_to_work_with < self.degree_threshold 
+        return num_to_work_with < self.min_fan_in_threshold
         
 
     def is_done_fan_out(self, node_id, type):
-        # num to work with is 
-        # fan_outs mod threshold plus those not fan_out
-        # num to work with is less than threshold, ya done.
         succ_ids = self.g.successors(node_id) # get successors
         fan_out_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, succ_id}) for succ_id in succ_ids] # check if each successor has a fan_out relationship
-        num_not = fan_out_or_not_list.count(False) # count the number of successors that do not have a fan_out relationship
-        num_fan_out = fan_out_or_not_list.count(True) # count the number of successors that do have a fan_out relationship
+        num_to_work_with = fan_out_or_not_list.count(False) # count the number of successors that do not have a fan_out relationship
 
-        num_to_work_with = (num_fan_out % self.degree_threshold) + num_not
-        return num_to_work_with < self.degree_threshold
+        return num_to_work_with < self.min_fan_out_threshold 
         
 
     def is_done_forward(self, node_id, type):
@@ -504,8 +324,8 @@ class Nominator:
         return [filtered for filtered in filtereds if node_ids.issubset(filtered.node_ids)] # return list of filtered normal models where node_ids are a subset of the node_ids
 
 
-    def fan_clumps(self, type, node_id):
-        """Return a list of sets of node_ids that are in a fan relationship with the node_id.
+    def nodes_in_type_relation(self, type, node_id):
+        """Return a list of sets of node_ids that are in a type relationship with the node_id.
 
         Args:
             type (string): The type of relationship.
@@ -518,70 +338,26 @@ class Nominator:
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == node_id) # filter out the normal models that are of the type and have the node_id as the main_id
         return (filtered.node_ids_without_main() for filtered in filtereds) # return the node_ids without the main_id
 
-
-    def fan_in_breakdown(self, type, node_id):
-        """Return a set of node_ids that are potentially in a fan-in relationship with the node_id.
-
-        Args:
-            type (string): The type of relationship.
-            node_id (int): The node id.
-
-        Returns:
-            set: A set of node_ids that are potentially in a fan-in relationship with the node_id.
-        """        
-        pred_ids = self.g.predecessors(node_id) # get the predecessors of the node_id
-        return self.fan_breakdown_candidates(type, node_id, set(pred_ids))
-
-
-    def fan_out_breakdown(self, type, node_id):
-        """Return a set of node_ids that are potentially in a fan-out relationship with the node_id.
-
-        Args:
-            type (string): The type of relationship.
-            node_id (int): The node id.
-
-        Returns:
-            set: A set of node_ids that are potentially in a fan-out relationship with the node_id.
-        """        
-        succ_ids = self.g.successors(node_id) # get the successors of the node_id
-        return self.fan_breakdown_candidates(type, node_id, set(succ_ids))
-    
-
-    def fan_breakdown_candidates(self, type_, node_id, neighbor_ids):
-        """ Return a list of sets of node_ids that are in a fan relationship with the node_id.
-
-        Args:
-            type_ (string): The type of relationship.
-            node_id (int): The node id.
-            neighbor_ids (set): A set of node ids.
+    def find_available_candidate_neighbors(self, type, node_id):
+        # This funcion is explicitly made for fan_in/fan_out
+        
+        if type == 'fan_in':
+            neighbor_ids = self.g.predecessors(node_id) # get the predecessors of the node_id
+        elif type == 'fan_out':
+            neighbor_ids = self.g.successors(node_id)
             
-        Raises:
-            ValueError: _description_
-
-        Returns:
-            set: A set of node ids that are candidates for being in a fan relationship with the node_id.
-        """        
-        candidates = set()
-
-        fan_clumps = self.fan_clumps(type_, node_id) # get the node_ids that are in a fan relationship with the node_id
-        fan_nodes = set()
-        for fan_clump in fan_clumps:
-            fan_nodes = fan_nodes | fan_clump # create a set of all nodes that are in fan relationship with node_id where node_id is main
-
-        candidates = neighbor_ids - fan_nodes # subtract the nodes that are already in a fan relationship with node_id from the neighbor_ids
-        if len(candidates) >= self.degree_threshold: 
+        neighbors_in_type = set(self.nodes_in_type_relation(type, node_id)) # get the node_ids that are in a type relationship with the node_id being main
+        candidates = set(neighbor_ids) - neighbors_in_type # subtract the nodes that are already in a fan relationship with node_id from the neighbor_ids
+        
+        indx = self.type_index[type] # get the index of the current type
+        min_threshold = self.model_params_dict[type][indx][1]-1 # get the minimum number of accounts required        
+        
+        if len(candidates) >= min_threshold: 
+            max_threshold = self.model_params_dict[type][indx][1]-1 # get the maximum number of allowed accounts
+            n_max = min(len(candidates), max_threshold) # get the maximum number of accounts that can be used
+            n_candidates = random.randint(min_threshold, n_max) # decide number of nodes in fan pattern
+            candidates = set(random.sample(candidates, n_candidates)) # randomly select nodes from the candidates
             return candidates
         else:
-            # if there are not enough candidates, then we need to add some from the nodes already in a fan_in relation
-            while (len(candidates) < self.degree_threshold):
-                touched = False
-                for clump in fan_clumps:
-                    if len(clump) > self.degree_threshold:
-                       n_id = clump.pop()
-                       candidates.add(n_id)
-                       touched = True
-                if touched == False:
-                    raise ValueError('something broke in breakdown')
-            return candidates
-        
+            raise ValueError(f"There are not enough candidate for {type}")
 
