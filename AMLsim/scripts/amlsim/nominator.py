@@ -4,7 +4,7 @@ import random
 class Nominator:
     """Class responsible for nominating nodes for transactions.
     """    
-    def __init__(self, g, degree_threshold):
+    def __init__(self, g):
         self.g = g
         self.remaining_count_dict = dict()
         self.used_count_dict = dict()
@@ -42,19 +42,36 @@ class Nominator:
             elif type == 'single':
                 self.type_candidates[type] = self.get_single_candidates()
             elif type == 'mutual':
-                if self.single_candidates is None:
                     self.type_candidates[type] = self.get_single_candidates()
-                else:
-                    self.mutual_candidates = self.single_candidates.copy()
             elif type == 'periodical':
-                if self.single_candidates is None:
                     self.type_candidates[type] = self.get_single_candidates()
-                else:
-                    self.type_candidates[type] = self.single_candidates.copy()
             else:
                 raise ValueError('Invalid type: {}'.format(type))
             
             self.type_index[type] = 0
+    
+
+    def get_forward_candidates(self):
+        """Return all vertices with at least one outgoing edge and at least one incoming edge.
+
+        Returns:
+            list: A list of vertices ranked by the number of in- and outgoing edges.
+        """        
+        candidates = [n for n in self.g.nodes() if self.g.in_degree(n) >= 1 and self.g.out_degree(n) >= 1]
+        random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
+        return candidates
+
+
+    def get_single_candidates(self):
+        """Return all vertices with outgoing edges.
+
+        Returns:
+            list: A list of vertices ranked by the number of outgoing edges.
+        """        
+        candidates = [n for n in self.g.nodes() if self.g.out_degree(n) >= 1]
+        random.shuffle(candidates) 
+        return candidates
+
     
     def get_fan_in_candidates(self):
         """Returns a list of node ids that have at least degree_threshold incoming edges.
@@ -67,8 +84,9 @@ class Nominator:
         self.min_fan_in_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
 
         # return a list of nodes with at least enough incoming edges as the minimum number of accounts, sorted with respect to how many in degrees there are
-        candidate_list = [n for n in self.g.nodes() if self.g.in_degree(n) >= self.min_fan_in_threshold]
-        return candidate_list
+        candidates = [n for n in self.g.nodes() if self.g.in_degree(n) >= self.min_fan_in_threshold]
+        random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
+        return candidates
 
 
     def get_fan_out_candidates(self):
@@ -79,9 +97,9 @@ class Nominator:
         """        
         nm_min_requirement = min(self.model_params_dict["fan_out"] , key=lambda x: x[1]) # get the normal model parameters with the smallest minimum number of accounts
         self.min_fan_out_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
-        candidate_list = [n for n in self.g.nodes() if self.g.out_degree(n) >= self.min_fan_out_threshold]
-        return candidate_list
-
+        candidates = [n for n in self.g.nodes() if self.g.out_degree(n) >= self.min_fan_out_threshold]
+        random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
+        return candidates
 
     def number_unused(self):
         """Returns the number of unused nodes in the graph.
@@ -175,32 +193,10 @@ class Nominator:
         
         if self.is_done(node_id, type): # check if node will be able to be main in other fan_in patterns
             self.type_candidates[type].pop(self.type_index[type]) # remove node_id from list of candidates (if popped, we dont need to increase index)
+            if self.type_index[type] >= len(self.type_candidates[type]): # if index is out of bounds, start from beginning
+                self.type_index[type] = 0
         else:
             self.type_index[type] += 1 # increment index (this is to allow next node considered to be different)
-
-
-    def get_forward_candidates(self):
-        """Return all vertices with at least one outgoing edge and at least one incoming edge.
-
-        Returns:
-            list: A list of vertices ranked by the number of in- and outgoing edges.
-        """        
-        return sorted(
-            (n for n in self.g.nodes() if self.g.in_degree(n) >= 1 and self.g.out_degree(n) >= 1),
-            key=lambda n: max(self.g.in_degree(n), self.g.out_degree(n))
-        )
-
-
-    def get_single_candidates(self):
-        """Return all vertices with outgoing edges.
-
-        Returns:
-            list: A list of vertices ranked by the number of outgoing edges.
-        """        
-        return sorted(
-            (n for n in self.g.nodes() if self.g.out_degree(n) >= 1),
-            key=lambda n: self.g.out_degree(n)
-        )
 
 
     def next_node_id(self, index, list):
@@ -335,8 +331,14 @@ class Nominator:
             list: A list of sets of node_ids that are in a fan relationship with the node_id.
         """        
         normal_models = self.g.node[node_id]['normal_models'] # get the transaction models associated with node_id
-        filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == node_id) # filter out the normal models that are of the type and have the node_id as the main_id
-        return (filtered.node_ids_without_main() for filtered in filtereds) # return the node_ids without the main_id
+        filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == node_id) # create generator to iterate over the normal models that are of the type and have the main_id = node_id
+        nodes_in_relation = [filtered.node_ids_without_main() for filtered in filtereds] # return the node_ids without the main_id
+        if len(nodes_in_relation) == 0:
+            nodes = set()
+        else:    
+            nodes = set.union(*nodes_in_relation) # convert list of sets into a single set
+        return nodes
+
 
     def find_available_candidate_neighbors(self, type, node_id):
         # This funcion is explicitly made for fan_in/fan_out
@@ -353,10 +355,10 @@ class Nominator:
         min_threshold = self.model_params_dict[type][indx][1]-1 # get the minimum number of accounts required        
         
         if len(candidates) >= min_threshold: 
-            max_threshold = self.model_params_dict[type][indx][1]-1 # get the maximum number of allowed accounts
+            max_threshold = self.model_params_dict[type][indx][2]-1 # get the maximum number of allowed accounts
             n_max = min(len(candidates), max_threshold) # get the maximum number of accounts that can be used
             n_candidates = random.randint(min_threshold, n_max) # decide number of nodes in fan pattern
-            candidates = set(random.sample(candidates, n_candidates)) # randomly select nodes from the candidates
+            candidates = set(random.sample(candidates, n_candidates)) # randomly select n_candidates from the candidates
             return candidates
         else:
             raise ValueError(f"There are not enough candidate for {type}")

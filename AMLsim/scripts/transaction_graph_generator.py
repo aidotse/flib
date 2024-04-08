@@ -11,11 +11,7 @@ import json
 import os
 import sys
 import logging
-import time
 from scipy import stats
-
-import cProfile
-
 
 from collections import Counter, defaultdict
 from amlsim.nominator import Nominator
@@ -709,7 +705,7 @@ class TransactionGenerator:
         """
         header = next(reader)
 
-        self.nominator = Nominator(self.g, self.degree_threshold)
+        self.nominator = Nominator(self.g)
 
         for row in reader:
             count = int(row[header.index('count')])
@@ -782,6 +778,8 @@ class TransactionGenerator:
             self.g.node[result_id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
+        
+        self.nominator.post_update(node_id, type)
         
 
 
