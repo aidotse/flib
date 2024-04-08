@@ -988,14 +988,14 @@ class TransactionGenerator:
                     count += 1
                     if count % 1000 == 0:
                         logger.info("Created %d alerts" % count)
-            # TODO: remove
+            
             # prints the info regarding sar patterns
-            n_sar_accts = sum([len(self.sar_participation[bin]) for bin in range(1, len(self.sar_participation))])
-            for k in range(1, len(self.sar_participation)):
-                print(f'\nbin: {k}, size: {len(self.sar_participation[k])}, members: {self.sar_participation[k]}')
-                pmf = -self.defult_prob_sar_participate**k / (k * np.log(1-self.defult_prob_sar_participate))
-                frac = len(self.sar_participation[k]) / n_sar_accts
-                print(f'pmf: {pmf}, frac: {frac}\n')
+            # n_sar_accts = sum([len(self.sar_participation[bin]) for bin in range(1, len(self.sar_participation))])
+            # for k in range(1, len(self.sar_participation)):
+            #     print(f'\nbin: {k}, size: {len(self.sar_participation[k])}, members: {self.sar_participation[k]}')
+            #     pmf = -self.defult_prob_sar_participate**k / (k * np.log(1-self.defult_prob_sar_participate))
+            #     frac = len(self.sar_participation[k]) / n_sar_accts
+            #     print(f'pmf: {pmf}, frac: {frac}\n')
 
 
     def add_aml_typology(self, is_sar, typology_name, num_accounts, min_amount, max_amount, period, bank_id="", schedule=1, source_type='TRANSFER'):
