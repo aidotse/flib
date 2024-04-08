@@ -730,11 +730,12 @@ class TransactionGenerator:
             for type in self.nominator.types():
                 count = self.nominator.count(type)
                 if count > 0:
-                    self.choose_normal_model(type)
-                    self.normal_model_id += 1
+                    success = self.choose_normal_model(type)
+                    self.normal_model_id += success
                     #print(self.normal_model_id)
         logger.info("Generated %d normal models." % len(self.normal_models))
         logger.info("Normal model counts %s", self.nominator.used_count_dict)
+        return self.normal_models # just to get access in unit test, probably not a good solution
         
 
     def choose_normal_model(self, type):
@@ -744,24 +745,25 @@ class TransactionGenerator:
             type (string): Type of normal model
         """        
         if type == 'fan_in':
-            self.fan_in_model(type)
+            success = self.fan_in_model(type)
         elif type == 'fan_out':
-            self.fan_out_model(type)
+            success = self.fan_out_model(type)
         elif type == 'forward':
-            self.forward_model(type)
+            success = self.forward_model(type)
         elif type == 'single':
-            self.single_model(type)
+            success = self.single_model(type)
         elif type == 'mutual':
-            self.mutual_model(type)
+            success = self.mutual_model(type)
         elif type == 'periodical':
-            self.periodical_model(type)
+            success = self.periodical_model(type)
 
+        return success
         
     def fan_in_model(self, type):     
         node_id = self.nominator.next(type) # get the next node_id for this type
 
         if node_id is None:
-            return
+            return False
 
         candidates = self.nominator.find_available_candidate_neighbors(type, node_id)
 
@@ -781,14 +783,14 @@ class TransactionGenerator:
         
         self.nominator.post_update(node_id, type)
         
-
+        return True
 
 
     def fan_out_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
 
         if node_id is None:
-            return
+            return False
 
         candidates = self.nominator.find_available_candidate_neighbors(type, node_id) # get the neighboring nodes that are in a potential fan-out relationship
 
@@ -806,13 +808,13 @@ class TransactionGenerator:
         
         self.nominator.post_update(node_id, type)
 
-    
+        return True
 
     def forward_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
         
         if node_id is None:
-            return
+            return False
 
         succ_ids = self.g.successors(node_id)
         pred_ids = self.g.predecessors(node_id)
@@ -834,13 +836,13 @@ class TransactionGenerator:
         self.normal_models.append(normal_model)
         
         self.nominator.post_update(node_id, type)
-                
+        return True
 
     def single_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
 
         if node_id is None:
-            return
+            return False
         
         succ_ids = self.g.successors(node_id) # find the accounts connected to this node_id
         # find the first account that is not in a single relationship with this node_id
@@ -856,13 +858,13 @@ class TransactionGenerator:
         self.normal_models.append(normal_model)
 
         self.nominator.post_update(node_id, type)
-
+        return True
     
     def periodical_model(self, type):
         node_id = self.nominator.next(type)
 
         if node_id is None:
-            return
+            return False
         
         succ_ids = self.g.successors(node_id)
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
@@ -877,13 +879,13 @@ class TransactionGenerator:
         self.normal_models.append(normal_model)
 
         self.nominator.post_update(node_id, type)
-
+        return True
     
     def mutual_model(self, type):
         node_id = self.nominator.next(type)
 
         if node_id is None:
-            return
+            return False
         
         succ_ids = self.g.successors(node_id)
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
@@ -898,7 +900,7 @@ class TransactionGenerator:
         self.normal_models.append(normal_model)
 
         self.nominator.post_update(node_id, type)
-        
+        return True
 
     def load_alert_patterns(self):
         """Load an AML typology parameter file
