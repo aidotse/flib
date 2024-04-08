@@ -33,5 +33,10 @@
     "std_bank_change_frequency_sar": 1,
     "margin_ratio": 0.1,
     "prob_participate_in_multiple_sars": 0.2
+  },
+  "scale-free": {
+    "gamma": 2.5,
+    "loc": 1,
+    "scale": 1
   }
 }
