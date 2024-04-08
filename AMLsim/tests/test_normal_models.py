@@ -47,8 +47,30 @@ def test_small_graph():
     for nm, expected_num in zip(normal_models["fan_out"], EXPECTED_NO_OF_NODES):
         assert len(nm.node_ids) == expected_num
     
+def test_large_graph():
+    config_str = "parameters/large_test/conf.json"
+    txg = Transaction_Graph(config_str)
     
+    EXPECTED_NO_OF_MODELS = [1e4]*6
+    normal_models = dict()
+    for type, expected_num in zip(TYPES,EXPECTED_NO_OF_MODELS):
+        normal_models[type] = [nm for nm in txg.normal_models if nm.type == type]
+        assert len(normal_models[type]) == expected_num
+    
+    # Check that we obtain the max and min number of nodes in fan patterns
+    MAX_FAN_IN = 10
+    MIN_FAN_IN = 3
+    for type in ["fan_in", "fan_out"]:
+        max_nodes_fan_in = max([len(nm.node_ids) for nm in normal_models[type]])
+        min_nodes_fan_in = min([len(nm.node_ids) for nm in normal_models[type]])
+    
+        assert max_nodes_fan_in == MAX_FAN_IN
+        assert min_nodes_fan_in == MIN_FAN_IN
+        
+
+
 # define main 
 if __name__ == "__main__":
     test_small_graph()
+    test_large_graph()
     
