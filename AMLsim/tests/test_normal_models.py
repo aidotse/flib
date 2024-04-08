@@ -8,6 +8,8 @@ import json
 
 from transaction_graph_generator import TransactionGenerator
 
+TYPES = ["single", "forward", "mutual", "periodical", "fan_in", "fan_out"]
+
 class Transaction_Graph:
     def __init__(self, config_str):
         self.config_str = config_str
@@ -30,8 +32,23 @@ class Transaction_Graph:
 def test_small_graph():
     config_str = "parameters/small_test/conf.json"
     txg = Transaction_Graph(config_str)
-    nm = txg.normal_models
-    a = 1
+    
+    # Ensure correct number of models are created
+    EXPECTED_NO_OF_MODELS = [2, 2, 2, 2, 2, 2]
+    
+    normal_models = dict()
+    for type, expected_num in zip(TYPES,EXPECTED_NO_OF_MODELS):
+        normal_models[type] = [nm for nm in txg.normal_models if nm.type == type]
+        assert len(normal_models[type]) == expected_num
+    
+    # Ensure fan patterns have correct number of nodes
+    EXPECTED_NO_OF_NODES = [3,5]
+    for nm, expected_num in zip(normal_models["fan_in"], EXPECTED_NO_OF_NODES):
+        assert len(nm.node_ids) == expected_num
+    for nm, expected_num in zip(normal_models["fan_out"], EXPECTED_NO_OF_NODES):
+        assert len(nm.node_ids) == expected_num
+    
+
 
 # define main 
 if __name__ == "__main__":

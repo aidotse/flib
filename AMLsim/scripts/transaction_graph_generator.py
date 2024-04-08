@@ -733,7 +733,7 @@ class TransactionGenerator:
                     success = self.choose_normal_model(type)
                     self.normal_model_id += success
                     #print(self.normal_model_id)
-        logger.info("Generated %d normal models." % len(self.normal_models))
+        logger.info(f"Generated {len(self.normal_models)} normal models.")
         logger.info("Normal model counts %s", self.nominator.used_count_dict)
         return self.normal_models # just to get access in unit test, probably not a good solution
         

@@ -135,7 +135,7 @@ class Nominator:
         """         
         node_id = self.type_candidates[type][self.type_index[type]] # get next node id from type candidates
         
-        # if fan in or fan out, double check there are enough neighbors
+        # if fan pattern, double check there are enough neighbors for node_id to be main in the current fan pattern
         if type == "fan_in" or type == "fan_out":
             current_threshold = self.model_params_dict[type][self.current_type_index[type]][1] - 1 # get threshold for current type
             node_fullfill_requirement = not self.is_done(node_id, type, current_threshold)
@@ -158,9 +158,7 @@ class Nominator:
                 node_id = self.type_candidates[type][self.type_index[type]]
                 node_fullfill_requirement = not self.is_done(node_id, type, current_threshold)
                 
-                
 
-            
         if node_id is None:
             self.conclude(type)
         else:
