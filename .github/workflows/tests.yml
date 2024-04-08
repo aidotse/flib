@@ -17,10 +17,10 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7.11
+      - name: Set up Python 3.7.13
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7.11
+          python-version: 3.7.13
       - name: provision-with-micromamba
         uses: mamba-org/provision-with-micromamba@main
         with:
