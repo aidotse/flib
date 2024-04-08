@@ -12,6 +12,7 @@ class Nominator:
         
         self.type_candidates = dict()
         self.type_index = dict()
+        self.current_type_index = dict()
 
     def initialize_count(self, type, count, schedule_id, min_accounts, max_accounts, min_period, max_period):
         """Counts the number of nodes of a given type.
@@ -23,7 +24,7 @@ class Nominator:
         if type in self.remaining_count_dict:
             self.remaining_count_dict[type] += count
             param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
-            self.model_params_dict[type] = param_list.append(param_list)
+            self.model_params_dict[type] += param_list
         else:
             self.remaining_count_dict[type] = count
             param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
@@ -48,7 +49,8 @@ class Nominator:
             else:
                 raise ValueError('Invalid type: {}'.format(type))
             
-            self.type_index[type] = 0
+            self.type_index[type] = 0 # index of the node currently being considered for a type
+            self.current_type_index[type] = 0 # pointer at the type currently being considered
     
 
     def get_forward_candidates(self):
@@ -131,8 +133,34 @@ class Nominator:
         Returns:
             int: node id of next node of given type.
         """         
-        _, node_id = self.next_node_id(self.type_index[type], self.type_candidates[type]) # get next node id from fan in candidates
+        node_id = self.type_candidates[type][self.type_index[type]] # get next node id from type candidates
+        
+        # if fan in or fan out, double check there are enough neighbors
+        if type == "fan_in" or type == "fan_out":
+            current_threshold = self.model_params_dict[type][self.current_type_index[type]][1] - 1 # get threshold for current type
+            node_fullfill_requirement = not self.is_done(node_id, type, current_threshold)
+            
+            start_indx = self.type_index[type]
+            
+            while not node_fullfill_requirement:
+                self.type_index[type] += 1 # check the next node in the list of candidates
+                
+                if self.type_index[type] > len(self.type_candidates[type])-1:
+                    self.type_index[type] = 0 # if we reach the end of the list, start from the beginning
+                    
+                # if we exhaust the nodes without finding one fullfilling requirements, 
+                if self.type_index[type] == start_indx:
+                    node_id = None
+                    self.decrement(type)
+                    self.current_type_index[type] += 1
+                    return node_id
+                
+                node_id = self.type_candidates[type][self.type_index[type]]
+                node_fullfill_requirement = not self.is_done(node_id, type, current_threshold)
+                
+                
 
+            
         if node_id is None:
             self.conclude(type)
         else:
@@ -191,6 +219,8 @@ class Nominator:
 
     def post_update(self, node_id, type):
         
+        self.current_type_index[type] += 1 # increment the index of the current type
+        
         if self.is_done(node_id, type): # check if node will be able to be main in other fan_in patterns
             self.type_candidates[type].pop(self.type_index[type]) # remove node_id from list of candidates (if popped, we dont need to increase index)
             if self.type_index[type] >= len(self.type_candidates[type]): # if index is out of bounds, start from beginning
@@ -198,33 +228,12 @@ class Nominator:
         else:
             self.type_index[type] += 1 # increment index (this is to allow next node considered to be different)
 
-
-    def next_node_id(self, index, list):
-        """Return the next node id from the list.
-
-        Args:
-            index (int): The current index.
-            list (list): The list of node ids.
-
-        Returns:
-            int: The next index.
-            int: The next node id.
-        """        
-        try:
-            node_id = list[index]
-        except IndexError:
-            index = 0
-            if len(list) == 0:
-                return index, None
-            node_id = list[index]
-        return index, node_id
-
     
-    def is_done(self, node_id, type):
+    def is_done(self, node_id, type, threshold=None):
         if type == 'fan_in':
-            return self.is_done_fan_in(node_id, type)
+            return self.is_done_fan_in(node_id, type, threshold)
         elif type == 'fan_out':
-            return self.is_done_fan_out(node_id, type)
+            return self.is_done_fan_out(node_id, type, threshold)
         elif type == 'forward':
             return self.is_done_forward(node_id, type)
         elif type == 'single':
@@ -235,20 +244,24 @@ class Nominator:
             return self.is_done_periodical(node_id, type)
 
 
-    def is_done_fan_in(self, node_id, type):
+    def is_done_fan_in(self, node_id, type, threshold = None):
         pred_ids = self.g.predecessors(node_id) # get node-ids of incoming edges
         fan_in_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, pred_id}) for pred_id in pred_ids] #get boolean list of whether each predecessor has a fan_in relationship with node_id
         num_to_work_with = fan_in_or_not_list.count(False) # count the number of predecessors that do not have a fan_in relationship with node_id
         
-        return num_to_work_with < self.min_fan_in_threshold
+        if threshold is None:
+            threshold = self.min_fan_in_threshold # get the minimum number of accounts required
+        return num_to_work_with <= threshold
         
 
-    def is_done_fan_out(self, node_id, type):
+    def is_done_fan_out(self, node_id, type, threshold = None):
         succ_ids = self.g.successors(node_id) # get successors
         fan_out_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, succ_id}) for succ_id in succ_ids] # check if each successor has a fan_out relationship
         num_to_work_with = fan_out_or_not_list.count(False) # count the number of successors that do not have a fan_out relationship
 
-        return num_to_work_with < self.min_fan_out_threshold 
+        if threshold is None:
+            threshold = self.min_fan_out_threshold # get the minimum number of accounts required
+        return num_to_work_with <= threshold
         
 
     def is_done_forward(self, node_id, type):
@@ -351,7 +364,7 @@ class Nominator:
         neighbors_in_type = set(self.nodes_in_type_relation(type, node_id)) # get the node_ids that are in a type relationship with the node_id being main
         candidates = set(neighbor_ids) - neighbors_in_type # subtract the nodes that are already in a fan relationship with node_id from the neighbor_ids
         
-        indx = self.type_index[type] # get the index of the current type
+        indx = self.current_type_index[type] # get the index of the current type
         min_threshold = self.model_params_dict[type][indx][1]-1 # get the minimum number of accounts required        
         
         if len(candidates) >= min_threshold: 
