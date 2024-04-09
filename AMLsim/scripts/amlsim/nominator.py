@@ -11,7 +11,7 @@ class Nominator:
         self.model_params_dict = dict()
         
         self.type_candidates = dict()
-        self.type_index = dict()
+        self.current_candidate_index = dict()
         self.current_type_index = dict()
 
     def initialize_count(self, type, count, schedule_id, min_accounts, max_accounts, min_period, max_period):
@@ -49,7 +49,7 @@ class Nominator:
             else:
                 raise ValueError('Invalid type: {}'.format(type))
             
-            self.type_index[type] = 0 # index of the node currently being considered for a type
+            self.current_candidate_index[type] = 0 # index of the node currently being considered for a type
             self.current_type_index[type] = 0 # pointer at the type currently being considered
     
 
@@ -133,29 +133,29 @@ class Nominator:
         Returns:
             int: node id of next node of given type.
         """         
-        node_id = self.type_candidates[type][self.type_index[type]] # get next node id from type candidates
+        node_id = self.type_candidates[type][self.current_candidate_index[type]] # get next node id from type candidates
         
         # if fan pattern, double check there are enough neighbors for node_id to be main in the current fan pattern
         if type == "fan_in" or type == "fan_out":
             current_threshold = self.model_params_dict[type][self.current_type_index[type]][1] - 1 # get threshold for current type
             node_fullfill_requirement = not self.is_done(node_id, type, current_threshold)
             
-            start_indx = self.type_index[type]
+            start_indx = self.current_candidate_index[type]
             
             while not node_fullfill_requirement:
-                self.type_index[type] += 1 # check the next node in the list of candidates
+                self.current_candidate_index[type] += 1 # check the next node in the list of candidates
                 
-                if self.type_index[type] > len(self.type_candidates[type])-1:
-                    self.type_index[type] = 0 # if we reach the end of the list, start from the beginning
+                if self.current_candidate_index[type] > len(self.type_candidates[type])-1:
+                    self.current_candidate_index[type] = 0 # if we reach the end of the list, start from the beginning
                     
                 # if we exhaust the nodes without finding one fullfilling requirements, 
-                if self.type_index[type] == start_indx:
+                if self.current_candidate_index[type] == start_indx:
                     node_id = None
                     self.decrement(type)
                     self.current_type_index[type] += 1
                     return node_id
                 
-                node_id = self.type_candidates[type][self.type_index[type]]
+                node_id = self.type_candidates[type][self.current_candidate_index[type]]
                 node_fullfill_requirement = not self.is_done(node_id, type, current_threshold)
                 
 
@@ -220,11 +220,14 @@ class Nominator:
         self.current_type_index[type] += 1 # increment the index of the current type
         
         if self.is_done(node_id, type): # check if node will be able to be main in other fan_in patterns
-            self.type_candidates[type].pop(self.type_index[type]) # remove node_id from list of candidates (if popped, we dont need to increase index)
-            if self.type_index[type] >= len(self.type_candidates[type]): # if index is out of bounds, start from beginning
-                self.type_index[type] = 0
+            self.type_candidates[type].pop(self.current_candidate_index[type]) # remove node_id from list of candidates (if popped, we dont need to increase index)
+            if len(self.type_candidates[type]) == 0: # if there are no more candidates, conclude the type
+                self.conclude(type)
         else:
-            self.type_index[type] += 1 # increment index (this is to allow next node considered to be different)
+            self.current_candidate_index[type] += 1 # increment index (this is to allow next node considered to be different)
+        
+        if self.current_candidate_index[type] >= len(self.type_candidates[type]): # if index is out of bounds, start from beginning
+            self.current_candidate_index[type] = 0
 
     
     def is_done(self, node_id, type, threshold=None):

@@ -771,7 +771,7 @@ class TransactionGenerator:
             raise ValueError('should always be candidates')
 
         # Create the normal pattern
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
@@ -797,7 +797,7 @@ class TransactionGenerator:
         if not candidates:
             raise ValueError('should always be candidates')
 
-        schedule_id, _, _, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
+        schedule_id, _, _, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
@@ -827,7 +827,7 @@ class TransactionGenerator:
         )
         normal_model = NormalModel(self.normal_model_id, type, list(set), pred_ids[0])
         
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         
         for id in set:
@@ -850,7 +850,7 @@ class TransactionGenerator:
         
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id) # create a normal model with the node_id and the connected account
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model) # add the normal model to the nodes
@@ -871,7 +871,7 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
@@ -892,7 +892,7 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.type_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
@@ -1647,7 +1647,7 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
-        PARAM_FILES = '100K_accts'
+        PARAM_FILES = '10K_accts'
         argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]
