@@ -1,6 +1,6 @@
 from simulate import init_params, create_param_files, run_simulation
 from preprocess import preprocess
-
+from train import train, evaluate, Classifier
 
 def main(iterations:int=10):
     
@@ -10,8 +10,14 @@ def main(iterations:int=10):
     run_simulation(param)
     path_to_tx_log = '/home/edvin/Desktop/flib/AMLsim/outputs/tmp/tx_log.csv'
     datasets = preprocess(path_to_tx_log, ['handelsbanken'], 0.9)
+    dataset = datasets[0]
     
-    print(datasets[0][1].head())
+    print(dataset[0].head())
+    
+    #model = train(datasets[0][0])
+    #evaluate(model, a)
+    
+    classifier = Classifier(dataset)
     
     return
 
