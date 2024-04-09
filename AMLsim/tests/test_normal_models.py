@@ -25,13 +25,12 @@ class Transaction_Graph:
         self.txg.generate_normal_transactions()  # Load a parameter CSV file for the base transaction types
         self.txg.load_account_list()  # Load account list CSV file and write accounts to nodes in network
         self.txg.load_normal_models() # Load a parameter CSV file for Normal Models
-        self.normal_models = self.txg.build_normal_models() # Build normal models from the base transaction types
+        self.txg.build_normal_models() # Build normal models from the base transaction types
             
-
 
 def test_small_graph():
     config_str = "parameters/small_test/conf.json"
-    txg = Transaction_Graph(config_str)
+    txg = Transaction_Graph(config_str).txg
     
     # Ensure correct number of models are created
     EXPECTED_NO_OF_MODELS = [2, 2, 2, 2, 2, 2]
@@ -49,24 +48,53 @@ def test_small_graph():
     
 def test_large_graph():
     config_str = "parameters/large_test/conf.json"
-    txg = Transaction_Graph(config_str)
+    txg = Transaction_Graph(config_str).txg
     
-    EXPECTED_NO_OF_MODELS = [1e4]*6
+    # Pick out normal models
     normal_models = dict()
-    for type, expected_num in zip(TYPES,EXPECTED_NO_OF_MODELS):
+    for type in TYPES:
         normal_models[type] = [nm for nm in txg.normal_models if nm.type == type]
-        assert len(normal_models[type]) == expected_num
     
-    # Check that we obtain the max and min number of nodes in fan patterns
-    MAX_FAN_IN = 10
-    MIN_FAN_IN = 3
+    # Check Fan patterns
+    NUM_DEFINED_MODELS = 10000
+    max_fan_threshold = {"fan_in" : 10-1, "fan_out" : 10-1}
+    min_fan_threshold = {"fan_in" : 6-1, "fan_out" : 7-1}    
+    
     for type in ["fan_in", "fan_out"]:
+        # find number of nodes with more than min_in_deg and min_out_deg in graph
+        if type == "fan_in":
+            num_candidates = len([n for n in txg.g.nodes() if txg.g.in_degree(n) >= min_fan_threshold[type]])
+        else:
+            num_candidates = len([n for n in txg.g.nodes() if txg.g.out_degree(n) >= min_fan_threshold[type]])
+        # check how many nodes are main in multiple patterns
+        main_ids = [nm.main_id for nm in normal_models[type]]
+        counter = {i:main_ids.count(i) - 1 for i in main_ids}
+        num_of_replicas = sum([v for _,v in counter.items()])
+        
+        # make sure that all candidates are used
+        assert num_candidates < NUM_DEFINED_MODELS
+        assert len(normal_models[type]) == (num_candidates + num_of_replicas)
+        
         max_nodes_fan_in = max([len(nm.node_ids) for nm in normal_models[type]])
         min_nodes_fan_in = min([len(nm.node_ids) for nm in normal_models[type]])
+
+        assert max_nodes_fan_in == (max_fan_threshold[type]+1)
+        assert min_nodes_fan_in == (min_fan_threshold[type]+1)
     
-        assert max_nodes_fan_in == MAX_FAN_IN
-        assert min_nodes_fan_in == MIN_FAN_IN
+    # Check forward patterns
+    TOTAL_FORWARD_PATTERNS = 10000
+    NUM_NODES_IN_FORWARD = 3
+    assert len(normal_models["forward"]) == TOTAL_FORWARD_PATTERNS
+    for nm in normal_models["forward"]:
+        assert len(nm.node_ids) == NUM_NODES_IN_FORWARD
         
+    # Check single, mutual, and periodical patterns
+    TOTAL_PATTERNS = 10000
+    NUM_NODES_IN_PATTERN = 2
+    for type in ["single", "mutual", "periodical"]:
+        assert len(normal_models[type]) == TOTAL_PATTERNS
+        for nm in normal_models[type]:
+            assert len(nm.node_ids) == NUM_NODES_IN_PATTERN
 
 
 # define main 
