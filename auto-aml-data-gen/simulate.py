@@ -2,6 +2,110 @@ import os
 import json
 import utils
 
+
+def init_params(seed:int=0) -> dict:
+    # TODO: sample with seed
+    params = {
+        'conf': {
+            "general": {
+                "random_seed": 0,
+                "simulation_name": "tmp",
+                "total_steps": 30
+            },
+            "default": {
+                "min_amount": 1,
+                "max_amount": 150000,
+                "mean_amount": 637,
+                "std_amount": 500,
+                "mean_amount_sar": 1000,
+                "std_amount_sar": 500,
+                "prob_income": 0.0,
+                "mean_income": 0.0,
+                "std_income": 0.0,
+                "prob_income_sar": 0.0,
+                "mean_income_sar": 0.0,
+                "std_income_sar": 0.0,
+                "mean_outcome": 200.0,
+                "std_outcome": 500.0,
+                "mean_outcome_sar": 200.0,
+                "std_outcome_sar": 500.0,
+                "prob_spend_cash": 0.7,
+                "n_steps_balance_history": 56,
+                "mean_phone_change_frequency": 1460,
+                "std_phone_change_frequency": 365,
+                "mean_phone_change_frequency_sar": 365,
+                "std_phone_change_frequency_sar": 182,
+                "mean_bank_change_frequency": 1460,
+                "std_bank_change_frequency": 1,
+                "mean_bank_change_frequency_sar": 1460,
+                "std_bank_change_frequency_sar": 1,
+                "margin_ratio": 0.1,
+                "prob_participate_in_multiple_sars": 0.2
+            },
+            "input": {
+                "directory": "paramFiles/tmp",
+                "schema": "schema.json",
+                "accounts": "accounts.csv",
+                "alert_patterns": "alertPatterns.csv",
+                "normal_models": "normalModels.csv",
+                "degree": "degree.csv",
+                "transaction_type": "transactionType.csv",
+                "is_aggregated_accounts": True
+            },
+            "temporal": {
+                "directory": "tmp",
+                "transactions": "transactions.csv",
+                "accounts": "accounts.csv",
+                "alert_members": "alert_members.csv",
+                "normal_models": "normal_models.csv"
+            },
+            "output": {
+                "directory": "outputs",
+                "transaction_log": "tx_log.csv"
+            },
+            "graph_generator": {
+                "degree_threshold": 1
+            },
+            "simulator": {
+                "transaction_limit": 100000,
+                "transaction_interval": 7,
+                "sar_interval": 7
+            },
+            "scale-free": {
+                "gamma": 2.0,
+                "loc": 1.0,
+                "scale": 1.0
+            }
+        },
+        'accounts': [
+            (2770, 1000, 100000, 'SWE', 'I', 'swedbank'),
+            (1348, 1000, 100000, 'SWE', 'I', 'handelsbanken'),
+            (5882, 1000, 100000, 'SWE', 'I', 'others')
+        ],
+        'alertPatterns': [
+            (10, 'fan_out', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
+            (10, 'fan_in', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
+            (10, 'cycle', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
+            (10, 'bipartite', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
+            (10, 'stack', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
+            (10, 'scatter_gather', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
+            (10, 'gather_scatter', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
+            (10, 'fan_in', 2, 4, 4, 100, 1000, 1, 28, 'swedbank', True, 'CASH'),
+            (10, 'fan_in', 2, 4, 4, 100, 1000, 1, 28, 'handelsbanken', True, 'CASH'),
+            (10, 'fan_in', 2, 4, 4, 100, 1000, 1, 28, 'others', True, 'CASH'),
+        ],
+        'normalModels': [
+            (10000, 'single', 2, 1, 1, 1, 28),
+            (10000, 'fan_out', 2, 4, 4, 1, 28),
+            (10000, 'fan_in', 2, 4, 4, 1, 28),
+            (10000, 'forward', 2, 3, 3, 1, 28),
+            (10000, 'periodical', 2, 2, 2, 1, 28),
+            (10000, 'mutual', 2, 2, 2, 1, 28)
+        ]
+    }
+    return params
+
+
 def create_param_files(params:dict, param_files_folder:str):
     if not os.path.exists(param_files_folder):
         os.makedirs(param_files_folder)
@@ -13,7 +117,7 @@ def create_param_files(params:dict, param_files_folder:str):
             f.write(','.join(map(str, p)) + '\n')
     
     alert_patterns_params = params['alertPatterns']
-    with open(os.path.join(param_files_folder, 'alert_patterns.csv'), 'w') as f:
+    with open(os.path.join(param_files_folder, 'alertPatterns.csv'), 'w') as f:
         f.write('count,type,schedule_id,min_accounts,max_accounts,min_amount,max_amount,min_period,max_period,bank_id,is_sar,source_type\n')
         for p in alert_patterns_params:
             f.write(','.join(map(str, p)) + '\n')
@@ -36,13 +140,13 @@ def create_param_files(params:dict, param_files_folder:str):
         with open(os.path.join(param_files_folder, 'degree.csv'), 'w') as f:
             f.write('Count,In-degree,Out-degree\n')
             for v, c in zip(values, counts):
-                f.write(f'{c},{v[0]},{v[1]}\n')
+                f.write(f'{c},{int(v[0])},{int(v[1])}\n')
         
     normal_models_params = params['normalModels']
-    with open(os.path.join(param_files_folder, 'normal_models.csv'), 'w') as f:
+    with open(os.path.join(param_files_folder, 'normalModels.csv'), 'w') as f:
         f.write('count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id\n')
         for p in normal_models_params:
-            f.write(','.join(map(str, p)) + '\n')
+            f.write(','.join(map(str, p)) + ',\n')
     
     with open(os.path.join(param_files_folder, 'transactionType.csv'), 'w') as f:
         f.write('Type,Frequency\n')
@@ -50,112 +154,13 @@ def create_param_files(params:dict, param_files_folder:str):
 
 
 def run_simulation(param_files_folder:str):
+    os.system(f'cd /home/edvin/Desktop/flib/AMLsim && python3 scripts/transaction_graph_generator.py "{param_files_folder}/conf.json"')
     os.system(f'cd /home/edvin/Desktop/flib/AMLsim && mvn exec:java -Dexec.mainClass=amlsim.AMLSim -Dexec.args="{param_files_folder}/conf.json"')
     return
 
 
 # for debugging and testing
-
-params = {
-    'conf': {
-        "general": {
-            "random_seed": 0,
-            "simulation_name": "100K_accts",
-            "total_steps": 367
-        },
-        "default": {
-            "min_amount": 1,
-            "max_amount": 150000,
-            "mean_amount": 637,
-            "std_amount": 500,
-            "mean_amount_sar": 1000,
-            "std_amount_sar": 500,
-            "prob_income": 0.0,
-            "mean_income": 0.0,
-            "std_income": 0.0,
-            "prob_income_sar": 0.0,
-            "mean_income_sar": 0.0,
-            "std_income_sar": 0.0,
-            "mean_outcome": 200.0,
-            "std_outcome": 500.0,
-            "mean_outcome_sar": 200.0,
-            "std_outcome_sar": 500.0,
-            "prob_spend_cash": 0.7,
-            "n_steps_balance_history": 56,
-            "mean_phone_change_frequency": 1460,
-            "std_phone_change_frequency": 365,
-            "mean_phone_change_frequency_sar": 365,
-            "std_phone_change_frequency_sar": 182,
-            "mean_bank_change_frequency": 1460,
-            "std_bank_change_frequency": 1,
-            "mean_bank_change_frequency_sar": 1460,
-            "std_bank_change_frequency_sar": 1,
-            "margin_ratio": 0.1,
-            "prob_participate_in_multiple_sars": 0.2
-        },
-        "input": {
-            "directory": "paramFiles/100K_accts",
-            "schema": "schema.json",
-            "accounts": "accounts.csv",
-            "alert_patterns": "alertPatterns.csv",
-            "normal_models": "normalModels.csv",
-            "degree": "degree.csv",
-            "transaction_type": "transactionType.csv",
-            "is_aggregated_accounts": True
-        },
-        "temporal": {
-            "directory": "tmp",
-            "transactions": "transactions.csv",
-            "accounts": "accounts.csv",
-            "alert_members": "alert_members.csv",
-            "normal_models": "normal_models.csv"
-        },
-        "output": {
-            "directory": "outputs",
-            "transaction_log": "tx_log.csv"
-        },
-        "graph_generator": {
-            "degree_threshold": 1
-        },
-        "simulator": {
-            "transaction_limit": 100000,
-            "transaction_interval": 7,
-            "sar_interval": 7
-        },
-        "scale-free": {
-            "gamma": 2.0,
-            "loc": 1.0,
-            "scale": 1.0
-        }
-    },
-    'accounts': [
-        (27700, 1000, 100000, 'SWE', 'I', 'swedbank'),
-        (13480, 1000, 100000, 'SWE', 'I', 'handelsbanken'),
-        (58820, 1000, 100000, 'SWE', 'I', 'other')
-    ],
-    'alertPatterns': [
-        (100, 'fan_out', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
-        (100, 'fan_in', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
-        (100, 'cycle', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
-        (100, 'bipartite', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
-        (100, 'stack', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
-        (100, 'scatter_gather', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
-        (100, 'gather_scatter', 2, 7, 7, 100, 1000, 1, 365, '', True, 'CASH'),
-        (100, 'fan_in', 2, 4, 4, 100, 1000, 1, 365, 'swedbank', True, 'CASH'),
-        (100, 'fan_in', 2, 4, 4, 100, 1000, 1, 365, 'handelsbanken', True, 'CASH'),
-        (100, 'fan_in', 2, 4, 4, 100, 1000, 1, 365, 'others', True, 'CASH'),
-    ],
-    'normalModels': [
-        (100000, 'single', 2, 1, 1, 1, 365),
-        (100000, 'fan_out', 2, 4, 4, 1, 365),
-        (100000, 'fan_in', 2, 4, 4, 1, 365),
-        (50000, 'forward', 2, 3, 3, 1, 365),
-        (100000, 'periodical', 2, 2, 2, 1, 365),
-        (100000, 'mutual', 2, 2, 2, 1, 365)
-    ]
-}
-
-param_file_folder = '/home/edvin/Desktop/flib/AMLsim/paramFiles/tmp'
-
+# params = init_params()
+# param_file_folder = '/home/edvin/Desktop/flib/AMLsim/paramFiles/tmp'
 # create_param_files(params, param_file_folder)
 # run_simulation(param_file_folder)
