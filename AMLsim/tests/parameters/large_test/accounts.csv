@@ -1,2 +1,2 @@
 count,min_balance,max_balance,country,business_type,bank_id
-100,100000,500000,SWE,I,bank_a
+100000,1000,100000,SWE,I,
