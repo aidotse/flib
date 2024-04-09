@@ -1,4 +1,4 @@
 count,min_balance,max_balance,country,business_type,bank_id
-2770,1000,100000,SWE,I,swedbank
-1348,1000,100000,SWE,I,handelsbanken
-5882,1000,100000,SWE,I,others
+2770,10000,100000,SWE,I,swedbank
+1348,10000,100000,SWE,I,handelsbanken
+5882,10000,100000,SWE,I,others

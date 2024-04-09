@@ -2,7 +2,7 @@
   "general": {
     "random_seed": 0,
     "simulation_name": "10K_accts",
-    "total_steps": 367
+    "total_steps": 98
   },
   "default": {
     "min_amount": 1,
@@ -21,6 +21,8 @@
     "std_outcome": 500.0,
     "mean_outcome_sar": 200.0,
     "std_outcome_sar": 500.0,
+    "prob_spend_cash": 0.7,
+    "n_steps_balance_history": 56,
     "mean_phone_change_frequency": 1460,
     "std_phone_change_frequency": 365,
     "mean_phone_change_frequency_sar": 365,
@@ -29,7 +31,8 @@
     "std_bank_change_frequency": 1,
     "mean_bank_change_frequency_sar": 1460,
     "std_bank_change_frequency_sar": 1,
-    "margin_ratio": 0.1
+    "margin_ratio": 0.1,
+    "prob_participate_in_multiple_sars": 0.2
   },
   "input": {
     "directory": "paramFiles/10K_accts",
