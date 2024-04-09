@@ -10,21 +10,21 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     permissions:
       pull-requests: write
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.7.12
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.7.12
       - name: provision-with-micromamba
         uses: mamba-org/provision-with-micromamba@main
         with:
-          environment-file: amlsim.yml
+          environment-file: AMLsim/amlsim.yml
           environment-name: amlsim
           cache-downloads: true
       - name: Test with pytest
