@@ -418,3 +418,94 @@ class GAT_GraphSVX(torch.nn.Module):
         print('Finished.')
 
         return out
+
+
+# (Written by Tomas & Agnes)
+class GAT_GraphSVX_foroptuna(torch.nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels, num_heads, dropout=0.3):
+        super(GAT_GraphSVX_foroptuna, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.dropout = dropout
+        self.conv1 = GATConv(in_channels, hidden_channels, heads=num_heads, dropout=dropout)
+        self.conv2 = GATConv(hidden_channels * num_heads, hidden_channels, heads=num_heads, dropout=dropout)
+        self.conv3 = GATConv(hidden_channels * num_heads, out_channels, heads=1, concat = False, dropout=dropout)
+        self.log_softmax = torch.nn.LogSoftmax(dim=1)
+        self.return_attention_weights = False
+        self.return_type = 'logits'
+    
+    def set_return_attention_weights(self, return_attention_weights):
+        if return_attention_weights == True or return_attention_weights == False:
+            self.return_attention_weights = return_attention_weights
+        else:
+            raise ValueError('return_attention_weights must be either True or False')
+    
+    def set_return_type(self, return_type):
+        if return_type == 'logits' or return_type == 'log_probas':
+            self.return_type = return_type
+        else:
+            raise ValueError('return_type must be either "logits" or "log_probas"')
+
+
+    def forward(self, x, edge_index):
+        x, attention_weights1 = self.conv1(x, edge_index, return_attention_weights=True)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x, attention_weights2 = self.conv2(x, edge_index, return_attention_weights=True)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x, attention_weights3 = self.conv3(x, edge_index, return_attention_weights=True)
+        if self.return_type == "log_probas":
+            x = self.log_softmax(x) #<--- log probas should only be used when running the explainers.
+            print('ping')
+        
+        if self.return_attention_weights:
+            return x, attention_weights1, attention_weights2, attention_weights3
+        else:
+            return x
+    
+    # Adaption for Node Feature Vector (NFV) input
+    def set_test_data(self, testdata):
+        self.testdata = testdata
+    
+    def set_node_to_explain(self, node_to_explain):
+        self.node_to_explain = node_to_explain
+    
+    def forward_NFVinput(self, node_feature_vec):
+        print('Starting forward_NFVinput...')
+        
+        print('Setting return type of forward pass to "logits" so that forward_NFVinput returns "probas"...')
+        self.return_type = 'logits'
+        
+        num_nodes = self.testdata.x.shape[0]
+        
+        node_feature_vec = node_feature_vec.reshape(-1,self.in_channels)
+        num_samples = node_feature_vec.shape[0]
+        out = torch.zeros((num_samples,2))
+        print(f'Number of samples = {num_samples}')
+        
+        data_list = []
+        
+        print('Loading data...')
+        for i in range(num_samples):
+            new_graph = copy.deepcopy(self.testdata)
+            new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+            data_list.append(new_graph)
+        print(f'number of graphs = {len(data_list)}')
+        
+        print('Loading data into a single batch...')
+        #dataset = CustomDataset(data_list)
+        batch = torch_geometric.data.Batch.from_data_list(data_list)
+        
+        print('Starting forward pass...')
+        with torch.no_grad():
+            out_tmp = F.softmax(self.forward(batch.x, batch.edge_index), dim = 1)
+        
+        print(f'out_tmp.shape = {out_tmp.shape}')
+        print('Extracting output...')
+        for i in range(batch.num_graphs):
+            out[i] = out_tmp[self.node_to_explain+i*num_nodes,:]
+            
+        print('Finished.')
+
+        return out
