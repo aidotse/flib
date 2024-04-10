@@ -270,9 +270,28 @@ class Nominator:
         pred_ids = self.g.predecessors(node_id)
         succ_ids = self.g.successors(node_id)
 
-        sets = ({node_id, pred_id, succ_id} for pred_id in pred_ids for succ_id in succ_ids)
+        sets = ([node_id, pred_id, succ_id] for pred_id in pred_ids for succ_id in succ_ids if pred_id != succ_id)
 
-        return all(self.is_in_type_relationship(type, node_id, set) for set in sets)
+        # as forward is ordered, we need to check all ordered subsets
+        return all(self.is_in_type_relationship_ordered(type, nodes[1], nodes) for nodes in sets)
+    
+    def is_in_type_relationship_ordered(self, type, main_id, node_ids=set()):
+        from collections import OrderedDict
+        # Simulate an ordered set using OrderedDict
+        node_ids_ordered = OrderedDict.fromkeys(node_ids)
+        # Getting the normal models associated with main_id
+        normal_models = self.g.node[main_id]['normal_models']
+        # Filter out the normal models that are of the specified type and have the main_id
+        filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id)
+        # Check if any of the filtered normal models contain the node_ids in order
+        # Since OrderedDict doesn't have an issubset method, need to check manually
+        def is_subset_ordered(ordered, candidate):
+            it = iter(ordered)
+            return all(key in it for key in candidate)
+
+        # Return True if any of the filtered normal models contain the node_ids in order
+        return any(is_subset_ordered(filtered.node_ids, node_ids_ordered) for filtered in filtereds)
+
 
     
     def is_done_mutual(self, node_id, type):

@@ -106,20 +106,25 @@ def directed_configuration_model(_in_deg, _out_deg, seed=0):
     random.shuffle(in_tmp_list)
     random.shuffle(out_tmp_list)
 
-    num_edges = len(in_tmp_list)
-    for i in range(num_edges):
+    added_edges = set()  # To prevent duplicate edges
+    for i in range(len(in_tmp_list)):
         _src = out_tmp_list[i]
         _dst = in_tmp_list[i]
-        if _src == _dst:  # ID conflict causes self-loop
-            for j in range(i + 1, num_edges):
-                if _src != in_tmp_list[j]:
-                    in_tmp_list[i], in_tmp_list[j] = in_tmp_list[j], in_tmp_list[i]  # Swap ID
-                    break
 
-    _g.add_edges_from(zip(out_tmp_list, in_tmp_list))
-    for idx, (_src, _dst) in enumerate(_g.edges()):
-        if _src == _dst:
-            logger.warning("Self loop from/to %d at %d" % (_src, idx))
+        # Ensure no self-loops or duplicates
+        if _src != _dst and (_src, _dst) not in added_edges:
+            _g.add_edge(_src, _dst)
+            added_edges.add((_src, _dst))
+        else:
+            # Find a new pair to avoid self-loop or duplicate
+            for j in range(i + 1, len(in_tmp_list)):
+                potential_dst = in_tmp_list[j]
+                if _src != potential_dst and (_src, potential_dst) not in added_edges:
+                    # Swap to avoid the self-loop or duplicate and break the inner loop
+                    in_tmp_list[i], in_tmp_list[j] = in_tmp_list[j], in_tmp_list[i]
+                    _g.add_edge(_src, in_tmp_list[i])
+                    added_edges.add((_src, in_tmp_list[i]))
+                    break
     return _g
 
 
@@ -819,22 +824,25 @@ class TransactionGenerator:
         succ_ids = self.g.successors(node_id)
         pred_ids = self.g.predecessors(node_id)
 
-        sets = [{node_id, pred_id, succ_id} for pred_id in pred_ids for succ_id in succ_ids]
-
-        # find the first set of accounts that is not in a forward relationship with this node_id
-        set = next(
-            set for set in sets if not self.nominator.is_in_type_relationship(type, node_id, set)
-        )
-        normal_model = NormalModel(self.normal_model_id, type, list(set), pred_ids[0])
+        # find all input-node_id-output sets avialable where input and output are different
+        sets = [[node_id, pred_id, succ_id] for pred_id in pred_ids for succ_id in succ_ids if pred_id != succ_id]
+        random.shuffle(sets)
+        # find the first set of nodes that is not in a forward relationship with this node_id
+        chosen_nodes = next((nodes for nodes in sets if not self.nominator.is_in_type_relationship_ordered(type, nodes[1], nodes)), None)
+        if chosen_nodes is None:
+            raise ValueError('should always be candidates')
+        main_node =  chosen_nodes[1]
         
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
+        # Create normal models
+        normal_model = NormalModel(self.normal_model_id, type, chosen_nodes, main_node)
+        # min and max accounts are not used in forward
+        schedule_id, _, _, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         
-        for id in set:
+        for id in chosen_nodes:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
-        
         self.nominator.post_update(node_id, type)
         return True
 
