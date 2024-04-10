@@ -12,7 +12,7 @@ class TransactionNetwork():
         self.N_ACCOUNTS = len(self.df_nodes)
         n_legit_illicit = self.df_edges['is_sar'].value_counts()
         self.N_LEGIT_TXS = n_legit_illicit[0]
-        self.N_LAUND_TXS = n_legit_illicit[1]
+        self.N_LAUND_TXS = n_legit_illicit[1] if 1 in n_legit_illicit else 0
         self.START_STEP = int(self.df_edges['step'].min())
         self.END_STEP = int(self.df_edges['step'].max()) + 1
         self.N_STEPS = self.END_STEP - self.START_STEP + 1
@@ -105,7 +105,7 @@ class TransactionNetwork():
             h_class_sum2[labels[i]] += n_neighbours[i]
         homophily_class = 0.0
         for i, (h_sum1, h_sum2) in enumerate(zip(h_class_sum1, h_class_sum2)):
-            h = h_sum1 / h_sum2
+            h = h_sum1 / h_sum2 if h_sum2 > 0 else 1
             homophily_class = 1/(len(h_class_sum1)-1) * max(h - len(self.df_nodes[self.df_nodes['is_sar']==i]) / n_nodes, 0)
         return homophily_edge, homophily_nodes, homophily_class
     
@@ -120,7 +120,7 @@ class TransactionNetwork():
         laundering_models = [self.laundering_type_map[m] for m in laundering_models]
         legitimate_models = [self.legitimate_type_map[m] for m in legitimate_models]
         df = df[df['model_type'].isin(laundering_models + legitimate_models)]
-        df = df[(df['step']  > steps[0]) & (df['step'] < steps[1])]
+        df = df[(df['step'] >= steps[0]) & (df['step'] <= steps[1])]
         names = set(df['source'].unique().tolist() + df['target'].unique().tolist())
         df = self.df_nodes[self.df_nodes['name'].isin(names)]
         names_legit = df[df['is_sar']==0]['name'].tolist()
@@ -172,7 +172,7 @@ class TransactionNetwork():
         laundering_models = [self.laundering_type_map[m] for m in laundering_models]
         legitimate_models = [self.legitimate_type_map[m] for m in legitimate_models]
         df = df[df['model_type'].isin(laundering_models + legitimate_models)]
-        df = df[(df['step']  > steps[0]) & (df['step'] < steps[1])]
+        df = df[(df['step'] >= steps[0]) & (df['step'] <= steps[1])]
         edges = self.get_edges(df, x_range, y_range)
         return edges
 
@@ -182,7 +182,7 @@ class TransactionNetwork():
         laundering_models = [self.laundering_type_map[m] for m in laundering_models]
         legitimate_models = [self.legitimate_type_map[m] for m in legitimate_models]
         df = df[df['model_type'].isin(laundering_models + legitimate_models)]
-        df = df[(df['step']  > steps[0]) & (df['step'] < steps[1])]
+        df = df[(df['step'] >= steps[0]) & (df['step'] <= steps[1])]
         names = set(df['source'].unique().tolist() + df['target'].unique().tolist())
         nodes = self.nodes.select(name=names)
         edges = self.get_edges(df[df['is_sar']==0], x_range, y_range)
