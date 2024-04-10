@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 import os
 
 
-# (Written by Edvin)
+# (Written by Edvin but edited)
 class AmlsimDataset():
     def __init__(self, node_file:str, edge_file:str, node_features:bool=False, edge_features:bool=True, node_labels:bool=False, edge_labels:bool=False, seed:int=42):
         self.data = self.load_data(node_file, edge_file, node_features, edge_features, node_labels, edge_labels)
@@ -32,6 +32,16 @@ class AmlsimDataset():
             y = torch.tensor(edges[edges.columns[-1]].values, dtype=torch.long)
         
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
+
+        # #look for nan values
+        # print('Nan values in x:', torch.isnan(data.x).sum())
+        # print('Nan values in edge_attr:', torch.isnan(data.edge_attr).sum())
+        # print('Nan values in y:', torch.isnan(data.y).sum())
+        # #inspect x nan values
+        # print('Nan values in x:', data.x[torch.isnan(data.x)])
+
+
+        # print('Data object', data)
         return data
 
     def get_data(self):
