@@ -59,7 +59,7 @@
     "degree_threshold": 1
   },
   "simulator": {
-    "transaction_limit": 100000,
+    "transaction_limit": 1000000,
     "transaction_interval": 7,
     "sar_interval": 7
   },
