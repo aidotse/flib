@@ -17,6 +17,8 @@ def main(iterations:int=10, operating_recall:float=0.8):
     model = classifier.train(model='RandomForestClassifier', tune_hyperparameters=True)
     fpr = classifier.evaluate(operating_recall=operating_recall)
     
+    print('hej')
+    
     return
 
 
