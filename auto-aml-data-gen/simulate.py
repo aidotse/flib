@@ -17,7 +17,7 @@ def init_params(seed:int=0) -> dict:
                 "max_amount": 150000,
                 "mean_amount": 637,
                 "std_amount": 500,
-                "mean_amount_sar": 1000,
+                "mean_amount_sar": 637,
                 "std_amount_sar": 500,
                 "prob_income": 0.0,
                 "mean_income": 0.0,
@@ -30,17 +30,17 @@ def init_params(seed:int=0) -> dict:
                 "mean_outcome_sar": 200.0,
                 "std_outcome_sar": 500.0,
                 "prob_spend_cash": 0.7,
-                "n_steps_balance_history": 56,
+                "n_steps_balance_history": 7,
                 "mean_phone_change_frequency": 1460,
                 "std_phone_change_frequency": 365,
-                "mean_phone_change_frequency_sar": 365,
-                "std_phone_change_frequency_sar": 182,
+                "mean_phone_change_frequency_sar": 1460,
+                "std_phone_change_frequency_sar": 365,
                 "mean_bank_change_frequency": 1460,
                 "std_bank_change_frequency": 1,
                 "mean_bank_change_frequency_sar": 1460,
                 "std_bank_change_frequency_sar": 1,
                 "margin_ratio": 0.1,
-                "prob_participate_in_multiple_sars": 0.2
+                "prob_participate_in_multiple_sars": 0.01
             },
             "input": {
                 "directory": "paramFiles/tmp",
@@ -78,29 +78,24 @@ def init_params(seed:int=0) -> dict:
             }
         },
         'accounts': [
-            (2770, 1000, 100000, 'SWE', 'I', 'swedbank'),
-            (1348, 1000, 100000, 'SWE', 'I', 'handelsbanken'),
-            (5882, 1000, 100000, 'SWE', 'I', 'others')
+            (10000, 1000, 100000, 'SWE', 'I', 'bank'),
         ],
         'alertPatterns': [
-            (10, 'fan_out', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
-            (10, 'fan_in', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
-            (10, 'cycle', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
-            (10, 'bipartite', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
-            (10, 'stack', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
-            (10, 'scatter_gather', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
-            (10, 'gather_scatter', 2, 7, 7, 100, 1000, 1, 28, '', True, 'CASH'),
-            (10, 'fan_in', 2, 4, 4, 100, 1000, 1, 28, 'swedbank', True, 'CASH'),
-            (10, 'fan_in', 2, 4, 4, 100, 1000, 1, 28, 'handelsbanken', True, 'CASH'),
-            (10, 'fan_in', 2, 4, 4, 100, 1000, 1, 28, 'others', True, 'CASH'),
+            (8, 'fan_out', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (8, 'fan_in', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (8, 'cycle', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (8, 'bipartite', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (8, 'stack', 2, 4, 4, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (8, 'scatter_gather', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (8, 'gather_scatter', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
         ],
         'normalModels': [
-            (10000, 'single', 2, 1, 1, 1, 28),
-            (10000, 'fan_out', 2, 4, 4, 1, 28),
-            (10000, 'fan_in', 2, 4, 4, 1, 28),
-            (10000, 'forward', 2, 3, 3, 1, 28),
-            (10000, 'periodical', 2, 2, 2, 1, 28),
-            (10000, 'mutual', 2, 2, 2, 1, 28)
+            (6000, 'single', 2, 2, 2, 1, 28),
+            (6000, 'fan_out', 2, 3, 3, 1, 28),
+            (6000, 'fan_in', 2, 3, 3, 1, 28),
+            (6000, 'forward', 2, 3, 3, 1, 28),
+            (6000, 'periodical', 2, 2, 2, 1, 28),
+            (6000, 'mutual', 2, 2, 2, 1, 28)
         ]
     }
     return params

@@ -28,7 +28,7 @@ TODO:
 - [x] function to generate config files
 - [x] function to start simulation
 - [x] function to preprocess data
-- [ ] function to train and hyperparameter tune models
+- [x] function to train and hyperparameter tune models
 - [ ] function to check constraint on feature importance
 - [ ] function to evaluate FPR
 - [ ] function to suggest new parameters, use optuna! many loss functions, one for each parameter?
