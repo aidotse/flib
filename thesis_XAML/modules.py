@@ -371,7 +371,7 @@ class GAT_GraphSVX(torch.nn.Module):
         x = F.dropout(x, p=self.dropout, training=self.training)
         x, attention_weights3 = self.conv3(x, edge_index, return_attention_weights=True)
         x = self.log_softmax(x) #<--- need to use NLLLoss instead of CrossEntropyLoss
-        
+
         if self.return_attention_weights:
             return x, attention_weights1, attention_weights2, attention_weights3
         else:

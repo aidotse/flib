@@ -1,6 +1,6 @@
 import torch
 import torch_geometric
-from sklearn.metrics import balanced_accuracy_score, precision_score, recall_score
+from sklearn.metrics import balanced_accuracy_score, precision_score, recall_score, accuracy_score
 
 import data
 import modules
@@ -30,6 +30,10 @@ def train_GCN(hyperparameters = None, verbose = False):
     print('Double check which dataset is being used.')
     
     # Data
+
+    #traindata = data.AmlsimDataset(node_file='bank/train/nodes.csv', edge_file='bank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    #testdata = data.AmlsimDataset(node_file='bank/test/nodes.csv', edge_file='bank/test/edges.csv', node_features=True, node_labels=True).get_data()
+
     traindata = data.AmlsimDataset(node_file='data/simulation2/swedbank/train/nodes.csv', edge_file='data/simulation2/swedbank/train/edges.csv', node_features=True, node_labels=True).get_data()
     testdata = data.AmlsimDataset(node_file='data/simulation2/swedbank/test/nodes.csv', edge_file='data/simulation2/swedbank/test/edges.csv', node_features=True, node_labels=True).get_data()
     feature_names = ['sum','mean','median','std','max','min','in_degree','out_degree','n_unique_in','n_unique_out']
@@ -48,7 +52,7 @@ def train_GCN(hyperparameters = None, verbose = False):
     hidden_dim = 10
     num_layers = 3
     dropout = 0.3
-    lr = 0.001
+    lr = 0.0001
     epochs = 200
     class_weights = [1, 1.5]
     
@@ -145,15 +149,23 @@ def train_GAT_GraphSVX(hyperparameters = None, verbose = False):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
     print('Double check which dataset is being used.')
-    
     # Data
-    traindata = data.AmlsimDataset(node_file='data/simulation3/swedbank/train/nodes.csv', edge_file='data/simulation3/swedbank/train/edges.csv', node_features=True, node_labels=True).get_data()
-    testdata = data.AmlsimDataset(node_file='data/simulation3/swedbank/test/nodes.csv', edge_file='data/simulation3/swedbank/test/edges.csv', node_features=True, node_labels=True).get_data()
+    # traindata = data.AmlsimDataset(node_file='data/simulation3/swedbank/train/nodes.csv', edge_file='data/simulation3/swedbank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    # testdata = data.AmlsimDataset(node_file='data/simulation3/swedbank/test/nodes.csv', edge_file='data/simulation3/swedbank/test/edges.csv', node_features=True, node_labels=True).get_data()
+  
+    traindata = data.AmlsimDataset(node_file='bank/train/nodes.csv', edge_file='bank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    testdata = data.AmlsimDataset(node_file='bank/test/nodes.csv', edge_file='bank/test/edges.csv', node_features=True, node_labels=True).get_data()
     traindata = torch_geometric.transforms.ToUndirected()(traindata)
     testdata = torch_geometric.transforms.ToUndirected()(testdata)
-    feature_names = ['sum','mean','median','std','max','min','in_degree','out_degree','n_unique_in','n_unique_out']
+    #feature_names = ['sum','mean','median','std','max','min','in_degree','out_degree','n_unique_in','n_unique_out']
+    #feature names for:  banks, in_sum, out_sum, in_mean, out_mean, in_median, out_median, in_std, out_std, in_max, out_max, in_min, out_min, n_unique_in, n_unique_out, count_days_in_bank, count_phone_changes, sums_spending, means_spending, medians_spending, stds_spending, maxs_spending, mins_spending, counts_spending
+    feature_names = ['in_sum', 'out_sum', 'in_mean', 'out_mean', 'in_median', 'out_median', 'in_std', 'out_std', 'in_max', 'out_max', 'in_min', 'out_min', 'n_unique_in', 'n_unique_out', 'count_days_in_bank', 'count_phone_changes', 'sums_spending', 'means_spending', 'medians_spending', 'stds_spending', 'maxs_spending', 'mins_spending', 'counts_spending']
     target_names = ['not_sar','is_sar']
     
+    
+
+
+    print('traindata', traindata)
     # --- Add preprocessing here ---
     
     traindata = traindata.to(device)
@@ -167,9 +179,10 @@ def train_GAT_GraphSVX(hyperparameters = None, verbose = False):
     hidden_channels = 10
     num_heads = 3
     dropout = 0.3
-    lr = 0.005
+    lr = 0.0001
+    print('lr',lr)
     epochs = 400
-    class_weights = [1, 3]
+    class_weights = [0.9489, 1.0511]
     
     class_weights = torch.tensor(class_weights, dtype=torch.float32).to(device)
     
@@ -192,18 +205,28 @@ def train_GAT_GraphSVX(hyperparameters = None, verbose = False):
     for epoch in range(epochs):
         model.train()
         optimizer.zero_grad()
+        # Get the parameters of the model
+        # params = list(model.parameters())
+        # print('print params', params)
+        # print('printing traindata x', traindata.x[:5,:])
+        # print('printing traindata edge_index', traindata.edge_index[:5,:])
         out = model.forward(traindata.x, traindata.edge_index)
+        # print('printing out', out[:5,:])
         loss = criterion(out, traindata.y)
         loss.backward()
         optimizer.step()
-        if verbose and ((epoch+1)%10 == 0 or epoch == epochs-1):
+        if verbose and ((epoch+1)%10 == 0 or epoch == epochs-1 or epoch<10):
             model.eval()
             with torch.no_grad():
+                train_loss = criterion(out, traindata.y)
+
                 out = model.forward(testdata.x, testdata.edge_index)
-                loss = criterion(out, testdata.y)
+                test_loss = criterion(out, testdata.y)
+                balanced_accuracy = balanced_accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
                 precision = precision_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
                 recall = recall_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
-                print(f'epoch: {epoch + 1}, loss: {loss:.4f}, precision: {precision:.4f}, recall: {recall:.4f}')
+                accuracy= accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
+                print(f'epoch: {epoch + 1}, test_loss: {test_loss:.4f}, train_loss: {train_loss:.4f}, precision: {precision:.4f}, recall: {recall:.4f}, balanced_accuracy: {balanced_accuracy:.4f}, accuracy: {accuracy:.4f}')
     print('Finished training.')
     
     return model, traindata, testdata, feature_names, target_names

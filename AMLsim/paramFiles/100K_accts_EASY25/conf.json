@@ -51,13 +51,14 @@
   "output": {
     "directory": "outputs",
     "transaction_log": "tx_log.csv",
-    "node_log": "node_log.csv"
+    "node_log": "node_log.csv",
+    "noise_log": "noise_log.csv"
   },
   "graph_generator": {
     "degree_threshold": 1
   },
   "simulator": {
-    "transaction_limit": 100000,
+    "transaction_limit": 10000000,
     "transaction_interval": 7,
     "sar_interval": 7
   },
