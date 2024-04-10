@@ -33,7 +33,12 @@ def test_small_graph():
     txg = Transaction_Graph(config_str).txg
     
     # Ensure correct number of models are created
-    EXPECTED_NO_OF_MODELS = [2, 2, 2, 2, 2, 2]
+    # for forward, we try to create 1000 models but the graph only supports 60
+    # each n1 -> n2 -> x has 3 different combinations
+    # each n1 -> x -> n3 has 4 different combinations
+    # hence, each n1 -> x -> y has 12 combinations
+    # each 5 nodes have 12 possible forward patterns - 60 in total
+    EXPECTED_NO_OF_MODELS = [2, 60, 2, 2, 2, 2]
     normal_models = dict()
     for type, expected_num in zip(TYPES,EXPECTED_NO_OF_MODELS):
         normal_models[type] = [nm for nm in txg.normal_models if nm.type == type]
