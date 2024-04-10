@@ -1330,7 +1330,6 @@ class GraphSVX():
             [tensor]: estimated coefficients of our weighted linear regression - on (z, f(z'))
             Dimension (M * num_classes)
         """
-        
         # Add constant term
         z_ = torch.cat([z_, torch.ones(z_.shape[0], 1)], dim=1)
 
@@ -1867,7 +1866,7 @@ class GraphLIME:
         subset, edge_index, mapping, edge_mask = k_hop_subgraph(
             node_idx, self.hop, edge_index, relabel_nodes=True,
             num_nodes=num_nodes, flow=self.__flow__())
-
+        #print('Printing subset and edge_index', subset, edge_index)
         x = x[subset]
         y = y[subset]
 
@@ -1937,7 +1936,35 @@ class GraphLIME:
 
         return G
 
-    def explain(self, node_index, hops, num_samples, info=False, multiclass=False, *unused, **kwargs):
+
+    def explain_node(self, node_idx, x, edge_index, **kwargs):
+        probas = self.__init_predict__(x, edge_index, **kwargs)
+
+        x, probas, _, _, _, _ = self.__subgraph__(
+            node_idx, x, probas, edge_index, **kwargs)
+
+        x = x.detach().cpu().numpy()  # (n, d)
+        y = probas.detach().cpu().numpy()  # (n, classes)
+
+        n, d = x.shape
+
+        K = self.__compute_kernel__(x, reduce=False)  # (n, n, d)
+        L = self.__compute_kernel__(y, reduce=True)  # (n, n, 1)
+
+        K_bar = self.__compute_gram_matrix__(K)  # (n, n, d)
+        L_bar = self.__compute_gram_matrix__(L)  # (n, n, 1)
+
+        K_bar = K_bar.reshape(n ** 2, d)  # (n ** 2, d)
+        L_bar = L_bar.reshape(n ** 2,)  # (n ** 2,)
+
+        solver = LassoLars(self.rho, fit_intercept=False, positive=True)
+
+        solver.fit(K_bar * n, L_bar * n)
+    
+        return solver.coef_
+
+
+    def explain(self, node_index, hops, num_samples, info=False, multiclass=False, printing=True, *unused, **kwargs):
         # hops, num_samples, info are useless: just to copy graphshap pipeline
         x = self.data.x
         edge_index = self.data.edge_index
@@ -1961,9 +1988,10 @@ class GraphLIME:
 
             K_bar = K_bar.reshape(n ** 2, d)  # (n ** 2, d)
             L_bar = L_bar.reshape(n ** 2, self.data.num_classes)  # (n ** 2,)
-
+            if printing:
+                print(f'Kbar: {K_bar} and L_bar: {L_bar}')
             solver = LassoLars(self.rho, fit_intercept=False,
-                               normalize=False, positive=True)
+                                positive=True)
             solver.fit(K_bar * n, L_bar * n)
 
             return solver.coef_.T
@@ -1977,10 +2005,13 @@ class GraphLIME:
 
             K_bar = K_bar.reshape(n ** 2, d)  # (n ** 2, d)
             L_bar = L_bar.reshape(n ** 2,)  # (n ** 2,)
+            if printing:
+                print(f'Kbar: {K_bar} and L_bar: {L_bar}')
 
             solver = LassoLars(self.rho, fit_intercept=False,
-                               normalize=False, positive=True)
+                               positive=True)
             solver.fit(K_bar * n, L_bar * n)
+
 
             return solver.coef_
 
@@ -2079,7 +2110,7 @@ class LIME:
 
         sample_x = np.array(sample_x)
         sample_y = np.array(sample_y)
-
+        print(f'sample_x: {sample_x} and sample_y: {sample_y}')
         solver = Ridge(alpha=0.1)
         solver.fit(sample_x, sample_y)
 
