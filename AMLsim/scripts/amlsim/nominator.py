@@ -59,7 +59,7 @@ class Nominator:
         Returns:
             list: A list of vertices ranked by the number of in- and outgoing edges.
         """        
-        candidates = [n for n in self.g.nodes() if self.g.in_degree(n) >= 1 and self.g.out_degree(n) >= 1]
+        candidates = [n for n in self.g.nodes() if self.g.in_degree(n) >= 1 and self.g.out_degree(n) >= 1 and set(self.g.successors(n)) != set(self.g.predecessors(n))]
         random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
         return candidates
 
