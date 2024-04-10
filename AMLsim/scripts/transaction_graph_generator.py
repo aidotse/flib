@@ -1655,7 +1655,11 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
+<<<<<<< HEAD
         PARAM_FILES = '10K_accts'
+=======
+        PARAM_FILES = 'forward'
+>>>>>>> 66f1f3f53e0fb4aa94a2d5b1de1d6fc575d02d01
         argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]
