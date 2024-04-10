@@ -1,8 +1,8 @@
 {
   "general": {
     "random_seed": 0,
-    "simulation_name": "10K_accts",
-    "total_steps": 98
+    "simulation_name": "large_test",
+    "total_steps": 367
   },
   "default": {
     "min_amount": 1,
@@ -35,7 +35,7 @@
     "prob_participate_in_multiple_sars": 0.2
   },
   "input": {
-    "directory": "paramFiles/10K_accts",
+    "directory": "tests/parameters/large_test",
     "schema": "schema.json",
     "accounts": "accounts.csv",
     "alert_patterns": "alertPatterns.csv",

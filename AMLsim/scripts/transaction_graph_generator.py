@@ -11,11 +11,7 @@ import json
 import os
 import sys
 import logging
-import time
 from scipy import stats
-
-import cProfile
-
 
 from collections import Counter, defaultdict
 from amlsim.nominator import Nominator
@@ -709,7 +705,7 @@ class TransactionGenerator:
         """
         header = next(reader)
 
-        self.nominator = Nominator(self.g, self.degree_threshold)
+        self.nominator = Nominator(self.g)
 
         for row in reader:
             count = int(row[header.index('count')])
@@ -724,6 +720,7 @@ class TransactionGenerator:
                 bank_id = self.default_bank_id
 
             self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period)
+        self.nominator.initialize_candidates() # create candidate lists for the types considered
 
 
     def build_normal_models(self):
@@ -733,11 +730,12 @@ class TransactionGenerator:
             for type in self.nominator.types():
                 count = self.nominator.count(type)
                 if count > 0:
-                    self.choose_normal_model(type)
-                    self.normal_model_id += 1
+                    success = self.choose_normal_model(type)
+                    self.normal_model_id += success
                     #print(self.normal_model_id)
-        logger.info("Generated %d normal models." % len(self.normal_models))
+        logger.info(f"Generated {len(self.normal_models)} normal models.")
         logger.info("Normal model counts %s", self.nominator.used_count_dict)
+        return self.normal_models # just to get access in unit test, probably not a good solution
         
 
     def choose_normal_model(self, type):
@@ -747,35 +745,33 @@ class TransactionGenerator:
             type (string): Type of normal model
         """        
         if type == 'fan_in':
-            self.fan_in_model(type)
+            success = self.fan_in_model(type)
         elif type == 'fan_out':
-            self.fan_out_model(type)
+            success = self.fan_out_model(type)
         elif type == 'forward':
-            self.forward_model(type)
+            success = self.forward_model(type)
         elif type == 'single':
-            self.single_model(type)
+            success = self.single_model(type)
         elif type == 'mutual':
-            self.mutual_model(type)
+            success = self.mutual_model(type)
         elif type == 'periodical':
-            self.periodical_model(type)
+            success = self.periodical_model(type)
 
+        return success
         
     def fan_in_model(self, type):     
         node_id = self.nominator.next(type) # get the next node_id for this type
 
         if node_id is None:
-            return
+            return False
 
-        candidates = self.nominator.fan_in_breakdown(type, node_id)
+        candidates = self.nominator.find_available_candidate_neighbors(type, node_id)
 
         if not candidates:
             raise ValueError('should always be candidates')
 
-        normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_in_index]
-        for nm in normal_models:
-            nm.remove_node_ids(candidates)
-            
+        # Create the normal pattern
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
@@ -785,42 +781,40 @@ class TransactionGenerator:
 
         self.normal_models.append(normal_model)
         
-        self.nominator.post_fan_in(node_id, type)
+        self.nominator.post_update(node_id, type)
+        
+        return True
 
 
     def fan_out_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
 
         if node_id is None:
-            return
+            return False
 
-        candidates = self.nominator.fan_out_breakdown(type, node_id) # get the neighboring nodes that are in a potential fan-out relationship
+        candidates = self.nominator.find_available_candidate_neighbors(type, node_id) # get the neighboring nodes that are in a potential fan-out relationship
 
         if not candidates:
             raise ValueError('should always be candidates')
 
-        normal_models = self.nominator.normal_models_in_type_relationship(type, node_id, {node_id})
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.fan_out_index]
-        for nm in normal_models:
-            nm.remove_node_ids(candidates)
-
+        schedule_id, _, _, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         result_ids = candidates | { node_id }
-        # TODO: smaple from candidates according to min max from csv
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
+        
+        self.nominator.post_update(node_id, type)
 
-        self.nominator.post_fan_out(node_id, type)
-    
+        return True
 
     def forward_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
         
         if node_id is None:
-            return
+            return False
 
         succ_ids = self.g.successors(node_id)
         pred_ids = self.g.predecessors(node_id)
@@ -833,22 +827,22 @@ class TransactionGenerator:
         )
         normal_model = NormalModel(self.normal_model_id, type, list(set), pred_ids[0])
         
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.forward_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         
         for id in set:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
-
-        self.nominator.post_forward(node_id, type)
-                
+        
+        self.nominator.post_update(node_id, type)
+        return True
 
     def single_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
 
         if node_id is None:
-            return
+            return False
         
         succ_ids = self.g.successors(node_id) # find the accounts connected to this node_id
         # find the first account that is not in a single relationship with this node_id
@@ -856,57 +850,57 @@ class TransactionGenerator:
         
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id) # create a normal model with the node_id and the connected account
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.single_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model) # add the normal model to the nodes
 
         self.normal_models.append(normal_model)
 
-        self.nominator.post_single(node_id, type)
-
+        self.nominator.post_update(node_id, type)
+        return True
     
     def periodical_model(self, type):
         node_id = self.nominator.next(type)
 
         if node_id is None:
-            return
+            return False
         
         succ_ids = self.g.successors(node_id)
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.periodical_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
 
-        self.nominator.post_periodical(node_id, type)
-
+        self.nominator.post_update(node_id, type)
+        return True
     
     def mutual_model(self, type):
         node_id = self.nominator.next(type)
 
         if node_id is None:
-            return
+            return False
         
         succ_ids = self.g.successors(node_id)
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.mutual_index]
+        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.node[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
 
-        self.nominator.post_mutual(node_id, type)
-        
+        self.nominator.post_update(node_id, type)
+        return True
 
     def load_alert_patterns(self):
         """Load an AML typology parameter file
@@ -1653,7 +1647,7 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
-        PARAM_FILES = '100K_accts'
+        PARAM_FILES = 'small'
         argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]
