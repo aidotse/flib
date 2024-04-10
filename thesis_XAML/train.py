@@ -1,9 +1,18 @@
+from importlib import reload
+
 import torch
 import torch_geometric
-from sklearn.metrics import balanced_accuracy_score, precision_score, recall_score, accuracy_score
+from torch.nn import functional as F
+from sklearn.metrics import accuracy_score, precision_score, recall_score, fbeta_score, precision_recall_curve
 
 import data
+reload(data)
+
 import modules
+reload(modules)
+
+from criterions import ClassBalancedLoss
+from utils import EarlyStopper
 
 def train_model(model, train, test, optimizer, criterion, epochs = 200, verbose = False):
     for epoch in range(200):
@@ -230,3 +239,91 @@ def train_GAT_GraphSVX(hyperparameters = None, verbose = False):
     print('Finished training.')
     
     return model, traindata, testdata, feature_names, target_names
+
+
+def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
+    # Computing device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Using device: {device}')
+    print('Double check which dataset is being used.')
+    
+    # Data
+    traindata = data.AmlsimDataset(node_file='data/100K_accts_EASY25/bank/train/nodes.csv', edge_file='data/100K_accts_EASY25/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    testdata = data.AmlsimDataset(node_file='data/100K_accts_EASY25/bank/test/nodes.csv', edge_file='data/100K_accts_EASY25/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
+    traindata = torch_geometric.transforms.ToUndirected()(traindata)
+    testdata = torch_geometric.transforms.ToUndirected()(testdata)
+    feature_names = ['sum','mean','median','std','max','min','in_degree','out_degree','n_unique_in','n_unique_out']
+    target_names = ['not_sar','is_sar']
+    
+    # --- Add preprocessing here ---
+    
+    traindata = traindata.to(device)
+    testdata = testdata.to(device)
+    
+    # Non-tunable hyperparameters
+    in_channels = traindata.x.shape[1]
+    out_channels = 2
+    
+    # Tunable hyperparamters
+    hidden_channels = hyperparameters['hidden_channels']
+    num_heads = hyperparameters['num_heads']
+    dropout = hyperparameters['dropout']
+    lr = hyperparameters['lr']
+    epochs = hyperparameters['epochs']
+    beta = hyperparameters['beta']
+        
+    # Model
+    model = modules.GAT_GraphSVX_foroptuna(in_channels=in_channels,
+                                            hidden_channels=hidden_channels,
+                                            out_channels=out_channels,
+                                            num_heads=num_heads,
+                                            dropout=dropout)
+    
+    model = model.to(device)
+    
+    # Criterion and optimizer
+    n_samples_per_classes_train = [(traindata.y == 0).sum().item(), (traindata.y == 1).sum().item()]
+    n_samples_per_classes_test = [(testdata.y == 0).sum().item(), (testdata.y == 1).sum().item()]
+    print(f'number of samples per classes (train) = {n_samples_per_classes_train}')
+    print(f'number of samples per classes (test) = {n_samples_per_classes_test}')
+    criterion_train = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_train, loss_type='sigmoid')
+    criterion_test = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_test, loss_type='sigmoid')
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    
+    # Initialize early stopper
+    early_stopper = EarlyStopper(patience=10, min_delta=0) #Stops after 10 epochs without improvement
+    
+    # Train model
+    print(f'Starting training with {epochs} epochs.')
+    train_loss = []
+    test_loss = []
+    
+    # This model needs special input format, so we can't use the train_model function
+    for epoch in range(epochs):
+        model.train()
+        optimizer.zero_grad()
+        out = model.forward(traindata.x, traindata.edge_index)
+        loss = criterion_train(out, traindata.y)
+        train_loss = loss.item()
+        loss.backward()
+        optimizer.step()
+        
+        #Evaluation
+        model.eval()
+        with torch.no_grad():
+            out = model.forward(testdata.x, testdata.edge_index)
+            loss = criterion_test(out, testdata.y)
+            test_loss = loss.item()
+            out = F.softmax(out, dim=1)
+            accuracy = accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
+            precision = precision_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
+            recall = recall_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
+            fbeta = fbeta_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), beta=beta, zero_division=0)
+        if verbose and ((epoch+1)%10 == 0 or epoch == epochs-1):
+                print(f'epoch: {epoch + 1}, train_loss: {train_loss:.4f}, test_loss: {test_loss:.4f}, accuracy: {accuracy:.4f}, precision: {precision:.4f}, recall: {recall:.4f}, fbeta: {fbeta:.4f}')
+        if early_stopper.early_stop(loss):
+            print(f'Stopping training early at {epoch}/{epochs} epochs.')             
+            break
+    print('Finished training.')
+    
+    return model, traindata, testdata, feature_names, target_names, accuracy

@@ -20,9 +20,11 @@ def proccess_data(edge_data,node_data):
 
     node_data = node_data.drop(['CUSTOMER_ID', 'ACCOUNT_TYPE','COUNTRY'], axis=1)
     #true_labels = node_data[['ACCOUNT_ID','TRUE_LABEL']]
+    #true_labels = node_data[['ACCOUNT_ID','TRUE_LABEL']]
     labels = node_data[['ACCOUNT_ID','IS_SAR']]
 
     labels = labels.rename(columns={'ACCOUNT_ID': 'node_id'})
+    #true_labels = true_labels.rename(columns={'ACCOUNT_ID': 'node_id'})
     #true_labels = true_labels.rename(columns={'ACCOUNT_ID': 'node_id'})
 
     init_balance_feat = node_data[['ACCOUNT_ID','INIT_BALANCE']]
