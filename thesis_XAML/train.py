@@ -3,6 +3,7 @@ from importlib import reload
 import torch
 import torch_geometric
 from torch.nn import functional as F
+from torch.optim.lr_scheduler import StepLR
 from sklearn.metrics import accuracy_score, precision_score, recall_score, fbeta_score, precision_recall_curve
 
 import data
@@ -255,7 +256,11 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
     feature_names = ['sum','mean','median','std','max','min','in_degree','out_degree','n_unique_in','n_unique_out']
     target_names = ['not_sar','is_sar']
     
-    # --- Add preprocessing here ---
+    # Normalization (note: normalizing also integer features | maybe add other preprocessing)
+    mean = traindata.x.mean(dim=0, keepdim=True)
+    std = traindata.x.std(dim=0, keepdim=True)
+    traindata.x = (traindata.x - mean) / std
+    testdata.x = (testdata.x - mean) / std
     
     traindata = traindata.to(device)
     testdata = testdata.to(device)
@@ -290,40 +295,47 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
     criterion_test = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_test, loss_type='sigmoid')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     
+    # Initialize learning rate decay scheduler
+    scheduler = StepLR(optimizer, step_size=100, gamma=0.9)
+    
     # Initialize early stopper
     early_stopper = EarlyStopper(patience=10, min_delta=0) #Stops after 10 epochs without improvement
     
     # Train model
     print(f'Starting training with {epochs} epochs.')
-    train_loss = []
-    test_loss = []
+    running_train_loss = []
+    running_test_loss = []
     
     # This model needs special input format, so we can't use the train_model function
     for epoch in range(epochs):
+        # Training
         model.train()
         optimizer.zero_grad()
         out = model.forward(traindata.x, traindata.edge_index)
         loss = criterion_train(out, traindata.y)
-        train_loss = loss.item()
+        running_train_loss.append(loss.item())
         loss.backward()
         optimizer.step()
         
-        #Evaluation
+        # Evaluation
         model.eval()
         with torch.no_grad():
             out = model.forward(testdata.x, testdata.edge_index)
             loss = criterion_test(out, testdata.y)
-            test_loss = loss.item()
+            running_test_loss.append(loss.item())
             out = F.softmax(out, dim=1)
             accuracy = accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
             precision = precision_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
             recall = recall_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
             fbeta = fbeta_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), beta=beta, zero_division=0)
         if verbose and ((epoch+1)%10 == 0 or epoch == epochs-1):
-                print(f'epoch: {epoch + 1}, train_loss: {train_loss:.4f}, test_loss: {test_loss:.4f}, accuracy: {accuracy:.4f}, precision: {precision:.4f}, recall: {recall:.4f}, fbeta: {fbeta:.4f}')
+                print(f'epoch: {epoch + 1}, train_loss: {running_train_loss[-1]:.4f}, test_loss: {running_test_loss[-1]:.4f}, accuracy: {accuracy:.4f}, precision: {precision:.4f}, recall: {recall:.4f}, fbeta: {fbeta:.4f}')
         if early_stopper.early_stop(loss):
             print(f'Stopping training early at {epoch}/{epochs} epochs.')             
             break
+        
+        # Weight decay
+        scheduler.step()
     print('Finished training.')
     
-    return model, traindata, testdata, feature_names, target_names, accuracy
+    return model, traindata, testdata, feature_names, target_names, running_train_loss, running_test_loss, accuracy
