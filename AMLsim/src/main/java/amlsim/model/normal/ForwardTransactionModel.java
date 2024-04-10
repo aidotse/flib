@@ -129,7 +129,13 @@ public class ForwardTransactionModel extends AbstractTransactionModel {
 
         // make transactions if step is correct
         if (steps[index] == step) {
-            Account dest = destsSet.iterator().next(); // it is unlikely that this set is larger than 1
+            Account dest;
+            if (index == 0) {
+                dest = members.get(0);
+            } else {
+                dest = members.get(2);
+            }
+            
             if (account.getBalance() < amount) {
                 amount = 0.9 * account.getBalance();
             }
