@@ -44,6 +44,9 @@ def cal_node_features(df:pd.DataFrame, bank) -> pd.DataFrame:
     mins_spending = gb['amount'].min().rename('min_spending')
     counts_spending = gb['amount'].count().rename('count_spending')
     
+    if sums_spending.isnull().any():
+        print('sums_spending contains NaN')
+    
     # calculate network features
     banks = df_network[['account', 'bank']].drop_duplicates().set_index('account')
     gb = df_network.groupby(['account'])
@@ -66,6 +69,10 @@ def cal_node_features(df:pd.DataFrame, bank) -> pd.DataFrame:
     # create final dataframe
     df_nodes = pd.concat([banks, sums, means, medians, stds, maxs, mins, counts_in, counts_out, counts_unique_in, counts_unique_out, counts_days_in_bank, counts_phone_changes, sums_spending, means_spending, medians_spending, stds_spending, maxs_spending, mins_spending, counts_spending, is_sar], axis=1)
     df_nodes = df_nodes[df_nodes['bank'] == bank]
+    
+    # if any of the features contain NaN, change to 0
+    df_nodes = df_nodes.fillna(0.0)
+    
     return df_nodes
 
 

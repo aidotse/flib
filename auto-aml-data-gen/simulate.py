@@ -90,12 +90,12 @@ def init_params(seed:int=0) -> dict:
             (8, 'gather_scatter', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
         ],
         'normalModels': [
-            (6000, 'single', 2, 2, 2, 1, 28),
-            (6000, 'fan_out', 2, 3, 3, 1, 28),
-            (6000, 'fan_in', 2, 3, 3, 1, 28),
-            (6000, 'forward', 2, 3, 3, 1, 28),
-            (6000, 'periodical', 2, 2, 2, 1, 28),
-            (6000, 'mutual', 2, 2, 2, 1, 28)
+            (7000, 'single', 2, 2, 2, 1, 28),
+            (7000, 'fan_out', 2, 3, 3, 1, 28),
+            (7000, 'fan_in', 2, 3, 3, 1, 28),
+            (7000, 'forward', 2, 3, 3, 1, 28),
+            (7000, 'periodical', 2, 2, 2, 1, 28),
+            (7000, 'mutual', 2, 2, 2, 1, 28)
         ]
     }
     return params
