@@ -63,18 +63,23 @@ class Classifier:
         y_pred = (y_pred > threshold).astype(int)
         
         tn, fp, fn, tp = confusion_matrix(self.y_test, y_pred).ravel()
-        print(f'tn: {tn}, fp: {fp}, fn: {fn}, tp: {tp}')
+        #print(f'tn: {tn}, fp: {fp}, fn: {fn}, tp: {tp}')
         fpr = fp/(fp+tp)
         print(f'False positive rate: {fpr:.4f}')
         
         # Print the important features
         importances = self.model.feature_importances_
-        indices = np.argsort(importances)[::-1]
-        print("Feature ranking:")
-        for f in range(self.X_train.shape[1]):
-            print(f'  {f}. {self.trainset.columns[indices[f]+2]} ({importances[indices[f]]})')
+        #indices = np.argsort(importances)[::-1]
+        #print("Feature ranking:")
+        #for f in range(self.X_train.shape[1]):
+        #    print(f'  {f}. {self.trainset.columns[indices[f]+2]} ({importances[indices[f]]})')
         
-        return fpr
+        avg_importance = importances.mean()
+        avg_importance_error = abs(importances - avg_importance)
+        sum_avg_importance_error = avg_importance_error.sum()
+        print(f'Average importance error: {sum_avg_importance_error:.4f}')
+        
+        return fpr, importances
     
     
     def precision_after_recall(self, X, y_true):
