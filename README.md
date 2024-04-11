@@ -78,6 +78,7 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     "mean_outcome_sar": 200.0,
     "std_outcome_sar": 500.0,
     "prob_spend_cash": 0.7,
+    "n_steps_balance_history": 56,
     "mean_phone_change_frequency": 1460,
     "std_phone_change_frequency": 365,
     "mean_phone_change_frequency_sar": 365,
@@ -86,7 +87,8 @@ The conf.json file contains parameters for the generel behaviour of the accounts
     "std_bank_change_frequency": 365,
     "mean_bank_change_frequency_sar": 365,
     "std_bank_change_frequency_sar": 182,
-    "margin_ratio": 0.1
+    "margin_ratio": 0.1,
+    "prob_participate_in_multiple_sars": 0.1
   },
   "input": {
     "directory": "paramFiles/simulation1",
