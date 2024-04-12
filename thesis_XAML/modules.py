@@ -342,6 +342,8 @@ class GCN_GraphSVX(torch.nn.Module):
         return out
 
 
+
+
 # (Written by Tomas & Agnes)
 class GAT_GraphSVX(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, num_heads, dropout=0.3):
@@ -420,6 +422,55 @@ class GAT_GraphSVX(torch.nn.Module):
         return out
 
 
+class GraphSAGE_GraphSVX_foroptuna(torch.nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels ,dropout=0.2, return_type='logits'):
+        super().__init__()
+        self.dropout = dropout
+        self.in_channels=in_channels
+        self.out_channels=out_channels
+        self.node_emb = Linear(in_channels, hidden_channels)
+        self.conv1 = SAGEConv(hidden_channels, hidden_channels)
+        self.conv2 = SAGEConv(hidden_channels, hidden_channels)
+        self.conv3 = SAGEConv(hidden_channels, hidden_channels)
+        self.bn1 = BatchNorm(hidden_channels)
+        self.bn2 = BatchNorm(hidden_channels)
+        self.bn3 = BatchNorm(hidden_channels)
+        self.classifier = Linear(hidden_channels, out_channels)
+        self.log_softmax = torch.nn.LogSoftmax(dim=1)
+        self.return_type = return_type
+
+    def forward(self, x, edge_index):
+        x = self.node_emb(x)
+        
+        x = self.conv1(x, edge_index)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = F.dropout(x, p=self.dropout)
+        
+        x = self.conv2(x, edge_index)
+        x = self.bn2(x)
+        x = F.relu(x)
+        x = F.dropout(x, p=self.dropout)
+        
+        x = self.conv3(x, edge_index)
+        x = self.bn3(x)
+        x = F.relu(x)
+        x = F.dropout(x, p=self.dropout)
+        
+        x = self.classifier(x)
+        if self.return_type=="log_probas":
+            x=self.log_softmax(x)
+            
+        return x#torch.softmax(x, dim=-1)
+
+    def set_return_type(self, return_type):
+        if return_type == 'logits' or return_type == 'log_probas':
+            self.return_type = return_type
+        else:
+            raise ValueError('return_type must be either "logits" or "log_probas"')
+        
+
+
 # (Written by Tomas & Agnes)
 class GAT_GraphSVX_foroptuna(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, num_heads, dropout=0.3):
@@ -448,7 +499,6 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         else:
             raise ValueError('return_type must be either "logits" or "log_probas"')
 
-
     def forward(self, x, edge_index):
         x, attention_weights1 = self.conv1(x, edge_index, return_attention_weights=True)
         x = F.elu(x)
@@ -467,6 +517,45 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
             return x, attention_weights1, attention_weights2, attention_weights3
         else:
             return x
+    
+    def forward_NFVinput(self, node_feature_vec):
+        print('Starting forward_NFVinput...')
+        
+        print('Setting return type of forward pass to "logits" so that forward_NFVinput returns "probas"...')
+        self.return_type = 'logits'
+        
+        num_nodes = self.testdata.x.shape[0]
+        
+        node_feature_vec = node_feature_vec.reshape(-1,self.in_channels)
+        num_samples = node_feature_vec.shape[0]
+        out = torch.zeros((num_samples,2))
+        print(f'Number of samples = {num_samples}')
+        
+        data_list = []
+        
+        print('Loading data...')
+        for i in range(num_samples):
+            new_graph = copy.deepcopy(self.testdata)
+            new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+            data_list.append(new_graph)
+        print(f'number of graphs = {len(data_list)}')
+        
+        print('Loading data into a single batch...')
+        #dataset = CustomDataset(data_list)
+        batch = torch_geometric.data.Batch.from_data_list(data_list)
+        
+        print('Starting forward pass...')
+        with torch.no_grad():
+            out_tmp = F.softmax(self.forward(batch.x, batch.edge_index), dim = 1)
+        
+        print(f'out_tmp.shape = {out_tmp.shape}')
+        print('Extracting output...')
+        for i in range(batch.num_graphs):
+            out[i] = out_tmp[self.node_to_explain+i*num_nodes,:]
+            
+        print('Finished.')
+
+        return out
     
     # Adaption for Node Feature Vector (NFV) input
     def set_test_data(self, testdata):
