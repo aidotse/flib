@@ -429,7 +429,9 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         self.dropout = dropout
         self.conv1 = GATConv(in_channels, hidden_channels, heads=num_heads, dropout=dropout)
         self.conv2 = GATConv(hidden_channels * num_heads, hidden_channels, heads=num_heads, dropout=dropout)
-        self.conv3 = GATConv(hidden_channels * num_heads, out_channels, heads=1, concat = False, dropout=dropout)
+        self.conv3 = GATConv(hidden_channels * num_heads, hidden_channels, heads=1, concat = False, dropout=dropout)
+        self.MLP_post1 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.MLP_post2 = torch.nn.Linear(hidden_channels, out_channels)
         self.log_softmax = torch.nn.LogSoftmax(dim=1)
         self.return_attention_weights = False
         self.return_type = 'logits'
@@ -455,6 +457,8 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         x = F.elu(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         x, attention_weights3 = self.conv3(x, edge_index, return_attention_weights=True)
+        x = self.MLP_post1(x)
+        x = self.MLP_post2(x)
         if self.return_type == "log_probas":
             x = self.log_softmax(x) #<--- log probas should only be used when running the explainers.
             print('ping')

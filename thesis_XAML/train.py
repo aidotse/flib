@@ -295,9 +295,6 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
     criterion_test = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_test, loss_type='sigmoid')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     
-    # Initialize learning rate decay scheduler
-    scheduler = StepLR(optimizer, step_size=100, gamma=0.9)
-    
     # Initialize early stopper
     early_stopper = EarlyStopper(patience=10, min_delta=0) #Stops after 10 epochs without improvement
     
@@ -333,9 +330,6 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
         if early_stopper.early_stop(loss):
             print(f'Stopping training early at {epoch}/{epochs} epochs.')             
             break
-        
-        # Weight decay
-        scheduler.step()
     print('Finished training.')
     
     return model, traindata, testdata, feature_names, target_names, running_train_loss, running_test_loss, accuracy
