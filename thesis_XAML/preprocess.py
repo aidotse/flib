@@ -198,12 +198,12 @@ def main():
     #path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     #df = load_data(path)
     print('Loading data...')
-    df = load_data('/home/agnes/desktop/flib/AMLsim/outputs/100K_accts_EASY25/tx_log.csv')
+    df = load_data('/home/agnes/desktop/flib/AMLsim/outputs/100K_accts_MID5/tx_log.csv')
     print('Data loaded.')
     #banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
     banks=['bank']
     #banks = ['handelsbanken', 'swedbank']
-    overlap = 0.9 # overlap of training and testing data
+    overlap = 0.5 # overlap of training and testing data
     print('start')
     for bank in banks:
         print('For bank', bank)
@@ -238,10 +238,10 @@ def main():
         os.makedirs(f'data/{DATASET}/{bank}/train', exist_ok=True)
         os.makedirs(f'data/{DATASET}/{bank}/test', exist_ok=True)
         
-        df_nodes_train.to_csv(f'data/{DATASET}/{bank}/train/nodes.csv', index=False)
-        df_edges_train.to_csv(f'data/{DATASET}/{bank}/train/edges.csv', index=False)
-        df_nodes_test.to_csv(f'data/{DATASET}/{bank}/test/nodes.csv', index=False)
-        df_edges_test.to_csv(f'data/{DATASET}/{bank}/test/edges.csv', index=False)
+        df_nodes_train.to_csv(f'data/{DATASET}/overlap05/{bank}/train/nodes.csv', index=False)
+        df_edges_train.to_csv(f'data/{DATASET}/overlap05/{bank}/train/edges.csv', index=False)
+        df_nodes_test.to_csv(f'data/{DATASET}/overlap05/{bank}/test/nodes.csv', index=False)
+        df_edges_test.to_csv(f'data/{DATASET}/overlap05/{bank}/test/edges.csv', index=False)
     
     t = time.time() - t
     print(f'Preprocessing finished in {t:.4f} seconds.')

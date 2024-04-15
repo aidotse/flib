@@ -351,6 +351,7 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
     # data
     traindata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/train/nodes.csv', edge_file='data/100K_accts_MID5/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
     testdata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/test/nodes.csv', edge_file='data/100K_accts_MID5/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
+
     traindata = traindata.to(device)
     testdata = testdata.to(device)
     
