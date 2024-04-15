@@ -194,11 +194,11 @@ def main():
     
     t = time.time()
     
-    DATASET = '100K_accts_EASY25'
+    DATASET = '100K_accts_MID5'
     #path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     #df = load_data(path)
     print('Loading data...')
-    df = load_data('/home/agnes/desktop/flib/AMLsim/outputs/100K_accts_EASY25/tx_log.csv')
+    df = load_data('/home/tomas/desktop/flib/AMLsim/outputs/100K_accts_MID5/tx_log.csv')
     print('Data loaded.')
     #banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
     banks=['bank']

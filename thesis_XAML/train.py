@@ -337,7 +337,7 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
 
 
 
-def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
+def train_GraphSAGE_foroptuna(hyperparameters = None, verbose = False):
     
     # set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -382,7 +382,7 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
     # print(f'number of samples per classes (test) = {n_samples_per_classes_test}')
     # criterion_train = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_train, loss_type='sigmoid')
     # criterion_test = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_test, loss_type='sigmoid')
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     
     ############
     # loss function
