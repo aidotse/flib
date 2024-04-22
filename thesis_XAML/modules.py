@@ -486,6 +486,9 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         self.log_softmax = torch.nn.LogSoftmax(dim=1)
         self.return_attention_weights = False
         self.return_type = 'logits'
+        self.testdata = []
+        self.node_to_explain = []
+        
     
     def set_return_attention_weights(self, return_attention_weights):
         if return_attention_weights == True or return_attention_weights == False:
@@ -511,7 +514,6 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         x = self.MLP_post2(x)
         if self.return_type == "log_probas":
             x = self.log_softmax(x) #<--- log probas should only be used when running the explainers.
-            print('ping')
         
         if self.return_attention_weights:
             return x, attention_weights1, attention_weights2, attention_weights3
