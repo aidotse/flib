@@ -40,9 +40,10 @@ def build_subgraph(data, node_to_explain, layers=2):
 
     #find feature vectors for nodes
     node_features = data.x[nodes]
+    labels = data.y[nodes]
 
     #create data object for subgraph using node_fetures and edges
-    data = Data(x=node_features, edge_index=edges)
+    data = Data(x=node_features, edge_index=edges, y = labels)
 
     return data, org_to_new_mapping, new_to_org_mapping
 
@@ -50,7 +51,7 @@ def build_subgraph(data, node_to_explain, layers=2):
 def node_index_mapping(nodes,edges):
 
     # Create a mapping from original node indices to new indices
-    node_index_mapping = {(old_idx.item(), new_idx) for new_idx, old_idx in enumerate(nodes)}
+    node_index_mapping = [(old_idx, new_idx) for new_idx, old_idx in enumerate(nodes)]
 
     # Create a dictionary mapping original indices to new indices
     org_to_new_mapping = {old_idx: new_idx for old_idx, new_idx in node_index_mapping}
@@ -59,10 +60,12 @@ def node_index_mapping(nodes,edges):
     new_to_org_mapping = {new_idx: old_idx for old_idx, new_idx in node_index_mapping}
 
     # Update the edge indices to use the new node indices
+    edges_new = edges.clone()
     for old_idx, new_idx in node_index_mapping:
-        edges[edges == old_idx] = new_idx
+        edges_new[0][edges_new[0] == old_idx] = new_idx
+        edges_new[1][edges_new[1] == old_idx] = new_idx
 
-    return org_to_new_mapping, new_to_org_mapping, edges
+    return org_to_new_mapping, new_to_org_mapping, edges_new
 
 
 # EarlyStopper code taken from https://stackoverflow.com/questions/71998978/early-stopping-in-pytorch

@@ -17,7 +17,7 @@ class AmlsimDataset():
         edge_index = torch.tensor(edges[['src', 'dst']].values, dtype=torch.long)
         edge_index = edge_index.t().contiguous()
         
-        nodes = nodes.drop(columns=['bank'])
+        nodes = nodes.drop(columns=['account','bank'])
         nodes = nodes.fillna(0)
         
         if node_features:
