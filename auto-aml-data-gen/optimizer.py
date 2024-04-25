@@ -129,7 +129,7 @@ class Optimizer():
     def optimize(self, n_trials:int=10):
         study = optuna.create_study(directions=['minimize', 'minimize'])
         study.optimize(self.objective, n_trials=n_trials)
-        return study.best_params, study.best_value
+        return study.best_trials
     
 
 

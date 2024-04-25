@@ -3,7 +3,7 @@ from preprocess import preprocess
 from classifier import Classifier
 from optimizer import Optimizer
 
-def main(n_trials:int=10, operating_recall:float=0.8):
+def main(n_trials:int=10, operating_recall:float=0.8, target:float=0.95):
     
     #params = init_params(seed=0)
     #param_file = '/home/edvin/Desktop/flib/AMLsim/paramFiles/tmp'
@@ -19,8 +19,8 @@ def main(n_trials:int=10, operating_recall:float=0.8):
     #fpr, importances = classifier.evaluate(operating_recall=operating_recall)
     
     optimizer = Optimizer(target=0.95, max=0.92, operating_recall=operating_recall)
-    best_params, best_value = optimizer.optimize(n_trials=n_trials)
-    print(f'best value: {best_value}')
+    best_trials = optimizer.optimize(n_trials=n_trials)
+    print(f'best value: {best_trials}')
     
     return
 
@@ -33,8 +33,8 @@ def main(n_trials:int=10, operating_recall:float=0.8):
 
 
 if __name__ == '__main__':
-    iterations = 10
+    iterations = 3
     ratio = 0.05
     operating_recall = 0.8
-    fpr = 0.95
-    main(iterations, operating_recall)
+    target = 0.95
+    main(iterations, operating_recall, target)
