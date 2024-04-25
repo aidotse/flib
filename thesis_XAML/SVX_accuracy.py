@@ -194,11 +194,11 @@ for i in range(n_sar_indices):
         SVX_accuracy[i,j] = accuracy_score(suspicious_neighbours_y, suspicious_neighbours_ypred)
         n_sus_neighbours[i,j] = len(suspicious_neighbours_ypred)
 
-        if i % 100 == 0:
-            np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/threshold.npy', threshold)
-            np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/n_sus_neighbours.npy', n_sus_neighbours)
-            np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/SVX_accuracy.npy', SVX_accuracy)
-            np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/thresh_stop.npy', thresh_stop)
+        # if i % 100 == 0:
+        #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/threshold.npy', threshold)
+        #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/n_sus_neighbours.npy', n_sus_neighbours)
+        #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/SVX_accuracy.npy', SVX_accuracy)
+        #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/thresh_stop.npy', thresh_stop)
 
 time_stop = time.time()
 time_elapsed = time_stop - time_start

@@ -31,7 +31,7 @@ def SHAP_explanation(node_to_explain, class_prob_fn, backgrounddata, explaindata
 
     # ...fattar inte riktigt vad NFV ska ha för shape egentligen, men det här verkar funka iaf.
     NFV_to_explain = explaindata.x[node_to_explain].to('cpu').numpy().squeeze() 
-    print(NFV_to_explain)
+    #print(NFV_to_explain)
     explainer = shap.KernelExplainer(is_sar_class_prob_fn, shap.sample(backgrounddata.x.to('cpu').numpy(), K))
     shap_values = explainer.shap_values(NFV_to_explain)
     exp_SHAP = shap.Explanation(shap_values[0], explainer.expected_value, data = NFV_to_explain, feature_names = feature_names)
