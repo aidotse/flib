@@ -286,7 +286,7 @@ if __name__ == "__main__":
     elif len(argv) == 1:
         deg_file_path = "paramFiles/100K_accts/degree.csv"
         n = 100000
-        gamma = 1.8
+        gamma = 1.6
         loc = 1.0
         scale = 1.0
         seed = 0
