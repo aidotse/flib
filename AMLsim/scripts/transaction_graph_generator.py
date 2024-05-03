@@ -379,7 +379,10 @@ class TransactionGenerator:
                         break
                     else:
                         bin += 1
-                candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                candidates = [] #[candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                while candidates == []:
+                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                    bin += 1
                 member = random.sample(candidates, 1)[0]
                 members.append(member)
             for member in members:
@@ -430,7 +433,10 @@ class TransactionGenerator:
                         break
                     else:
                         bin += 1
-                candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members]
+                candidates = [] #[candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                while candidates == []:
+                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                    bin += 1
                 member = random.sample(candidates, 1)[0]
                 members.append(member)
             for member in members:
@@ -1655,7 +1661,7 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
-        PARAM_FILES = '100K_accts'
+        PARAM_FILES = '10K_accts'
         argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]
