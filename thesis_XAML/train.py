@@ -249,8 +249,8 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
     print('Double check which dataset is being used.')
     
     # Data
-    traindata = data.AmlsimDataset(node_file='data/100K_accts_EASY25/bank/train/nodes.csv', edge_file='data/100K_accts_EASY25/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
-    testdata = data.AmlsimDataset(node_file='data/100K_accts_EASY25/bank/test/nodes.csv', edge_file='data/100K_accts_EASY25/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
+    traindata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/train/nodes.csv', edge_file='data/100K_accts_MID5/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    testdata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/test/nodes.csv', edge_file='data/100K_accts_MID5/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
     traindata = torch_geometric.transforms.ToUndirected()(traindata)
     testdata = torch_geometric.transforms.ToUndirected()(testdata)
     feature_names = ['sum','mean','median','std','max','min','in_degree','out_degree','n_unique_in','n_unique_out']
@@ -341,11 +341,16 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
     
     # set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
+
+    # set seed
+    seed = hyperparameters['seed']
+    torch.manual_seed(seed)
+
     # data
     traindata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/train/nodes.csv', edge_file='data/100K_accts_MID5/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
     testdata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/test/nodes.csv', edge_file='data/100K_accts_MID5/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
-
+    traindata = torch_geometric.transforms.ToUndirected()(traindata)
+    testdata = torch_geometric.transforms.ToUndirected()(testdata)
     traindata = traindata.to(device)
     testdata = testdata.to(device)
     
@@ -354,9 +359,6 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
     std = traindata.x.std(dim=0, keepdim=True)
     traindata.x = (traindata.x - mean) / std
     testdata.x = (testdata.x - mean) / std
-
-    feature_names=[]
-    target_names=[]
 
     # Non-tunable hyperparameters
     in_channels = traindata.x.shape[1]
@@ -368,23 +370,15 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
     lr = hyperparameters['lr']
     epochs = hyperparameters['epochs']
     beta = hyperparameters['beta']
-        
+    seed = hyperparameters['seed']
+
     # model
-    model = modules.GraphSAGE_GraphSVX_foroptuna(in_channels, hidden_channels, out_channels, dropout)
+    model = modules.GraphSAGE_GraphSVX_foroptuna(in_channels, hidden_channels, out_channels, dropout, seed)
     model.to(device)
     
     # optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    # Criterion and optimizer
-    # n_samples_per_classes_train = [(traindata.y == 0).sum().item(), (traindata.y == 1).sum().item()]
-    # n_samples_per_classes_test = [(testdata.y == 0).sum().item(), (testdata.y == 1).sum().item()]
-    # print(f'number of samples per classes (train) = {n_samples_per_classes_train}')
-    # print(f'number of samples per classes (test) = {n_samples_per_classes_test}')
-    # criterion_train = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_train, loss_type='sigmoid')
-    # criterion_test = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_test, loss_type='sigmoid')
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    
     ############
     # loss function
     n_samples_per_classes = [(traindata.y == 0).sum().item(), (traindata.y == 1).sum().item()]
@@ -392,6 +386,8 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
     running_train_loss = []
     running_test_loss = []
 
+    feature_names=[]
+    target_names=['not_sar','is_sar']
     for epoch in range(epochs):
         model.train()
         optimizer.zero_grad()

@@ -20,6 +20,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.*;
+import amlsim.dists.TruncatedNormal;
 
 /**
  * AMLSimulator Main class
@@ -28,7 +29,9 @@ public class AMLSim extends SimState {
 
 	private static SimProperties simProp;
 	private static final int TX_SIZE = 10000000; // Transaction buffer size
+	private static final int TX_SIZE_withoutSAR = 10000000; // Transaction buffer size
 	private static TransactionRepository txs = new TransactionRepository(TX_SIZE);
+	private static TransactionRepository txs_withoutSAR = new TransactionRepository(TX_SIZE_withoutSAR);
 	private static Logger logger = Logger.getLogger("AMLSim");
 	// private static int seed;
 	private static Random rand;
@@ -53,7 +56,7 @@ public class AMLSim extends SimState {
 	private static long numOfSteps = 1; // Number of simulation steps
 	private static int currentLoop = 0; // Simulation iteration counter
 	private static String txLogFileName = "";
-
+	private static String txLogWithoutSARFileName = "";
 	private String accountFile = "";
 	private String transactionFile = "";
 	private String normalModelsFile = "";
@@ -63,7 +66,8 @@ public class AMLSim extends SimState {
 
 	private static Diameter diameter;
 	private boolean computeDiameter = false;
-
+	private static boolean runEvaluation = false;
+	
 	private AMLSim(long seed) {
 		super(seed);
 		AMLSim.rand = new Random(seed);
@@ -161,6 +165,8 @@ public class AMLSim extends SimState {
 		}
 	}
 
+	
+
 	public void loadParametersFromFile() {
 		numOfSteps = simProp.getSteps();
 		// Default transaction interval for accounts
@@ -170,6 +176,7 @@ public class AMLSim extends SimState {
 		int transactionLimit = simProp.getTransactionLimit();
 		if (transactionLimit > 0) { // Set the limit only if the parameter is positive value
 			txs.setLimit(transactionLimit);
+			txs_withoutSAR.setLimit(transactionLimit);
 		}
 
 		// Parameters of Cash Transactions
@@ -272,7 +279,7 @@ public class AMLSim extends SimState {
 			account.setProp(simProp.getProbIncome(), simProp.getMeanIncome(), simProp.getStdIncome(),
 					simProp.getProbIncomeSAR(), simProp.getMeanIncomeSAR(), simProp.getStdIncomeSAR(),
 					simProp.getMeanOutcome(), simProp.getStdOutcome(),
-					simProp.getMeanOutcomeSar(), simProp.getStdOutcomeSar());
+					simProp.getMeanOutcomeSar(), simProp.getStdOutcomeSar(), simProp.getProbSpendCash());
 
 			int index = this.getAccounts().size();
 			//account.setBranch(this.branches.get(index % this.numBranches));
@@ -448,6 +455,7 @@ public class AMLSim extends SimState {
 		}
 		logger.info("Simulator Name: " + AMLSim.simulatorName);
 
+		
 		String dirPath = simProp.getOutputDir();
 		File f = new File(dirPath);
 		if (f.exists()) {
@@ -476,6 +484,25 @@ public class AMLSim extends SimState {
 		return txLogFileName;
 	}
 
+	static String getTxWithoutSARLogFileName() {
+		return txLogWithoutSARFileName;
+	}
+
+	public void executeEvaluation() {
+		loadParametersFromFile();
+		initSimulatorName();
+		txLogFileName = simProp.getOutputTxLogFile();
+		txLogWithoutSARFileName = simProp.getOutputTxWithoutSARLogFile();
+		initTxLogBufWriter(txLogWithoutSARFileName);
+		logger.info("Transaction log file: " + txLogWithoutSARFileName);
+
+		// Create account objects
+		super.start();
+		this.initSimulation(); // this is where
+		
+		
+	}
+
 	public void executeSimulation() {
 		// Load the parameters from the .property file
 		loadParametersFromFile();
@@ -488,6 +515,12 @@ public class AMLSim extends SimState {
 		initTxLogBufWriter(txLogFileName);
 		logger.info("Transaction log file: " + txLogFileName);
 
+		if (runEvaluation){
+			// Initiate the dumpfile output writer
+			txLogWithoutSARFileName = simProp.getOutputTxWithoutSARLogFile();
+			initTxLogBufWriter(txLogWithoutSARFileName);
+			logger.info("Transaction log file: " + txLogWithoutSARFileName);
+		}
 		// Create account objects
 		super.start();
 		this.initSimulation(); // this is where
@@ -497,7 +530,7 @@ public class AMLSim extends SimState {
 		System.out.println("Starting AMLSim Running for " + numOfSteps + " steps. Current loop:" + AMLSim.currentLoop);
 
 		long step;
-		while ((step = super.schedule.getSteps()) < numOfSteps) {
+		while ((step = super.schedule.getSteps()) < numOfSteps) {  //numOfSteps
 			if (!super.schedule.step(this))
 				break;
 			if (step % 100 == 0 && step != 0) {
@@ -511,7 +544,10 @@ public class AMLSim extends SimState {
 				writeDiameter(step, result);
 			}
 		}
-		txs.flushLog();
+		txs.flushLog(getTxLogFileName());
+		if (runEvaluation){
+			txs_withoutSAR.flushLog(getTxWithoutSARLogFileName());
+		}
 		//txs.writeCounterLog(numOfSteps, counterFile);
 		System.out.println(" - Finished running " + step + " steps ");
 
@@ -543,6 +579,7 @@ public class AMLSim extends SimState {
 		if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
 			return;
 		}
+
 		
 		// Reduce the balance of the originator account
 		String origID = orig.getID();
@@ -565,14 +602,41 @@ public class AMLSim extends SimState {
 			txs.addTransaction(step, desc, amt, origID, origBankID, beneID, beneBankID, origBefore, origAfter, beneBefore,
 					beneAfter, isSAR, alertID, modelType, origPhoneChanges, benePhoneChanges, origDaysInBank,
 					beneDaysInBank);
+			
+			
 			diameter.addEdge(origID, beneID);
+			
+		}
+		if (runEvaluation && !isSAR){
+			if (orig.getBalanceWithoutSAR() < amt || orig.getBalanceWithoutSAR() <= 0.0) {
+				return;
+			}
+			origBefore = (float) orig.getBalanceWithoutSAR();
+			success = orig.withdrawWithoutSAR(amt);
+			origAfter = (float) orig.getBalanceWithoutSAR();
+			origPhoneChanges = (long) orig.getNumberOfPhoneChangesWithoutSAR();
+
+			if (success){
+				// Increase the balance of the beneficiary account
+				String beneID = bene.getID();
+				String beneBankID = bene.getBankID();
+				float beneBefore = (float) bene.getBalanceWithoutSAR();
+				bene.depositWithoutSAR(amt);
+				float beneAfter = (float) bene.getBalanceWithoutSAR();
+				long benePhoneChanges = (long) bene.getNumberOfPhoneChangesWithoutSAR();
+				long beneDaysInBank = (long) bene.getDaysInBank();
+				txs_withoutSAR.addTransaction(step, desc, amt, origID, origBankID, beneID, beneBankID, origBefore, origAfter, beneBefore,
+						beneAfter, isSAR, alertID, modelType, origPhoneChanges, benePhoneChanges, origDaysInBank,
+						beneDaysInBank);
+			}
 		}
 	}
 
-	public static void handleIncome(long step, String desc, double amt, Account bene, boolean isSAR, long alertID, long modelType) {
+	public static void handleIncome(long step, String desc, double amt, Account bene, boolean isSAR, long alertID, long modelType, String type) {
 		// Increase the balance of the beneficiary account
 		String beneID = bene.getID();
 		String beneBankID = bene.getBankID();
+
 		float beneBefore = (float) bene.getBalance();
 		bene.deposit(amt);
 		float beneAfter = (float) bene.getBalance();
@@ -580,10 +644,113 @@ public class AMLSim extends SimState {
 		long beneDaysInBank = (long) bene.getDaysInBank();
 
 		txs.addTransaction(step, desc, amt, "-2", "source", beneID, beneBankID, 0, 0, beneBefore, beneAfter, isSAR, alertID, modelType,
+		0, benePhoneChanges, 0, beneDaysInBank);
+
+		if (runEvaluation){
+			beneBefore = (float) bene.getBalanceWithoutSAR();
+			benePhoneChanges = (long) bene.getNumberOfPhoneChangesWithoutSAR();
+
+			if (!isSAR){
+				bene.depositWithoutSAR(amt);
+				beneAfter = (float) bene.getBalanceWithoutSAR();
+				txs_withoutSAR.addTransaction(step, desc, amt, "-2", "source", beneID, beneBankID, 0, 0, beneBefore, beneAfter, isSAR, alertID, modelType,
 				0, benePhoneChanges, 0, beneDaysInBank);
+			}
+			else {
+				if (type.equals("MONTHLY")){
+					amt=bene.getMonthlyIncome();
+					bene.depositWithoutSAR(amt);
+					beneAfter = (float) bene.getBalanceWithoutSAR();
+					txs_withoutSAR.addTransaction(step, desc, amt, "-2", "source", beneID, beneBankID, 0, 0, beneBefore, beneAfter, isSAR, alertID, modelType,
+				0, benePhoneChanges, 0, beneDaysInBank);
+				}
+				else {
+					double mean=bene.getMeanIncome();
+					double std=bene.getStdIncome();
+					double prob=bene.getProbIncome();
+					double random=bene.getRandomNumber();
+					if (random<prob){
+						TruncatedNormal tn = new TruncatedNormal(mean, std, 1.0, 1000000); // TODO: handle lb better, maybe define in conf.json?
+						amt = tn.sample();
+						bene.depositWithoutSAR(amt);
+						beneAfter = (float) bene.getBalanceWithoutSAR();
+						txs_withoutSAR.addTransaction(step, desc, amt, "-2", "source", beneID, beneBankID, 0, 0, beneBefore, beneAfter, isSAR, alertID, modelType,
+				0, benePhoneChanges, 0, beneDaysInBank);
+					}
+					
+
+				}
+				
+
+
+				}
+			}
 	}
 
-	public static void handleOutcome(long step, String desc, double amt, Account orig, boolean isSAR, long alertID, long modelType) {
+		
+	
+	// public static void handleIncome(long step, String desc, double amt, Account bene, boolean isSAR, long alertID, long modelType) {
+	// 	// Increase the balance of the beneficiary account
+	// 	String beneID = bene.getID();
+	// 	String beneBankID = bene.getBankID();
+
+	// 	float beneBefore = (float) bene.getBalance();
+	// 	bene.deposit(amt);
+	// 	float beneAfter = (float) bene.getBalance();
+	// 	long benePhoneChanges = (long) bene.getNumberOfPhoneChanges();
+	// 	long beneDaysInBank = (long) bene.getDaysInBank();
+
+	// 	txs.addTransaction(step, desc, amt, "-2", "source", beneID, beneBankID, 0, 0, beneBefore, beneAfter, isSAR, alertID, modelType,
+	// 	0, benePhoneChanges, 0, beneDaysInBank);
+
+	// }
+
+	// public static void handleIncomeWithoutSAR(long step, String desc, double amt, Account bene, boolean isSAR, long alertID, long modelType) {
+	// 	// Increase the balance of the beneficiary account
+	// 	String beneID = bene.getID();
+	// 	String beneBankID = bene.getBankID();
+	// 	float beneBefore = (float) bene.getBalanceWithoutSAR();
+	// 	bene.depositWithoutSAR(amt);
+	// 	float beneAfter = (float) bene.getBalanceWithoutSAR();
+	// 	long benePhoneChanges = (long) bene.getNumberOfPhoneChangesWithoutSAR();
+	// 	long beneDaysInBank = (long) bene.getDaysInBank();
+
+	// 	if (runEvaluation){
+	// 		txs_withoutSAR.addTransaction(step, desc, amt, "-2", "source", beneID, beneBankID, 0, 0, beneBefore, beneAfter, isSAR, alertID, modelType,
+	// 			0, benePhoneChanges, 0, beneDaysInBank);
+	// 	}
+
+	// }
+
+
+
+	// public static void handleOutcome(long step, String desc, double amt, Account orig, boolean isSAR, long alertID, long modelType) {
+		
+	// 	if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
+	// 		return;
+	// 	}
+
+	// 	// Reduce the balance of the originator account
+	// 	String origID = orig.getID();
+	// 	String origBankID = orig.getBankID();
+	// 	float origBefore = (float) orig.getBalance();
+	// 	boolean success = false;
+	// 	if (desc.equals("CASH")) {
+	// 		success = orig.withdrawCash(amt);
+	// 	} else {
+	// 		success = orig.withdraw(amt);
+	// 	}
+	// 	float origAfter = (float) orig.getBalance();
+	// 	long origPhoneChanges = (long) orig.getNumberOfPhoneChanges();
+	// 	long origDaysInBank = (long) orig.getDaysInBank();
+
+	// 	if (success){
+	// 		txs.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+	// 		origPhoneChanges, 0, origDaysInBank, 0);
+	// 	}
+	// }
+
+	public static void handleOutcome(long step, String desc, double amt, Account orig, boolean isSAR, long alertID, long modelType, String type) {
 		
 		if (orig.getBalance() < amt || orig.getBalance() <= 0.0) {
 			return;
@@ -602,10 +769,86 @@ public class AMLSim extends SimState {
 		float origAfter = (float) orig.getBalance();
 		long origPhoneChanges = (long) orig.getNumberOfPhoneChanges();
 		long origDaysInBank = (long) orig.getDaysInBank();
-		if (success) {
+
+		if (success){
 			txs.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
-				origPhoneChanges, 0, origDaysInBank, 0);
+			origPhoneChanges, 0, origDaysInBank, 0);
 		}
+
+		if (runEvaluation){
+			origBefore = (float) orig.getBalanceWithoutSAR();
+			origPhoneChanges = (long) orig.getNumberOfPhoneChangesWithoutSAR();
+			// origDaysInBank = (long) orig.getDaysInBankWithoutSAR();
+
+			if (!isSAR){
+				if (orig.getBalanceWithoutSAR() < amt || orig.getBalanceWithoutSAR() <= 0.0) {
+					return;
+				}
+				success = orig.withdrawWithoutSAR(amt);
+				origAfter = (float) orig.getBalanceWithoutSAR();
+				if(success) {
+					txs_withoutSAR.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+					origPhoneChanges, 0, origDaysInBank, 0);
+				}
+			}
+			else {
+				if (type.equals("MONTHLY")){
+					amt=orig.getMonthlyOutcome();
+					success=orig.withdrawWithoutSAR(amt);
+					origAfter = (float) orig.getBalanceWithoutSAR();
+					if (success){
+						txs_withoutSAR.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+						origPhoneChanges, 0, origDaysInBank, 0);
+					}
+				}
+				else {
+					double mean=orig.getMeanOutcome();
+					double std=orig.getStdOutcome();
+					double sigmoid=orig.getSigmoidWithoutSAR();
+					double random=orig.getRandomNumber();
+					if (random<sigmoid){
+						TruncatedNormal tn = new TruncatedNormal(mean, std, 1.0, 1000000); // TODO: handle lb better, maybe define in conf.json?
+						amt = tn.sample();
+						success=orig.withdrawWithoutSAR(amt);
+						origAfter = (float) orig.getBalanceWithoutSAR();
+						if (success){
+							txs_withoutSAR.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+							origPhoneChanges, 0, origDaysInBank, 0);
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	// public static void handleOutcomeWithoutSAR(long step, String desc, double amt, Account orig, boolean isSAR, long alertID, long modelType) {
+		
+	// 	if (orig.getBalanceWithoutSAR() < amt || orig.getBalanceWithoutSAR() <= 0.0) {
+	// 		return;
+	// 	}
+
+	// 	// Reduce the balance of the originator account
+	// 	String origID = orig.getID();
+	// 	String origBankID = orig.getBankID();
+	// 	float origBefore = (float) orig.getBalanceWithoutSAR();
+	// 	boolean success = false;
+	// 	if (desc.equals("CASH")) {
+	// 		success = orig.withdrawCashWithoutSAR(amt);
+	// 	} else {
+	// 		success = orig.withdrawWithoutSAR(amt);
+	// 	}
+	// 	float origAfter = (float) orig.getBalanceWithoutSAR();
+	// 	long origPhoneChanges = (long) orig.getNumberOfPhoneChangesWithoutSAR();
+	// 	long origDaysInBank = (long) orig.getDaysInBank();
+	// 	if (runEvaluation && success) {
+	// 		txs_withoutSAR.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+	// 			origPhoneChanges, 0, origDaysInBank, 0);
+	// 	}
+	// }
+
+	public static boolean runEvaluation(){
+		return runEvaluation;
 	}
 
 	/**
@@ -625,7 +868,7 @@ public class AMLSim extends SimState {
 	}
 
 	public static void main(String[] args) {
-
+		
 		/*
 		 * if (args.length < 1) {
 		 * System.err.println("Usage: java amlsim.AMLSim [ConfFile]");
@@ -634,9 +877,11 @@ public class AMLSim extends SimState {
 		 */
 
 		// Loading configuration JSON file instead of parsing command line arguments
-		String confFile = args[0];
-		//String paramFiles = "100K_accts";
-		//String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
+		// String confFile = args[0];
+		String paramFiles = "10K_accts_MID5";
+		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
+		System.out.println("New version started");
+		runEvaluation = true;
 
 		try {
 			simProp = new SimProperties(confFile);
@@ -653,6 +898,7 @@ public class AMLSim extends SimState {
 
 		int seed = simProp.getSeed();
 		AMLSim sim = new AMLSim(seed);
+		
 		sim.setCurrentLoop(0);
 		sim.executeSimulation();
 	}

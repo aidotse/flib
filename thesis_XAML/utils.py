@@ -50,7 +50,7 @@ def build_subgraph(data, node_to_explain, layers=2):
 def node_index_mapping(nodes,edges):
 
     # Create a mapping from original node indices to new indices
-    node_index_mapping = {(old_idx.item(), new_idx) for new_idx, old_idx in enumerate(nodes)}
+    node_index_mapping = [(old_idx.item(), new_idx) for new_idx, old_idx in enumerate(nodes)]
 
     # Create a dictionary mapping original indices to new indices
     org_to_new_mapping = {old_idx: new_idx for old_idx, new_idx in node_index_mapping}
@@ -58,11 +58,12 @@ def node_index_mapping(nodes,edges):
     # Create a dictionary mapping new indices to original indices
     new_to_org_mapping = {new_idx: old_idx for old_idx, new_idx in node_index_mapping}
 
+    edges_new=edges.clone()
     # Update the edge indices to use the new node indices
     for old_idx, new_idx in node_index_mapping:
-        edges[edges == old_idx] = new_idx
+        edges_new[edges_new == old_idx] = new_idx
 
-    return org_to_new_mapping, new_to_org_mapping, edges
+    return org_to_new_mapping, new_to_org_mapping, edges_new
 
 
 # EarlyStopper code taken from https://stackoverflow.com/questions/71998978/early-stopping-in-pytorch

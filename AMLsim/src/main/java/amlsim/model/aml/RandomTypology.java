@@ -60,7 +60,7 @@ public class RandomTypology extends AMLTypology { // TODO: review this pattern, 
             if (this.sourceType.equals("CASH")) {
                 nextOrig.depositCash(transactionAmount.doubleValue());
             } else if (this.sourceType.equals("TRANSFER")) {
-                AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), nextOrig, false, (long) -1, (long) 0);
+                AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), nextOrig, true, (long) -1, (long) 0, "OTHER");
             }
         }
         

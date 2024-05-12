@@ -21,6 +21,7 @@
     "std_outcome": 500.0,
     "mean_outcome_sar": 600.0,
     "std_outcome_sar": 850.0,
+    "prob_spend_cash": 0.7,
     "mean_phone_change_frequency": 1460,
     "std_phone_change_frequency": 365,
     "mean_phone_change_frequency_sar": 800,
@@ -52,7 +53,10 @@
     "directory": "outputs",
     "transaction_log": "tx_log.csv",
     "node_log": "node_log.csv",
-    "noise_log": "noise_log.csv"
+    "noise_log": "noise_log.csv",
+    "transaction_log_without_SAR": "tx_log_without_SAR.csv",
+    "node_log_without_SAR": "node_log_without_SAR.csv"
+  
   },
   "graph_generator": {
     "degree_threshold": 1

@@ -192,7 +192,7 @@ public class StackTypology extends AMLTypology {
                 if (this.sourceType.equals("CASH")) {
                     acct.depositCash(transactionAmount.doubleValue());
                 } else if (this.sourceType.equals("TRANSFER")){
-                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, false, (long) -1, (long) 0);
+                    AMLSim.handleIncome(step, "TRANSFER", transactionAmount.doubleValue(), orig, true, (long) -1, (long) 0, "OTHER");
                 }
             }
         }

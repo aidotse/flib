@@ -113,7 +113,7 @@ public class CycleTypology extends AMLTypology {
             if (this.sourceType.equals("CASH")) {
                 acct.depositCash(amount);
             } else if (this.sourceType.equals("TRANSFER")) {
-                AMLSim.handleIncome(step, "TRANSFER", amount, orig, false, (long) -1, (long) 0);
+                AMLSim.handleIncome(step, "TRANSFER", amount, orig, true, (long) -1, (long) 0, "OTHER");
             }
         }
         

@@ -54,6 +54,8 @@ public class SimProperties {
     private double stdOutcome;
     private double meanOutcomeSar;
     private double stdOutcomeSar;
+    private double probSpendCash;
+
     
     SimProperties(String jsonName) throws IOException {
         String jsonStr = loadTextFile(jsonName);
@@ -93,6 +95,8 @@ public class SimProperties {
         stdOutcome = defaultProp.getDouble("std_outcome");
         meanOutcomeSar = defaultProp.getDouble("mean_outcome_sar");
         stdOutcomeSar = defaultProp.getDouble("std_outcome_sar");
+        // nStepsBalanceHistory = defaultProp.getInt("n_steps_balance_history");
+        probSpendCash = defaultProp.getDouble("prob_spend_cash");
 
         System.out.printf("General transaction interval: %d\n", normalTxInterval);
         System.out.printf("Base transaction amount: Normal = %f, Suspicious= %f\n", minTxAmount, maxTxAmount);
@@ -246,6 +250,10 @@ public class SimProperties {
         return marginRatio;
     }
 
+    public double getProbSpendCash() {
+        return probSpendCash;
+    }
+
     int getNumBranches() {
         return simProp.getInt("numBranches");
     }
@@ -268,6 +276,10 @@ public class SimProperties {
 
     String getOutputTxLogFile() {
         return getOutputDir() + outputProp.getString("transaction_log");
+    }
+
+    String getOutputTxWithoutSARLogFile() {
+        return getOutputDir() + outputProp.getString("transaction_log_without_SAR");
     }
 
     String getOutputDir() {
