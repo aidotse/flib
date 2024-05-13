@@ -17,12 +17,7 @@ class AmlsimDataset():
         edge_index = torch.tensor(edges[['src', 'dst']].values, dtype=torch.long)
         edge_index = edge_index.t().contiguous()
         
-        #sort nodes according to account number from small to large
-        # nodes = nodes.sort_values(by=['account'])
-        print('sorting')
-
-        nodes = nodes.drop(columns=['bank', 'account'])
-
+        nodes = nodes.drop(columns=['account','bank'])
         nodes = nodes.fillna(0)
         
         if node_features:

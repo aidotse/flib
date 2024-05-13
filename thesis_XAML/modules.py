@@ -492,6 +492,9 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         self.log_softmax = torch.nn.LogSoftmax(dim=1)
         self.return_attention_weights = False
         self.return_type = 'logits'
+        self.testdata = []
+        self.node_to_explain = []
+        
     
     def set_return_attention_weights(self, return_attention_weights):
         if return_attention_weights == True or return_attention_weights == False:
@@ -517,7 +520,6 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         x = self.MLP_post2(x)
         if self.return_type == "log_probas":
             x = self.log_softmax(x) #<--- log probas should only be used when running the explainers.
-            print('ping')
         
         if self.return_attention_weights:
             return x, attention_weights1, attention_weights2, attention_weights3
@@ -577,34 +579,98 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         self.return_type = 'logits'
         
         num_nodes = self.testdata.x.shape[0]
+        # print(f'Number of nodes: {num_nodes}')
         
         node_feature_vec = node_feature_vec.reshape(-1,self.in_channels)
         num_samples = node_feature_vec.shape[0]
         out = torch.zeros((num_samples,2))
-        print(f'Number of samples = {num_samples}')
+        # print(f'Number of samples = {num_samples}')
         
-        data_list = []
+        # for i in range(num_samples):
+        #     self.testdata.x[self.node_to_explain,:] = node_feature_vec[i,:]
+        #     with torch.no_grad():
+        #         out_tmp = F.softmax(self.forward(self.testdata.x, self.testdata.edge_index), dim = 1)
+        #         out[i,:] = out_tmp[self.node_to_explain,:]
+        #     print(f'{i}/{num_samples}')
         
-        print('Loading data...')
-        for i in range(num_samples):
-            new_graph = copy.deepcopy(self.testdata)
-            new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
-            data_list.append(new_graph)
-        print(f'number of graphs = {len(data_list)}')
+        n_iters = num_nodes//50+1
+        n_samples_per_iter = num_samples//n_iters+1
         
-        print('Loading data into a single batch...')
-        #dataset = CustomDataset(data_list)
-        batch = torch_geometric.data.Batch.from_data_list(data_list)
+        all_idx_start = np.arange(0,num_samples,n_samples_per_iter)
+        all_idx_stop = np.copy(all_idx_start) + n_samples_per_iter
+        if all_idx_stop[-1] > num_samples:
+            all_idx_stop[-1] = num_samples
+        print(f'all_idx_start: {all_idx_start}')
+        print(f'all_idx_stop: {all_idx_stop}')
         
-        print('Starting forward pass...')
-        with torch.no_grad():
-            out_tmp = F.softmax(self.forward(batch.x, batch.edge_index), dim = 1)
         
-        print(f'out_tmp.shape = {out_tmp.shape}')
-        print('Extracting output...')
-        for i in range(batch.num_graphs):
-            out[i] = out_tmp[self.node_to_explain+i*num_nodes,:]
+        print(f'num_samples: {num_samples}')
+        print(f'n_iters: {len(all_idx_start)}')
+        print(f'n_samples_per_iter: {n_samples_per_iter}')
+        
+        for k in range(len(all_idx_start)):
+            idx_start = all_idx_start[k] #k*n_samples_per_iter
+            idx_stop = all_idx_stop[k] #min((k+1)*n_samples_per_iter, num_samples)
+            
+            data_list = []
+            
+            print(f'Loading data iter {k+1}/{len(all_idx_start)}')
+            for i in range(idx_start,idx_stop):
+                new_graph = copy.deepcopy(self.testdata)
+                new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+                data_list.append(new_graph)
+            #print(f'number of graphs = {len(data_list)}')
+            
+            #print('Loading data into a single batch...')
+            #dataset = CustomDataset(data_list)
+            batch = torch_geometric.data.Batch.from_data_list(data_list)
+            
+            #print('Starting forward pass...')
+            with torch.no_grad():
+                out_tmp = F.softmax(self.forward(batch.x, batch.edge_index), dim = 1)
+            
+            #print(f'out_tmp.shape = {out_tmp.shape}')
+            #print('Extracting output...')
+            for i in range(batch.num_graphs):
+                out[idx_start+i,:] = out_tmp[self.node_to_explain+i*num_nodes,:]
             
         print('Finished.')
 
         return out
+    
+    # def forward_NFVinput(self, node_feature_vec):
+    #     print('Starting forward_NFVinput...')
+        
+    #     print('Setting return type of forward pass to "logits" so that forward_NFVinput returns "probas"...')
+    #     self.return_type = 'logits'
+        
+    #     num_nodes = self.testdata.x.shape[0]
+        
+    #     node_feature_vec = node_feature_vec.reshape(-1,self.in_channels)
+    #     num_samples = node_feature_vec.shape[0]
+    #     out = torch.zeros((num_samples,2))
+    #     print(f'Number of samples = {num_samples}')
+        
+    #     data_list = []
+        
+    #     print('Loading data...')
+    #     for i in range(num_samples):
+    #         new_graph = copy.deepcopy(self.testdata)
+    #         new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+    #         data_list.append(new_graph)
+    #     print(f'number of graphs = {len(data_list)}')
+        
+    #     print('Loading data into a single batch...')
+    #     #dataset = CustomDataset(data_list)
+    #     batch = torch_geometric.data.Batch.from_data_list(data_list)
+        
+    #     print('Starting forward pass...')
+    #     with torch.no_grad():
+    #         out_tmp = F.softmax(self.forward(batch.x, batch.edge_index), dim = 1)
+        
+    #     print(f'out_tmp.shape = {out_tmp.shape}')
+    #     print('Extracting output...')
+    #     for i in range(batch.num_graphs):
+    #         out[i] = out_tmp[self.node_to_explain+i*num_nodes,:]
+            
+    #     print('Finished.')

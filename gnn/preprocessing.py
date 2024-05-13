@@ -107,7 +107,7 @@ def compare_mp(df:pd.DataFrame, n_workers:int=mp.cpu_count()) -> list[tuple]:
 def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> pd.DataFrame:
     if range:
         df = df[(df['step'] > range[0]) & (df['step'] < range[1])]
-    df = df.loc[df['counterpart']==-2]
+    df = df.loc[df['counterpart']==-1]
     df['interval_group'] = df['step'] // interval
     df['amount'] = df['amount'].abs()
     gb = df.groupby(['account', 'interval_group'])
@@ -118,7 +118,7 @@ def cal_spending_behavior(df:pd.DataFrame, range:list=None, interval:int=7) -> p
     return df_speding_behavior
 
 def main():
-    DATASET = '100K_accts'
+    DATASET = '100K_accts_EASY25'
     path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     df = load_data(path)
     banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
@@ -129,7 +129,7 @@ def main():
         split_step = (df_bank['step'].max() - df_bank['step'].min()) * (1 - test_size) + df_bank['step'].min()
         
         df_bank_train = df_bank[df_bank['step'] <= split_step]
-        df_bank_test = df_bank #[df_bank['step'] > split_step]
+        df_bank_test = df_bank[df_bank['step'] > split_step] #df_bank
         
         df_nodes_train = get_nodes(df_bank_train)
         df_edges_train = get_edges(df_bank_train, aggregated=True, directional=False)

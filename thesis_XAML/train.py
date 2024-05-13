@@ -337,7 +337,7 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
 
 
 
-def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
+def train_GraphSAGE_foroptuna(hyperparameters = None, verbose = False):
     
     # set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -379,12 +379,27 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
     # optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    # Criterion and optimizer
+    # n_samples_per_classes_train = [(traindata.y == 0).sum().item(), (traindata.y == 1).sum().item()]
+    # n_samples_per_classes_test = [(testdata.y == 0).sum().item(), (testdata.y == 1).sum().item()]
+    # print(f'number of samples per classes (train) = {n_samples_per_classes_train}')
+    # print(f'number of samples per classes (test) = {n_samples_per_classes_test}')
+    # criterion_train = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_train, loss_type='sigmoid')
+    # criterion_test = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes_test, loss_type='sigmoid')
+    # optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    
     ############
     # loss function
     n_samples_per_classes = [(traindata.y == 0).sum().item(), (traindata.y == 1).sum().item()]
     criterion = ClassBalancedLoss(beta=beta, n_samples_per_classes=n_samples_per_classes, loss_type='sigmoid')
     running_train_loss = []
     running_test_loss = []
+
+    # Initialize early stopper
+    early_stopper = EarlyStopper(patience=10, min_delta=0) #Stops after 10 epochs without improvement
+
+    # Initialize early stopper
+    early_stopper = EarlyStopper(patience=10, min_delta=0) #Stops after 10 epochs without improvement
 
     feature_names=[]
     target_names=['not_sar','is_sar']
@@ -393,23 +408,26 @@ def train_graphSAGE_foroptuna(hyperparameters = None, verbose = False):
         optimizer.zero_grad()
         out = model(traindata.x, traindata.edge_index)
         loss = criterion(out, traindata.y)
-        
         running_train_loss.append(loss.item())
-
         loss.backward()
         optimizer.step()
+        
+        model.eval()
+        with torch.no_grad():
+            out = model.forward(testdata.x, testdata.edge_index)
+            loss = criterion(out, testdata.y)
+            running_test_loss.append(loss.item())
+            accuracy = accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
+            balanced_accuracy = balanced_accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
+            precision = precision_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
+            recall = recall_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
+            fbeta = fbeta_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), beta=beta, zero_division=0)
         if (epoch + 1) % 10 == 0 or epoch == 0:
-            model.eval()
-            with torch.no_grad():
-                out = model.forward(testdata.x, testdata.edge_index)
-                loss = criterion(out, testdata.y)
-                running_test_loss.append(loss.item())
-                accuracy = accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
-                balanced_accuracy = balanced_accuracy_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1))
-                precision = precision_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
-                recall = recall_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), zero_division=0)
-                fbeta = fbeta_score(testdata.y.cpu().numpy(), out.cpu().numpy().argmax(axis=1), beta=beta, zero_division=0)
-                print(f'epoch: {epoch + 1}, train_loss: {running_train_loss[-1]:.4f}, test_loss: {running_test_loss[-1]}, accuracy: {accuracy:.4f}, balanced_accuracy: {balanced_accuracy:.4f}, precision: {precision:.4f}, recall: {recall:.4f}, f{beta}: {fbeta:.4f}')
+            print(f'epoch: {epoch + 1}, train_loss: {running_train_loss[-1]:.4f}, test_loss: {running_test_loss[-1]}, accuracy: {accuracy:.4f}, balanced_accuracy: {balanced_accuracy:.4f}, precision: {precision:.4f}, recall: {recall:.4f}, f{beta}: {fbeta:.4f}')
+
+        if early_stopper.early_stop(running_test_loss[-1]):
+            print(f'Stopping training early at {epoch}/{epochs} epochs.')             
+            break
 
     return model, traindata, testdata, feature_names, target_names, running_train_loss, running_train_loss, accuracy
 
