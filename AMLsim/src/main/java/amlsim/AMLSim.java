@@ -797,7 +797,7 @@ public class AMLSim extends SimState {
 					success=orig.withdrawWithoutSAR(amt);
 					origAfter = (float) orig.getBalanceWithoutSAR();
 					if (success){
-						txs_withoutSAR.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+						txs_withoutSAR.addTransaction(step, "TRANSFER", amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
 						origPhoneChanges, 0, origDaysInBank, 0);
 					}
 				}
@@ -812,7 +812,7 @@ public class AMLSim extends SimState {
 						success=orig.withdrawWithoutSAR(amt);
 						origAfter = (float) orig.getBalanceWithoutSAR();
 						if (success){
-							txs_withoutSAR.addTransaction(step, desc, amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
+							txs_withoutSAR.addTransaction(step, "TRANSFER", amt, origID, origBankID, "-1", "sink", origBefore, origAfter, 0, 0, isSAR, alertID, modelType,
 							origPhoneChanges, 0, origDaysInBank, 0);
 						}
 					}
@@ -878,7 +878,7 @@ public class AMLSim extends SimState {
 
 		// Loading configuration JSON file instead of parsing command line arguments
 		// String confFile = args[0];
-		String paramFiles = "10K_accts_MID5";
+		String paramFiles = "50K_accts_MID5";
 		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 		System.out.println("New version started");
 		runEvaluation = true;
