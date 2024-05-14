@@ -91,7 +91,7 @@ public class GatherScatterTypology extends AMLTypology {
                 if (this.sourceType.equals("CASH")) {
                     acct.depositCash(amounts[i]);
                 } else if (this.sourceType.equals("TRANSFER")){
-                    AMLSim.handleIncome(step, "TRANSFER", amounts[i], orig, false, (long) -1, (long) 0);
+                    AMLSim.handleIncome(step, "TRANSFER", amounts[i], orig, true, (long) -1, (long) 0, "OTHER");
                 }
             }
         }

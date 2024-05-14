@@ -123,7 +123,7 @@ class GCN(torch.nn.Module):
 
 # (Written by Edvin)
 class GraphSAGE(torch.nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout=0.2):
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout=0.2,seed=42):
         super().__init__()
         self.dropout = dropout
         self.node_emb = Linear(input_dim, hidden_dim)
@@ -134,6 +134,7 @@ class GraphSAGE(torch.nn.Module):
         self.bn2 = BatchNorm(hidden_dim)
         self.bn3 = BatchNorm(hidden_dim)
         self.classifier = Linear(hidden_dim, output_dim)
+        torch.manual_seed(seed)
     
     def forward(self, data):
         x = self.node_emb(data.x)
@@ -423,8 +424,10 @@ class GAT_GraphSVX(torch.nn.Module):
 
 
 class GraphSAGE_GraphSVX_foroptuna(torch.nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels ,dropout=0.2, return_type='logits'):
+    def __init__(self, in_channels, hidden_channels, out_channels ,dropout=0.2, return_type='logits', seed=42):
         super().__init__()
+        self.seed=seed
+        torch.manual_seed(seed)
         self.dropout = dropout
         self.in_channels=in_channels
         self.out_channels=out_channels
@@ -439,7 +442,10 @@ class GraphSAGE_GraphSVX_foroptuna(torch.nn.Module):
         self.log_softmax = torch.nn.LogSoftmax(dim=1)
         self.return_type = return_type
 
+
+
     def forward(self, x, edge_index):
+        torch.manual_seed(self.seed)
         x = self.node_emb(x)
         
         x = self.conv1(x, edge_index)

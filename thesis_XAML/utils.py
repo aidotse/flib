@@ -59,6 +59,7 @@ def node_index_mapping(nodes,edges):
     # Create a dictionary mapping new indices to original indices
     new_to_org_mapping = {new_idx: old_idx for old_idx, new_idx in node_index_mapping}
 
+    edges_new=edges.clone()
     # Update the edge indices to use the new node indices
     edges_new = edges.clone()
     for old_idx, new_idx in node_index_mapping:

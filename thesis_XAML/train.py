@@ -249,8 +249,8 @@ def train_GAT_GraphSVX_foroptuna(hyperparameters = None, verbose = False):
     print('Double check which dataset is being used.')
     
     # Data
-    traindata = data.AmlsimDataset(node_file='data/100K_accts_EASY25/bank/train/nodes.csv', edge_file='data/100K_accts_EASY25/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
-    testdata = data.AmlsimDataset(node_file='data/100K_accts_EASY25/bank/test/nodes.csv', edge_file='data/100K_accts_EASY25/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
+    traindata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/train/nodes.csv', edge_file='data/100K_accts_MID5/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
+    testdata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/test/nodes.csv', edge_file='data/100K_accts_MID5/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
     traindata = torch_geometric.transforms.ToUndirected()(traindata)
     testdata = torch_geometric.transforms.ToUndirected()(testdata)
     feature_names = ['sum','mean','median','std','max','min','in_degree','out_degree','n_unique_in','n_unique_out']
@@ -341,11 +341,16 @@ def train_GraphSAGE_foroptuna(hyperparameters = None, verbose = False):
     
     # set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
+
+    # set seed
+    seed = hyperparameters['seed']
+    torch.manual_seed(seed)
+
     # data
     traindata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/train/nodes.csv', edge_file='data/100K_accts_MID5/bank/train/edges.csv', node_features=True, node_labels=True).get_data()
     testdata = data.AmlsimDataset(node_file='data/100K_accts_MID5/bank/test/nodes.csv', edge_file='data/100K_accts_MID5/bank/test/edges.csv', node_features=True, node_labels=True).get_data()
-
+    traindata = torch_geometric.transforms.ToUndirected()(traindata)
+    testdata = torch_geometric.transforms.ToUndirected()(testdata)
     traindata = traindata.to(device)
     testdata = testdata.to(device)
     
@@ -354,9 +359,6 @@ def train_GraphSAGE_foroptuna(hyperparameters = None, verbose = False):
     std = traindata.x.std(dim=0, keepdim=True)
     traindata.x = (traindata.x - mean) / std
     testdata.x = (testdata.x - mean) / std
-
-    feature_names=[]
-    target_names=[]
 
     # Non-tunable hyperparameters
     in_channels = traindata.x.shape[1]
@@ -368,9 +370,10 @@ def train_GraphSAGE_foroptuna(hyperparameters = None, verbose = False):
     lr = hyperparameters['lr']
     epochs = hyperparameters['epochs']
     beta = hyperparameters['beta']
-        
+    seed = hyperparameters['seed']
+
     # model
-    model = modules.GraphSAGE_GraphSVX_foroptuna(in_channels, hidden_channels, out_channels, dropout)
+    model = modules.GraphSAGE_GraphSVX_foroptuna(in_channels, hidden_channels, out_channels, dropout, seed)
     model.to(device)
     
     # optimizer
@@ -395,6 +398,11 @@ def train_GraphSAGE_foroptuna(hyperparameters = None, verbose = False):
     # Initialize early stopper
     early_stopper = EarlyStopper(patience=10, min_delta=0) #Stops after 10 epochs without improvement
 
+    # Initialize early stopper
+    early_stopper = EarlyStopper(patience=10, min_delta=0) #Stops after 10 epochs without improvement
+
+    feature_names=[]
+    target_names=['not_sar','is_sar']
     for epoch in range(epochs):
         model.train()
         optimizer.zero_grad()

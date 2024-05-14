@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import logging
+import copy
 
 import cProfile
 
@@ -1569,8 +1570,8 @@ if __name__ == "__main__":
     argv = sys.argv
     
     # debug: 
-    # PARAM_FILES = '100K_accts'
-    # argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
+    PARAM_FILES = '50K_accts_MID5'
+    argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
     
     argc = len(argv)
     if argc < 2:
@@ -1598,13 +1599,31 @@ if __name__ == "__main__":
     #cProfile.run('txg.build_normal_models()')
     txg.build_normal_models() # Build normal models from the base transaction types
     txg.set_main_acct_candidates() # Identify accounts with large amounts of in and out edges
+    
+
+    ## Duplicate the txg object to generate alerts on one copy and normal transactions on the other
+    txg_clean = copy.deepcopy(txg)
+
     txg.load_alert_patterns()  # Loadalert patterns CSV file and create AML typology subgraphs
+
     txg.mark_active_edges() # mark all edges in the normal models as active
+    txg_clean.mark_active_edges() # mark all edges in the normal models as active
 
     if degree_threshold > 0:
         logger.info("Added alert transaction patterns")
         txg.count_fan_in_out_patterns(degree_threshold)
+        txg_clean.count_fan_in_out_patterns(degree_threshold)
+    
     txg.write_account_list()  # Export accounts to a CSV file
     txg.write_transaction_list()  # Export transactions to a CSV file
     txg.write_alert_account_list()  # Export alert accounts to a CSV file
     txg.write_normal_models()
+
+    txg_clean.output_dir=os.path.join(txg_clean.output_dir, 'without_alert')
+    txg_clean.write_account_list()  # Export accounts to a CSV file
+    txg_clean.write_transaction_list()  # Export transactions to a CSV file
+    txg_clean.write_alert_account_list()  # Export alert accounts to a CSV file
+    txg_clean.write_normal_models()  # Export normal models to a CSV file
+    logger.info("Done.")
+
+

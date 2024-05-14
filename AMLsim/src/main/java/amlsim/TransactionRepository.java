@@ -163,9 +163,40 @@ public class TransactionRepository {
             }
             writer.flush();
             writer.close();
+
+
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        index = 0;
+    }
+    void flushLog(String filename) {
+        // Flush transaction logs to the CSV file
+        try {
+            FileWriter writer1 = new FileWriter(new File(filename), true);
+            BufferedWriter writer = new BufferedWriter(writer1);
+
+            for (int i = 0; i < this.index; i++) {
+                writer.write(steps[i] + "," + descriptions[i] + "," + getDoublePrecision(amounts[i]) + "," + origIDs[i]
+                        + "," + origBankIDs[i] + "," + origDaysInBank[i] + "," + origPhoneChanges[i] + ","
+                        + getDoublePrecision(origBefore[i]) + "," + getDoublePrecision(origAfter[i]) + "," + destIDs[i]
+                        + "," + destBankIDs[i] + "," + destDaysInBank[i] + "," + destPhoneChanges[i] + ","
+                        + getDoublePrecision(destBefore[i])
+                        + ","
+                        + getDoublePrecision(destAfter[i])
+                        + "," + (isSAR[i] ? "1" : "0") + "," + alertIDs[i] + "," + modelType[i] + "\n");
+            }
+            writer.flush();
+            writer.close();
+
+
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
         index = 0;
     }
 
