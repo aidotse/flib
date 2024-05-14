@@ -27,7 +27,7 @@ import java.util.logging.*;
 public class AMLSim extends SimState {
 
 	private static SimProperties simProp;
-	private static final int TX_SIZE = 10000000; // Transaction buffer size
+	private static final int TX_SIZE = 100000000; // Transaction buffer size
 	private static TransactionRepository txs = new TransactionRepository(TX_SIZE);
 	private static Logger logger = Logger.getLogger("AMLSim");
 	// private static int seed;
@@ -634,9 +634,12 @@ public class AMLSim extends SimState {
 		 */
 
 		// Loading configuration JSON file instead of parsing command line arguments
-		String confFile = args[0];
-		//String paramFiles = "100K_accts";
-		//String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
+		// String confFile = args[0];
+		// String paramFiles = "10K_accts";
+		// String paramFiles = "100K_accts_EASY25";
+		// String paramFiles = "100K_accts_MID5";
+		String paramFiles = "100K_accts_HARD1";
+		String confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
 
 		try {
 			simProp = new SimProperties(confFile);
