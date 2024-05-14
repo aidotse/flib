@@ -1569,11 +1569,8 @@ if __name__ == "__main__":
     argv = sys.argv
     
     # debug: 
-    #PARAM_FILES = '10K_accts'
-    # PARAM_FILES = '100K_accts_EASY25'
-    # PARAM_FILES = '100K_accts_MID5'
-    PARAM_FILES = '100K_accts_HARD1'
-    argv.append(f'paramFiles/{PARAM_FILES}/conf.json'),
+    # PARAM_FILES = '100K_accts'
+    # argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
     
     argc = len(argv)
     if argc < 2:
