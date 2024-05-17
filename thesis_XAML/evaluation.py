@@ -43,6 +43,8 @@ reload(GraphSVX_explainers)
 from GraphSVX_explainers import GraphSVX, GraphLIME
 
 
+WD_PATH = os.path.dirname(os.path.abspath(__file__))
+
 
 def get_sar_indices(model, testdata):
     # Find the indices of the nodes that are predicted as SAR
@@ -61,7 +63,7 @@ def get_sar_indices(model, testdata):
 def load_model(model_name, dataset_name):
     
     # Load model, data, and other variables
-    model_path = f'trained_models/{model_name}_{dataset_name}.pth'
+    model_path = f'/home/tomas/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
     
     checkpoint = torch.load(model_path)
     model_state_dict = checkpoint['model_state_dict']
@@ -105,6 +107,11 @@ def load_model(model_name, dataset_name):
 
 
 def calculate_feature_importance_SVX(model_name, dataset_name):
+    # Set saving directory
+    data_save_dir = f'{WD_PATH}/evaluation_data/feature_importance'
+    if not os.path.isdir(data_save_dir):
+        os.makedirs(data_save_dir)
+    
     # Load model
     model, _, testdata, feature_names, _ = load_model(model_name, dataset_name)
     
@@ -182,11 +189,11 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
         r2_GraphSVX[i] = r2_SVX
         
         if i % 100 == 0 or i == 10 or i == n_sar_indices-1:
-            with open(f'evaluation_data/{model_name}_{dataset_name}_feature_importance_GraphSVX.pkl', 'wb') as f:
+            with open(f'{data_save_dir}/{model_name}_{dataset_name}_feature_importance_GraphSVX.pkl', 'wb') as f:
                 pickle.dump(feature_importance_GraphSVX, f)
-            with open(f'evaluation_data/{model_name}_{dataset_name}_node_importance_GraphSVX.pkl', 'wb') as f:
+            with open(f'{data_save_dir}/{model_name}_{dataset_name}_node_importance_GraphSVX.pkl', 'wb') as f:
                 pickle.dump(node_importance_GraphSVX, f)
-            with open(f'evaluation_data/{model_name}_{dataset_name}_r2_GraphSVX.pkl', 'wb') as f:
+            with open(f'{data_save_dir}/{model_name}_{dataset_name}_r2_GraphSVX.pkl', 'wb') as f:
                 pickle.dump(r2_GraphSVX, f)
             # np.save(f'evaluation_data/{model_name}_{dataset_name}_feature_importance_GraphSVX.npy', feature_importance_GraphSVX)
             # np.save(f'evaluation_data/{model_name}_{dataset_name}_node_importance_GraphSVX.npy', node_importance_GraphSVX)
@@ -196,6 +203,11 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
 
 
 def calculate_feature_importance_LIME(model_name, dataset_name):
+    # Set saving directory
+    data_save_dir = f'{WD_PATH}/evaluation_data/feature_importance'
+    if not os.path.isdir(data_save_dir):
+        os.makedirs(data_save_dir)
+    
     # Load model
     model, _, testdata, feature_names, target_names = load_model(model_name, dataset_name)
     
@@ -215,7 +227,7 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
     time_start = time.time()
     for i in range(n_sar_indices):
         os.system('cls' if os.name == 'nt' else 'clear')
-
+        
         time_checkpoint = time.time()
         time_elapsed = time_checkpoint - time_start
         print('Running LIME')
@@ -264,14 +276,19 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
         r2_LIME[i] = exp_LIME.score
         
         if i % 100 == 0 or i == 10 or i == n_sar_indices-1:
-            with open(f'evaluation_data/{model_name}_{dataset_name}_feature_importance_LIME.pkl', 'wb') as f:
+            with open(f'{data_save_dir}/{model_name}_{dataset_name}_feature_importance_LIME.pkl', 'wb') as f:
                 pickle.dump(feature_importance_LIME, f)
-            with open(f'evaluation_data/{model_name}_{dataset_name}_r2_LIME.pkl', 'wb') as f:
+            with open(f'{data_save_dir}/{model_name}_{dataset_name}_r2_LIME.pkl', 'wb') as f:
                 pickle.dump(r2_LIME, f)
     print('Finished.')
 
 
 def calculate_feature_importance_SHAP(model_name, dataset_name):
+    # Set saving directory
+    data_save_dir = f'{WD_PATH}/evaluation_data/feature_importance'
+    if not os.path.isdir(data_save_dir):
+        os.makedirs(data_save_dir)
+    
     # Load model
     model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
     
@@ -338,33 +355,33 @@ def calculate_feature_importance_SHAP(model_name, dataset_name):
             feature_importance_SHAP[i, feature_name_to_index_dict[feat_name]] = feature_importance_SHAP_dict[feat_name]
         
         if i % 100 == 0 or i == 10 or i == n_sar_indices-1:
-            with open(f'evaluation_data/{model_name}_{dataset_name}_feature_importance_SHAP.pkl', 'wb') as f:
+            with open(f'{data_save_dir}/{model_name}_{dataset_name}_feature_importance_SHAP.pkl', 'wb') as f:
                 pickle.dump(feature_importance_SHAP, f)
     print('Finished.')
 
 
 def load_evaluation_data_SVX(model_name, dataset_name):
-    with open(f'evaluation_data/{model_name}_{dataset_name}_feature_importance_GraphSVX.pkl', 'rb') as f:
+    with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_feature_importance_GraphSVX.pkl', 'rb') as f:
         feature_importance_SVX = pickle.load(f)
-    with open(f'evaluation_data/{model_name}_{dataset_name}_node_importance_GraphSVX.pkl', 'rb') as f:
+    with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_node_importance_GraphSVX.pkl', 'rb') as f:
         node_importance_SVX = pickle.load(f)
-    with open(f'evaluation_data/{model_name}_{dataset_name}_r2_GraphSVX.pkl', 'rb') as f:
+    with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_r2_GraphSVX.pkl', 'rb') as f:
         r2_SVX = pickle.load(f)
 
     return feature_importance_SVX, node_importance_SVX, r2_SVX
 
 
 def load_evaluation_data_LIME(model_name, dataset_name):
-    with open(f'evaluation_data/{model_name}_{dataset_name}_feature_importance_LIME.pkl', 'rb') as f:
+    with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_feature_importance_LIME.pkl', 'rb') as f:
         feature_importance_LIME = pickle.load(f)
-    with open(f'evaluation_data/{model_name}_{dataset_name}_r2_LIME.pkl', 'rb') as f:
+    with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_r2_LIME.pkl', 'rb') as f:
         r2_LIME = pickle.load(f)
         
     return feature_importance_LIME, r2_LIME
 
 
 def load_evaluation_data_SHAP(model_name, dataset_name):
-    with open(f'evaluation_data/{model_name}_{dataset_name}_feature_importance_SHAP.pkl', 'rb') as f:
+    with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_feature_importance_SHAP.pkl', 'rb') as f:
         feature_importance_SHAP = pickle.load(f)
     return feature_importance_SHAP
 
@@ -405,18 +422,23 @@ def TEST_get_topk_pairwise_sign_agreement():
     print('todo')
 
 
-def get_ind_topk(feature_importance, k):
-    ind_topk = np.argpartition(abs(feature_importance), range(-k, 0), axis=1)[:, :-(k+1):-1]
+def get_ind_topk(feature_importance, k, importance_order = 'abs'):
+    if importance_order == 'abs':
+        ind_topk = np.argpartition(abs(feature_importance), range(-k, 0), axis=1)[:, :-(k+1):-1]
+    elif importance_order == 'noabs':
+        ind_topk = np.argpartition(feature_importance, range(-k, 0), axis=1)[:, :-(k+1):-1]
+    else:
+        raise ValueError('importance_order must be either "abs" or "noabs"')
     return ind_topk
 
 
-def get_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, k, agreement_type):
+def get_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, k, agreement_type, importance_order = 'abs'):
     n_samples = feature_importance_exp1.shape[0]    
     n_features = feature_importance_exp1.shape[1]
     
     # Get indices for the largest (absolute value) feature importances
-    ind_topall_exp1 = get_ind_topk(feature_importance_exp1, n_features)
-    ind_topall_exp2 = get_ind_topk(feature_importance_exp2, n_features)
+    ind_topall_exp1 = get_ind_topk(feature_importance_exp1, n_features, importance_order)
+    ind_topall_exp2 = get_ind_topk(feature_importance_exp2, n_features, importance_order)
     
     # Extract top-k indices from both explanations
     ind_topk_exp1 = ind_topall_exp1[:, :k].reshape((-1,k))
@@ -473,7 +495,7 @@ def get_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2
     return [avg_agreement, std_agreement]
 
 
-def get_all_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, agreement_type):
+def get_all_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, agreement_type, importance_order = 'abs'):
     # Returns a list with elements of the form [avg, std] for feature agreement for all k's
     n_features = feature_importance_exp1.shape[1]
     
@@ -482,12 +504,12 @@ def get_all_topk_pairwise_agreement(feature_importance_exp1, feature_importance_
     avg_std_agreement[0] = [1,0]
     
     for k in range(1,n_features+1):
-        avg_std_agreement[k] = get_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, k, agreement_type)
+        avg_std_agreement[k] = get_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, k, agreement_type, importance_order)
     
     return avg_std_agreement
 
 
-def get_agreement(feature_importance_list: list, agreement_type: str):
+def get_agreement(feature_importance_list: list, agreement_type: str, importance_order = 'abs'):
     # Calculates all topk pairwise feature agreement between all explainer pairs (in the upper right triangle of the (n_explainers x n_explainers) table)
     n_explainers = len(feature_importance_list)
     n_comparisons = n_explainers*(n_explainers+1)//2
@@ -499,14 +521,14 @@ def get_agreement(feature_importance_list: list, agreement_type: str):
         for j in range(i, n_explainers):
             feature_importance_exp1 = feature_importance_list[i]
             feature_importance_exp2 = feature_importance_list[j]
-            agreement_list[index] = get_all_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, agreement_type)
+            agreement_list[index] = get_all_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, agreement_type, importance_order)
             index = index + 1
             print(f'{agreement_type} agreement between explainer {i} and explainer {j} done.')
     
     return agreement_list
 
 
-def create_and_save_coherence_plots(agreement_list: list, explainer_names: list, agreement_type: str):
+def create_and_save_agreement_plots(agreement_list: list, explainer_names: list, model_name: str, dataset_name: str, agreement_type: str, evaluation_type: str):
     if agreement_type != 'feature' and agreement_type != 'rank' and agreement_type != 'sign' and agreement_type != 'signed_rank':
         raise ValueError("agreement_type must be either 'feature', 'rank', 'sign', or 'signed_rank'")
     n_explainers = len(explainer_names)
@@ -523,7 +545,14 @@ def create_and_save_coherence_plots(agreement_list: list, explainer_names: list,
             plt.ylabel('Agreement (%)')
             plt.title(f'{agreement_type} Agreement between {explainer_names[i]} and {explainer_names[j]}')
             plt.show()
-            plt.savefig(f'/home/tomas/desktop/flib/thesis_XAML/evaluation_figures/{agreement_type}_agreement_{explainer_names[i]}_{explainer_names[j]}.png')
+            
+            save_dir = f'{WD_PATH}/evaluation_figures/{model_name}/{dataset_name}/{evaluation_type}'
+            if not os.path.isdir(save_dir):
+                os.makedirs(save_dir)
+            
+            plt.savefig(f'{save_dir}/{agreement_type}_agreement_{explainer_names[i]}_{explainer_names[j]}.png')
+            plt.close()
+            
             index = index + 1
 
 
@@ -790,7 +819,7 @@ def get_feature_importance_groundtruth(dataset_name):
 
 
 def correctness(model_name, dataset_name):
-    print('Running correctness evalution.')
+    print('Running correctness evalution...')
     print('OBS! KONTROLLERA ATT VI KÖR MED ALLA SAMPLES I feature_importance_list.')
     print('OBS! BYT UT feature_importance_groundtruth till att ladda in rätt data.')
     print('OBSSS MÅSTE IMPLEMENTERA DET DÄR MED DISTRIBUTION delta_i OSV FÖR ATT SKAPA groundtruth!!!')
@@ -799,7 +828,8 @@ def correctness(model_name, dataset_name):
     feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
     feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
     
-    feature_importance_groundtruth = get_feature_importance_groundtruth(dataset_name)
+    # Använd det här för att ladda in feature_importance på riktigt
+    #feature_importance_groundtruth = np.load(f'evaluation_data/feature_importance_groundtruth.npy')
     
     # OBS! Byt ut feature_importance_groundtruth till att ladda in rätt data.
     # feature_importance_groundtruth = LADDA IN DATA HÄR
@@ -808,7 +838,9 @@ def correctness(model_name, dataset_name):
     for i in range(11):
         feature_importance_groundtruth[i] = np.random.permutation(feature_importance_groundtruth[i])
     
-    agreement_type = 'feature'
+    importance_order = 'noabs'
+    evaluation_type = 'correctness'
+    
     explainer_names_1 = ['SVX', 'Groundtruth']
     explainer_names_2 = ['LIME', 'Groundtruth']
     explainer_names_3 = ['SHAP', 'Groundtruth']
@@ -817,30 +849,21 @@ def correctness(model_name, dataset_name):
     feature_importance_list_2 = [feature_importance_LIME[:11], feature_importance_groundtruth]
     feature_importance_list_3 = [feature_importance_SHAP[:11], feature_importance_groundtruth]
     
-    feature_agreement_list_1 = get_agreement(feature_importance_list_1, agreement_type)
-    feature_agreement_list_2 = get_agreement(feature_importance_list_2, agreement_type)
-    feature_agreement_list_3 = get_agreement(feature_importance_list_3, agreement_type)
+    agreement_type = 'feature'
+    feature_agreement_list_1 = get_agreement(feature_importance_list_1, agreement_type, importance_order)
+    feature_agreement_list_2 = get_agreement(feature_importance_list_2, agreement_type, importance_order)
+    feature_agreement_list_3 = get_agreement(feature_importance_list_3, agreement_type, importance_order)
+    create_and_save_agreement_plots(feature_agreement_list_1, explainer_names_1, model_name, dataset_name, agreement_type, evaluation_type)
+    create_and_save_agreement_plots(feature_agreement_list_2, explainer_names_2, model_name, dataset_name, agreement_type, evaluation_type)
+    create_and_save_agreement_plots(feature_agreement_list_3, explainer_names_3, model_name, dataset_name, agreement_type, evaluation_type)
     
-    create_and_save_coherence_plots(feature_agreement_list_1, explainer_names_1, agreement_type)
-    create_and_save_coherence_plots(feature_agreement_list_2, explainer_names_2, agreement_type)
-    create_and_save_coherence_plots(feature_agreement_list_3, explainer_names_3, agreement_type)
-
-
-    # # Do one explainer at a time
-    # feature_importance_list = []
-    
-    # # Load model
-    # model, _, testdata, feature_names, _ = load_model(model_name, dataset_name)
-    
-    # # Calculate SAR indices
-    # sar_indices = get_sar_indices(model, testdata)
-    # n_sar_indices = len(sar_indices)
-    # model.eval()
-    # model.set_return_type('log_probas')
-    
-    # i = 1
-    # feature_importance = feature_importance_list[i]
-    # ind_topall = get_ind_topk(feature_importance, 31)
+    agreement_type = 'rank'
+    feature_agreement_list_1 = get_agreement(feature_importance_list_1, agreement_type, importance_order)
+    feature_agreement_list_2 = get_agreement(feature_importance_list_2, agreement_type, importance_order)
+    feature_agreement_list_3 = get_agreement(feature_importance_list_3, agreement_type, importance_order)
+    create_and_save_agreement_plots(feature_agreement_list_1, explainer_names_1, model_name, dataset_name, agreement_type, evaluation_type)
+    create_and_save_agreement_plots(feature_agreement_list_2, explainer_names_2, model_name, dataset_name, agreement_type, evaluation_type)
+    create_and_save_agreement_plots(feature_agreement_list_3, explainer_names_3, model_name, dataset_name, agreement_type, evaluation_type)
 
 
 def remove_feature(dataset, feature_index, mean_feature_values):
@@ -854,321 +877,340 @@ def remove_node(dataset, sar_index, node_index):
 
 
 def completeness(model_name, dataset_name):
+    print('Running completteness evaluation...')
     print('OBS: Kontrollera att vi loopar över alla sar indices.')
-    ans = input('Type y or n: ')
-    if ans != 'y':
-        raise ValueError('Aborting.')
+
+    evaluation_type = 'completeness'
+    figures_save_dir = f'{WD_PATH}/evaluation_figures/{model_name}/{dataset_name}/{evaluation_type}'
+    if not os.path.isdir(figures_save_dir):
+        os.makedirs(figures_save_dir)
+    data_save_dir = f'{WD_PATH}/evaluation_data/{evaluation_type}_data/{model_name}/{dataset_name}/{evaluation_type}'
+    if not os.path.isdir(data_save_dir):
+        os.makedirs(data_save_dir)
     
     model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
     mean_feature_values = traindata.x.mean(dim=0, keepdim=True).to('cpu').detach().numpy().squeeze()
 
-    rerun_and_save = 1
-    explanation_name = 'SHAP'
-    n_sar_indices_used = 100
+    rerun_and_save = 0
+    n_sar_indices_used = 11
     
-    if explanation_name == 'LIME':
-        feature_importance, _ = load_evaluation_data_LIME(model_name, dataset_name)
-        node_importance = np.array([])
-    elif explanation_name == 'SHAP':
-        feature_importance = load_evaluation_data_SHAP(model_name, dataset_name)
-        node_importance = np.array([])
-    elif explanation_name == 'SVX':
-        feature_importance, node_importance, _ = load_evaluation_data_SVX(model_name, dataset_name)
-    else:
-        raise ValueError('Explanation method not implemented.')
+    print('NOTE')
+    print(f'rerun_and_save == {rerun_and_save}')
+    print(f'n_sar_indices_used == {n_sar_indices_used}')
+    ans = input(f'Type "y" to continue, "n" to abort: ')
+    if ans != 'y':
+        raise ValueError('Aborting.')
     
-    sar_indices = get_sar_indices(model, testdata)
-    n_sar_indices = len(sar_indices)
-    
-    print('max feature importance: ', np.max(feature_importance[:n_sar_indices_used]))
-    print('min feature importance: ', np.min(feature_importance[:n_sar_indices_used]))
-    print('abs_min: ', np.min(np.abs(feature_importance[:n_sar_indices_used])))
-    
-    # --- noabs, from negative to positive ---
-    thresholds = np.arange(-1, 1.001, 0.001)
-    n_thresholds = len(thresholds)
-    
-    probability_diff = np.zeros((n_sar_indices, n_thresholds))
-    k_count = np.zeros((n_sar_indices, n_thresholds))
-    
-    if rerun_and_save:
-        for i, sar_index in enumerate(sar_indices[:n_sar_indices_used]):
-            
-            # Extract subgraph around SAR index
-            if model_name == 'GAT':
-                subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
-                org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
-                testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
-            else:
-                raise ValueError('Model not implemented.')
-            
-            # Calculate the original class probability
-            probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-            
-            # For each threshold
-            for gamma, thresh in enumerate(thresholds):
-                
-                # Determine which features and nodes that should be 'removed'
-                feature_index_to_remove = np.where(feature_importance[i,:] <= thresh)[0]
-                #print('node importance: ', node_importance[i][0])
-                node_index_to_remove = (np.where(node_importance[i][0] <= thresh)[0] + 1) if len(node_importance) > 0 else np.array([]) # + 1 because the 0th node in the graph is the SAR-node
-                
-                # Remove the features/nodes by replacing with mean values/SAR node feature vector
-                for feature_index in feature_index_to_remove:
-                    testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
-                for node_index in node_index_to_remove:
-                    testdata_expl = remove_node(testdata_expl, sar_index, node_index)
-                
-                # Calculate the new class probability and the difference to the original class probability
-                probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-                probability_diff[i,gamma] = probability_orig - probability_new
-                
-                # Keep track of how many features+nodes that have been removed at this threshold
-                k_count[i,gamma] = len(feature_index_to_remove) + len(node_index_to_remove)
-            print('Done calculating for sar index ', i)
+    explanation_names = ['LIME', 'SHAP', 'SVX']
+
+    for explanation_name in explanation_names:
+        if explanation_name == 'LIME':
+            feature_importance, _ = load_evaluation_data_LIME(model_name, dataset_name)
+            node_importance = np.array([])
+        elif explanation_name == 'SHAP':
+            feature_importance = load_evaluation_data_SHAP(model_name, dataset_name)
+            node_importance = np.array([])
+        elif explanation_name == 'SVX':
+            feature_importance, node_importance, _ = load_evaluation_data_SVX(model_name, dataset_name)
+        else:
+            raise ValueError('Explanation method not implemented.')
         
-        avg_probability_diff = np.mean(probability_diff[:n_sar_indices_used], axis=0)
-        std_probability_diff = np.std(probability_diff[:n_sar_indices_used], axis=0)
-        avg_k_count = np.mean(k_count[:n_sar_indices_used], axis=0)
-
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_probability_diff.npy', probability_diff)    
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_avg_probability_diff.npy', avg_probability_diff)
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_std_probability_diff.npy', std_probability_diff)
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_k_count.npy', k_count)
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_avg_k_count.npy', avg_k_count)
-    else:
-        probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_probability_diff.npy')
-        avg_probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_avg_probability_diff.npy')
-        std_probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_std_probability_diff.npy')
-        k_count = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_k_count.npy')
-        avg_k_count = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_{explanation_name}_avg_k_count.npy')
-    
-    plt.figure()
-    
-    plt.subplot(2,2,1)
-    plt.plot(thresholds,avg_probability_diff)
-    plt.xlabel('Thresholds')
-    plt.ylabel('AVG(y_orig - y_new)')
-    plt.axvline(x=0, color='r', linestyle='--')
-    
-    plt.subplot(2,2,2)
-    plt.plot(avg_k_count,avg_probability_diff)
-    plt.xlabel('Average k')
-    plt.ylabel('AVG(y_orig - y_new)')
-    idx = np.where(abs(thresholds) < 0.0001)[0][0]
-    plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')    
-
-    plt.subplot(2,2,3)
-    plt.plot(thresholds,std_probability_diff)
-    plt.xlabel('Thresholds')
-    plt.ylabel('STD(y_orig - y_new)')
-    plt.axvline(x=0, color='r', linestyle='--')
-    
-    plt.subplot(2,2,4)
-    plt.plot(avg_k_count,std_probability_diff)
-    plt.xlabel('Average k')
-    plt.ylabel('STD(y_orig - y_new)')
-    idx = np.where(abs(thresholds) < 0.0001)[0][0]
-    plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')
-    
-    plt.subplots_adjust(wspace=0.5, hspace=0.5)
-    plt.show()
-    plt.savefig(f'/home/tomas/desktop/flib/thesis_XAML/completeness_figs/noabs_{explanation_name}.png')
-
-    avg_k_count_noabs = avg_k_count
-
-    # --- noabs, from positive to negative ---
-    thresholds = np.arange(1, -1.001, -0.001)
-    n_thresholds = len(thresholds)
-    
-    probability_diff = np.zeros((n_sar_indices, n_thresholds))
-    k_count = np.zeros((n_sar_indices, n_thresholds))
-    
-    if rerun_and_save:
-        for i, sar_index in enumerate(sar_indices[:n_sar_indices_used]):
-            
-            # Extract subgraph around SAR index
-            if model_name == 'GAT':
-                subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
-                org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
-                testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
-            else:
-                raise ValueError('Model not implemented.')
-            
-            # Calculate the original class probability
-            probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-            
-            # For each threshold
-            for gamma, thresh in enumerate(thresholds):
-                
-                # Determine which features and nodes that should be 'removed'
-                feature_index_to_remove = np.where(feature_importance[i,:] > thresh)[0]
-                #print('node importance: ', node_importance[i][0])
-                node_index_to_remove = (np.where(node_importance[i][0] > thresh)[0] + 1) if len(node_importance) > 0 else np.array([]) # + 1 because the 0th node in the graph is the SAR-node
-                
-                # Remove the features/nodes by replacing with mean values/SAR node feature vector
-                for feature_index in feature_index_to_remove:
-                    testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
-                for node_index in node_index_to_remove:
-                    testdata_expl = remove_node(testdata_expl, sar_index, node_index)
-                
-                # Calculate the new class probability and the difference to the original class probability
-                probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-                probability_diff[i,gamma] = probability_orig - probability_new
-                
-                # Keep track of how many features+nodes that have been removed at this threshold
-                k_count[i,gamma] = len(feature_index_to_remove) + len(node_index_to_remove)
-            print('Done calculating for sar index ', i)
+        sar_indices = get_sar_indices(model, testdata)
+        n_sar_indices = len(sar_indices)
         
-        avg_probability_diff = np.mean(probability_diff[:n_sar_indices_used], axis=0)
-        std_probability_diff = np.std(probability_diff[:n_sar_indices_used], axis=0)
-        avg_k_count = np.mean(k_count[:n_sar_indices_used], axis=0)
-
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_probability_diff.npy', probability_diff)    
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_avg_probability_diff.npy', avg_probability_diff)
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_std_probability_diff.npy', std_probability_diff)
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_k_count.npy', k_count)
-        np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_avg_k_count.npy', avg_k_count)
-    else:
-        probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_probability_diff.npy')
-        avg_probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_avg_probability_diff.npy')
-        std_probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_std_probability_diff.npy')
-        k_count = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_k_count.npy')
-        avg_k_count = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/noabs_reversed_{explanation_name}_avg_k_count.npy')
-    
-    plt.figure()
-    
-    plt.subplot(2,2,1)
-    plt.plot(thresholds,avg_probability_diff)
-    plt.xlabel('Thresholds')
-    plt.ylabel('AVG(y_orig - y_new)')
-    plt.axvline(x=0, color='r', linestyle='--')
-    
-    plt.subplot(2,2,2)
-    plt.plot(avg_k_count,avg_probability_diff)
-    plt.xlabel('Average k')
-    plt.ylabel('AVG(y_orig - y_new)')
-    idx = np.where(abs(thresholds) < 0.0001)[0][0]
-    plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')   
-    print('idx: ', idx) 
-
-    plt.subplot(2,2,3)
-    plt.plot(thresholds,std_probability_diff)
-    plt.xlabel('Thresholds')
-    plt.ylabel('STD(y_orig - y_new)')
-    plt.axvline(x=0, color='r', linestyle='--')
-    
-    plt.subplot(2,2,4)
-    plt.plot(avg_k_count,std_probability_diff)
-    plt.xlabel('Average k')
-    plt.ylabel('STD(y_orig - y_new)')
-    idx = np.where(abs(thresholds) < 0.0001)[0][0]
-    plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')
-    print('idx: ', idx)
-    
-    plt.subplots_adjust(wspace=0.5, hspace=0.5)
-    plt.show()
-    plt.savefig(f'/home/tomas/desktop/flib/thesis_XAML/completeness_figs/noabs_reversed_{explanation_name}.png')
-    
-    avg_k_count_noabs_reversed = avg_k_count
-    
-    plt.figure()
-    plt.plot(range(975,1025), avg_k_count_noabs[975:1025], color = 'b')
-    plt.plot(range(975,1025), avg_k_count_noabs_reversed[975:1025], color='r', linestyle='--')
-    plt.show()
-    plt.savefig('avg_k_count_comparison.png')
-
-    # # --- abs ---
-    # thresholds = np.arange(0, 1, 0.001) # Använd 0.4 ist.
-    # n_thresholds = len(thresholds)
-    
-    # probability_diff = np.zeros((n_sar_indices, n_thresholds))
-    # k_count = np.zeros((n_sar_indices, n_thresholds))
-    
-    # if rerun_and_save:
-    #     for i, sar_index in enumerate(sar_indices[:n_sar_indices_used]):
-            
-    #         # Extract subgraph around SAR index
-    #         if model_name == 'GAT':
-    #             subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
-    #             org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
-    #             testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
-    #         else:
-    #             raise ValueError('Model not implemented.')
-            
-    #         # Calculate the original class probability
-    #         probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-            
-    #         # For each threshold
-    #         for gamma, thresh in enumerate(thresholds):
-                
-    #             # Determine which features and nodes that should be 'removed'
-    #             feature_index_to_remove = np.where(np.abs(feature_importance[i,:]) < thresh)[0]
-    #             node_index_to_remove = np.where(np.abs(node_importance[i][0]) < thresh)[0] if len(node_importance) > 0 else np.array([])
-                
-    #             # Remove the features/nodes by replacing with mean values/SAR node feature vector
-    #             for feature_index in feature_index_to_remove:
-    #                 testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
-    #             for node_index in node_index_to_remove:
-    #                 testdata_expl = remove_node(testdata_expl, sar_index, node_index)
-                
-    #             # Calculate the new class probability and the difference to the original class probability
-    #             probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-    #             probability_diff[i,gamma] = probability_orig - probability_new
-                
-    #             # Keep track of how many features+nodes that have been removed at this threshold
-    #             k_count[i,gamma] = len(feature_index_to_remove) + len(node_index_to_remove)
-    #         print('Done calculating for sar index ', i)
+        print('max feature importance: ', np.max(feature_importance[:n_sar_indices_used]))
+        print('min feature importance: ', np.min(feature_importance[:n_sar_indices_used]))
+        print('abs_min: ', np.min(np.abs(feature_importance[:n_sar_indices_used])))
         
-    #     avg_probability_diff = np.mean(probability_diff[:n_sar_indices_used], axis=0)
-    #     std_probability_diff = np.std(probability_diff[:n_sar_indices_used], axis=0)
-    #     avg_k_count = np.mean(k_count[:n_sar_indices_used], axis=0)
-
-    #     np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_probability_diff.npy', probability_diff)    
-    #     np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_avg_probability_diff.npy', avg_probability_diff)
-    #     np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_std_probability_diff.npy', std_probability_diff)
-    #     np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_k_count.npy', k_count)
-    #     np.save(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_avg_k_count.npy', avg_k_count)
-    # else:
-    #     probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_probability_diff.npy')
-    #     avg_probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_avg_probability_diff.npy')
-    #     std_probability_diff = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_std_probability_diff.npy')
-    #     k_count = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_k_count.npy')
-    #     avg_k_count = np.load(f'/home/tomas/desktop/flib/thesis_XAML/completeness_data/abs_{explanation_name}_avg_k_count.npy')
-    
-    # plt.figure()
-    
-    # plt.subplot(2,2,1)
-    # plt.plot(thresholds,avg_probability_diff)
-    # plt.xlabel('Thresholds')
-    # plt.ylabel('AVG(y_orig - y_new)')
-    
-    # plt.subplot(2,2,2)
-    # plt.plot(avg_k_count,avg_probability_diff)
-    # plt.xlabel('Average k')
-    # plt.ylabel('AVG(y_orig - y_new)')
-
-    # plt.subplot(2,2,3)
-    # plt.plot(thresholds,std_probability_diff)
-    # plt.xlabel('Thresholds')
-    # plt.ylabel('STD(y_orig - y_new)')
-    
-    # plt.subplot(2,2,4)
-    # plt.plot(avg_k_count,std_probability_diff)
-    # plt.xlabel('Average k')
-    # plt.ylabel('STD(y_orig - y_new)')
-    
-    # plt.subplots_adjust(wspace=0.5, hspace=0.5)
-    # plt.show()
-    # plt.savefig(f'/home/tomas/desktop/flib/thesis_XAML/completeness_figs/abs_{explanation_name}.png')
-    
-    def preservation_check():
-        print('todo')
+        # --- noabs, from negative to positive ---
+        thresholds = np.arange(-1, 1.001, 0.001)
+        #thresholds[1000] = 0
+        thresholds = np.round(thresholds, 3)
+        n_thresholds = len(thresholds)
         
+        probability_diff = np.zeros((n_sar_indices, n_thresholds))
+        k_count = np.zeros((n_sar_indices, n_thresholds))
         
-    def deletion_check():
-        print('todo')
-    print('Not implemented yet.')
+        if rerun_and_save:
+            for i, sar_index in enumerate(sar_indices[:n_sar_indices_used]):
+                
+                # Extract subgraph around SAR index
+                if model_name == 'GAT' or model_name == 'GraphSAGE':
+                    subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
+                    org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
+                    testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
+                else:
+                    raise ValueError('Model not implemented.')
+                
+                # Calculate the original class probability
+                probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
+                
+                # For each threshold
+                for gamma, thresh in enumerate(thresholds):
+                    
+                    # Determine which features and nodes that should be 'removed'
+                    feature_index_to_remove = np.where(feature_importance[i,:] <= thresh)[0]
+                    #print('node importance: ', node_importance[i][0])
+                    node_index_to_remove = (np.where(node_importance[i][0] <= thresh)[0] + 1) if len(node_importance) > 0 else np.array([]) # + 1 because the 0th node in the graph is the SAR-node
+                    
+                    # Remove the features/nodes by replacing with mean values/SAR node feature vector
+                    for feature_index in feature_index_to_remove:
+                        testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
+                    for node_index in node_index_to_remove:
+                        testdata_expl = remove_node(testdata_expl, sar_index, node_index)
+                    
+                    # Calculate the new class probability and the difference to the original class probability
+                    probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
+                    probability_diff[i,gamma] = probability_orig - probability_new
+                    
+                    # Keep track of how many features+nodes that have been removed at this threshold
+                    k_count[i,gamma] = len(feature_index_to_remove) + len(node_index_to_remove)
+                print('Done calculating for sar index ', i)
+            
+            avg_probability_diff = np.mean(probability_diff[:n_sar_indices_used], axis=0)
+            std_probability_diff = np.std(probability_diff[:n_sar_indices_used], axis=0)
+            avg_k_count = np.mean(k_count[:n_sar_indices_used], axis=0)
+
+            np.save(f'{data_save_dir}/noabs_{explanation_name}_probability_diff.npy', probability_diff)    
+            np.save(f'{data_save_dir}/noabs_{explanation_name}_avg_probability_diff.npy', avg_probability_diff)
+            np.save(f'{data_save_dir}/noabs_{explanation_name}_std_probability_diff.npy', std_probability_diff)
+            np.save(f'{data_save_dir}/noabs_{explanation_name}_k_count.npy', k_count)
+            np.save(f'{data_save_dir}/noabs_{explanation_name}_avg_k_count.npy', avg_k_count)
+        else:
+            probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_probability_diff.npy')
+            avg_probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_avg_probability_diff.npy')
+            std_probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_std_probability_diff.npy')
+            k_count = np.load(f'{data_save_dir}/noabs_{explanation_name}_k_count.npy')
+            avg_k_count = np.load(f'{data_save_dir}/noabs_{explanation_name}_avg_k_count.npy')
+        
+        plt.figure()
+        
+        plt.subplot(2,2,1)
+        plt.plot(thresholds,avg_probability_diff)
+        plt.xlabel('Thresholds')
+        plt.ylabel('AVG(y_orig - y_new)')
+        plt.axvline(x=0, color='r', linestyle='--')
+        
+        plt.subplot(2,2,2)
+        plt.plot(avg_k_count,avg_probability_diff)
+        plt.xlabel('Average k')
+        plt.ylabel('AVG(y_orig - y_new)')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')    
+
+        plt.subplot(2,2,3)
+        plt.plot(thresholds,std_probability_diff)
+        plt.xlabel('Thresholds')
+        plt.ylabel('STD(y_orig - y_new)')
+        plt.axvline(x=0, color='r', linestyle='--')
+        
+        plt.subplot(2,2,4)
+        plt.plot(avg_k_count,std_probability_diff)
+        plt.xlabel('Average k')
+        plt.ylabel('STD(y_orig - y_new)')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')
+        
+        plt.subplots_adjust(wspace=0.5, hspace=0.5)
+        plt.show()
+        plt.savefig(f'{figures_save_dir}/noabs_{explanation_name}.png')
+
+        avg_k_count_noabs = avg_k_count
+
+        # --- noabs, from positive to negative ---
+        thresholds = np.arange(1, -1.001, -0.001)
+        #thresholds[1000] = 0
+        thresholds = np.round(thresholds,3)
+        n_thresholds = len(thresholds)
+        
+        probability_diff = np.zeros((n_sar_indices, n_thresholds))
+        k_count = np.zeros((n_sar_indices, n_thresholds))
+        
+        if rerun_and_save:
+            for i, sar_index in enumerate(sar_indices[:n_sar_indices_used]):
+                
+                # Extract subgraph around SAR index
+                if model_name == 'GAT' or model_name == 'GraphSAGE':
+                    subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
+                    org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
+                    testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
+                else:
+                    raise ValueError('Model not implemented.')
+                
+                # Calculate the original class probability
+                probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
+                
+                # For each threshold
+                for gamma, thresh in enumerate(thresholds):
+                    
+                    # Determine which features and nodes that should be 'removed'
+                    feature_index_to_remove = np.where(feature_importance[i,:] > thresh)[0]
+                    #print('node importance: ', node_importance[i][0])
+                    node_index_to_remove = (np.where(node_importance[i][0] > thresh)[0] + 1) if len(node_importance) > 0 else np.array([]) # + 1 because the 0th node in the graph is the SAR-node
+                    
+                    # Remove the features/nodes by replacing with mean values/SAR node feature vector
+                    for feature_index in feature_index_to_remove:
+                        testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
+                    for node_index in node_index_to_remove:
+                        testdata_expl = remove_node(testdata_expl, sar_index, node_index)
+                    
+                    # Calculate the new class probability and the difference to the original class probability
+                    probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
+                    probability_diff[i,gamma] = probability_orig - probability_new
+                    
+                    # Keep track of how many features+nodes that have been removed at this threshold
+                    k_count[i,gamma] = len(feature_index_to_remove) + len(node_index_to_remove)
+                print('Done calculating for sar index ', i)
+            
+            avg_probability_diff = np.mean(probability_diff[:n_sar_indices_used], axis=0)
+            std_probability_diff = np.std(probability_diff[:n_sar_indices_used], axis=0)
+            avg_k_count = np.mean(k_count[:n_sar_indices_used], axis=0)
+
+            np.save(f'{data_save_dir}/noabs_reversed_{explanation_name}_probability_diff.npy', probability_diff)    
+            np.save(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_probability_diff.npy', avg_probability_diff)
+            np.save(f'{data_save_dir}/noabs_reversed_{explanation_name}_std_probability_diff.npy', std_probability_diff)
+            np.save(f'{data_save_dir}/noabs_reversed_{explanation_name}_k_count.npy', k_count)
+            np.save(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_k_count.npy', avg_k_count)
+        else:
+            probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_probability_diff.npy')
+            avg_probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_probability_diff.npy')
+            std_probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_std_probability_diff.npy')
+            k_count = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_k_count.npy')
+            avg_k_count = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_k_count.npy')
+        
+        plt.figure()
+        
+        plt.subplot(2,2,1)
+        plt.plot(thresholds,avg_probability_diff)
+        plt.xlabel('Thresholds')
+        plt.ylabel('AVG(y_orig - y_new)')
+        plt.axvline(x=0, color='r', linestyle='--')
+        
+        plt.subplot(2,2,2)
+        plt.plot(avg_k_count,avg_probability_diff)
+        plt.xlabel('Average k')
+        plt.ylabel('AVG(y_orig - y_new)')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')   
+        print('idx: ', idx) 
+
+        plt.subplot(2,2,3)
+        plt.plot(thresholds,std_probability_diff)
+        plt.xlabel('Thresholds')
+        plt.ylabel('STD(y_orig - y_new)')
+        plt.axvline(x=0, color='r', linestyle='--')
+        
+        plt.subplot(2,2,4)
+        plt.plot(avg_k_count,std_probability_diff)
+        plt.xlabel('Average k')
+        plt.ylabel('STD(y_orig - y_new)')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')
+        print('idx: ', idx)
+        
+        plt.subplots_adjust(wspace=0.5, hspace=0.5)
+        plt.show()
+        plt.savefig(f'{figures_save_dir}/noabs_reversed_{explanation_name}.png')
+        
+        avg_k_count_noabs_reversed = avg_k_count
+        
+        plt.figure()
+        plt.subplot(1,2,1)
+        plt.plot(range(975,1025), avg_k_count_noabs[975:1025], color = 'b')
+        plt.plot(range(975,1025), avg_k_count_noabs_reversed[975:1025], color='r', linestyle='--')
+        
+        plt.figure()
+        plt.subplot(1,2,1)
+        plt.plot(range(975,1025), avg_k_count_noabs[975:1025], color = 'b')
+        plt.plot(range(975,1025), avg_k_count_noabs_reversed[1025:975:-1], color='r', linestyle='-.')
+        plt.plot(range(975,1025), avg_k_count_noabs_reversed[1025:975:-1] + avg_k_count_noabs[975:1025], color='g', linestyle=':')
+        
+        plt.show()
+        plt.savefig(f'{figures_save_dir}/{explanation_name}_avg_k_count_comparison.png')
+
+        # # --- abs ---
+        # thresholds = np.arange(0, 1, 0.001) # Använd 0.4 ist.
+        # n_thresholds = len(thresholds)
+        
+        # probability_diff = np.zeros((n_sar_indices, n_thresholds))
+        # k_count = np.zeros((n_sar_indices, n_thresholds))
+        
+        # if rerun_and_save:
+        #     for i, sar_index in enumerate(sar_indices[:n_sar_indices_used]):
+                
+        #         # Extract subgraph around SAR index
+        #         if model_name == 'GAT':
+        #             subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
+        #             org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
+        #             testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
+        #         else:
+        #             raise ValueError('Model not implemented.')
+                
+        #         # Calculate the original class probability
+        #         probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
+                
+        #         # For each threshold
+        #         for gamma, thresh in enumerate(thresholds):
+                    
+        #             # Determine which features and nodes that should be 'removed'
+        #             feature_index_to_remove = np.where(np.abs(feature_importance[i,:]) < thresh)[0]
+        #             node_index_to_remove = np.where(np.abs(node_importance[i][0]) < thresh)[0] if len(node_importance) > 0 else np.array([])
+                    
+        #             # Remove the features/nodes by replacing with mean values/SAR node feature vector
+        #             for feature_index in feature_index_to_remove:
+        #                 testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
+        #             for node_index in node_index_to_remove:
+        #                 testdata_expl = remove_node(testdata_expl, sar_index, node_index)
+                    
+        #             # Calculate the new class probability and the difference to the original class probability
+        #             probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
+        #             probability_diff[i,gamma] = probability_orig - probability_new
+                    
+        #             # Keep track of how many features+nodes that have been removed at this threshold
+        #             k_count[i,gamma] = len(feature_index_to_remove) + len(node_index_to_remove)
+        #         print('Done calculating for sar index ', i)
+            
+        #     avg_probability_diff = np.mean(probability_diff[:n_sar_indices_used], axis=0)
+        #     std_probability_diff = np.std(probability_diff[:n_sar_indices_used], axis=0)
+        #     avg_k_count = np.mean(k_count[:n_sar_indices_used], axis=0)
+
+        #     np.save(f'{data_save_dir}/abs_{explanation_name}_probability_diff.npy', probability_diff)    
+        #     np.save(f'{data_save_dir}/abs_{explanation_name}_avg_probability_diff.npy', avg_probability_diff)
+        #     np.save(f'{data_save_dir}/abs_{explanation_name}_std_probability_diff.npy', std_probability_diff)
+        #     np.save(f'{data_save_dir}/abs_{explanation_name}_k_count.npy', k_count)
+        #     np.save(f'{data_save_dir}/abs_{explanation_name}_avg_k_count.npy', avg_k_count)
+        # else:
+        #     probability_diff = np.load(f'{data_save_dir}/abs_{explanation_name}_probability_diff.npy')
+        #     avg_probability_diff = np.load(f'{data_save_dir}/abs_{explanation_name}_avg_probability_diff.npy')
+        #     std_probability_diff = np.load(f'{data_save_dir}/abs_{explanation_name}_std_probability_diff.npy')
+        #     k_count = np.load(f'{data_save_dir}/abs_{explanation_name}_k_count.npy')
+        #     avg_k_count = np.load(f'{data_save_dir}/abs_{explanation_name}_avg_k_count.npy')
+        
+        # plt.figure()
+        
+        # plt.subplot(2,2,1)
+        # plt.plot(thresholds,avg_probability_diff)
+        # plt.xlabel('Thresholds')
+        # plt.ylabel('AVG(y_orig - y_new)')
+        
+        # plt.subplot(2,2,2)
+        # plt.plot(avg_k_count,avg_probability_diff)
+        # plt.xlabel('Average k')
+        # plt.ylabel('AVG(y_orig - y_new)')
+
+        # plt.subplot(2,2,3)
+        # plt.plot(thresholds,std_probability_diff)
+        # plt.xlabel('Thresholds')
+        # plt.ylabel('STD(y_orig - y_new)')
+        
+        # plt.subplot(2,2,4)
+        # plt.plot(avg_k_count,std_probability_diff)
+        # plt.xlabel('Average k')
+        # plt.ylabel('STD(y_orig - y_new)')
+        
+        # plt.subplots_adjust(wspace=0.5, hspace=0.5)
+        # plt.show()
+        # plt.savefig(f'{figures_save_dir}/abs_{explanation_name}.png')
 
 
 def completeness2(model_name, dataset_name):
@@ -1297,7 +1339,7 @@ def completeness2(model_name, dataset_name):
 
 
 def confidence(model_name, dataset_name):
-    print('Not implemented yet.')
+    print('Running confidence evaluation...')
     # Alternative 1 (High priority): Boxplots for GraphSVX and LIME showing distribution of r2 values
     _, _, r2_SVX = load_evaluation_data_SVX(model_name, dataset_name)
     _, r2_LIME = load_evaluation_data_LIME(model_name, dataset_name)
@@ -1312,14 +1354,20 @@ def confidence(model_name, dataset_name):
     plt.ylabel('r2 values')
     plt.title('Comparison of r2 values between SVX and LIME')
     plt.show()
-    plt.savefig('confidence_test.png')
+    
+    evaluation_type = 'confidence'
+    save_dir = f'{WD_PATH}/evaluation_figures/{model_name}/{dataset_name}/{evaluation_type}'
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+    
+    plt.savefig(f'{save_dir}/r2_values.png')
     
     # Alternative 2 (Medium priority): Scatter plot with x = r2 values, y = feature agreement between GraphSVX/LIME and Groundtruth. Is there a correlation?
     # Alternative 3 (Low priority): Repeat the evaluation of each exapliner several times and look at the standard deviation of the feature importances, or calculate confidence bound and use width to quantify confidence
     
 
 def coherence(model_name, dataset_name):
-    print('Running coherence evalution.')
+    print('Running coherence evalution...')
     print('OBS KONTROLLERA ATT VI KÖR MED ALLA SAMPLES I feature_importance_list.')
     
     feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
@@ -1329,32 +1377,13 @@ def coherence(model_name, dataset_name):
     feature_importance_list = [feature_importance_SVX[:11], feature_importance_LIME[:11], feature_importance_SHAP[:11]]
     
     agreement_type = 'feature'
+    evaluation_type = 'coherence'
     explainer_names = ['SVX', 'LIME', 'SHAP']
     
     for agreement_type in ['feature', 'rank', 'sign', 'signed_rank']:
         feature_agreement_list = get_agreement(feature_importance_list, agreement_type)
-        create_and_save_coherence_plots(feature_agreement_list, explainer_names, agreement_type)
+        create_and_save_agreement_plots(feature_agreement_list, explainer_names, model_name, dataset_name, agreement_type, evaluation_type)
 
-
-def main():
-    print('Running main.')
-    
-    model_name = 'GAT'
-    dataset_name = '100K_accts_EASY25'
-    
-    # Calculate feature importance and save data to the folder 'evaluation_data'
-    #calculate_feature_importance_LIME(model_name, dataset_name)
-    #calculate_feature_importance_SHAP(model_name, dataset_name)
-    #calculate_feature_importance_SVX(model_name, dataset_name)
-    
-    # Run the different Co12 evaluation methods
-    #correctness(model_name, dataset_name)
-    completeness(model_name, dataset_name)
-    #confidence(model_name, dataset_name)
-    #coherence(model_name, dataset_name)
-    #get_feature_importance_groundtruth('hello')
-
-    #completeness2(model_name, dataset_name)
 
 def test():
     model_name = 'GAT'
@@ -1470,329 +1499,49 @@ def test():
 
 
 def test2():
-    a = np.arange(1, -1.1, -0.1)
-    b = np.arange(-1, 1.1, 0.1)
-    print(a)
-    print(b)
+    a = np.random.permutation(np.arange(-1,1.5,0.5)).reshape((1,-1))
+    a = np.repeat(a, 3, axis=0)
+    print('a: ', a)
+    k = a.shape[1]
+    print('k: ',k)
+    ind_topk = np.argpartition(a, range(-k, 0), axis=1)[:, :-(k+1):-1]
+    print('ind_topk: ', ind_topk)
 
+
+def test3():
+    thresholds = np.arange(1, -1.001, -0.001)
+    #thresholds[1000] = 0
+    thresholds = np.round(thresholds, 3)
+    print(thresholds[998:1002])
+    thresholds = np.arange(-1, 1.001, 0.001)
+    #thresholds[1000] = 0
+    thresholds = np.round(thresholds, 3)
+    print(thresholds[998:1002])
+
+
+def main():
+    print('Running main.')
+    
+    model_name = 'GAT'
+    dataset_name = '100K_accts_EASY25'
+    
+    # Calculate feature importance and save data to the folder 'evaluation_data'
+    #calculate_feature_importance_LIME(model_name, dataset_name)
+    #calculate_feature_importance_SHAP(model_name, dataset_name)
+    #calculate_feature_importance_SVX(model_name, dataset_name)
+    
+    # Run the different Co12 evaluation methods
+    #correctness(model_name, dataset_name)
+    completeness(model_name, dataset_name)
+    #confidence(model_name, dataset_name)
+    #coherence(model_name, dataset_name)
+    #get_feature_importance_groundtruth('hello')
+
+    #completeness2(model_name, dataset_name)
 
 if __name__ == "__main__":
     #test()
     #test2()
+    #test3()
     main()
-
-
-
-
-
-# ----------------------------------- gammalt, ta bort sen ------------------
-    # thresholds = np.arange(0, 0.4, 0.0005)
-    # print('thresholds: ', thresholds)
-    # n_thresholds = len(thresholds)
-    # sar_class_probability_diff = np.zeros((n_sar_indices, n_thresholds))
-    # k_count = np.zeros((n_sar_indices, n_thresholds))
     
-    # for i, sar_index in enumerate(sar_indices[:100]):        
-    #     if model_name == 'GAT':
-    #         subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
-    #         org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
-    #         testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
-    #     else:
-    #         raise ValueError('Model not implemented.')
-        
-    #     sar_class_probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-        
-    #     for gamma, thresh in enumerate(thresholds):
-    #         pos_importance_index = np.where(feature_importance_LIME[0][i,:] >= 0)[0]
-    #         feature_index_to_remove = np.where(feature_importance_LIME[0][i,pos_importance_index] < thresh)[0]
-    #         node_index_to_remove = np.where(node_importance_LIME[i] < thresh)[0] if len(node_importance_LIME) > 0 else np.array([])
-    #         for feature_index in feature_index_to_remove:
-    #             testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
-    #         for node_index in node_index_to_remove:
-    #             testdata_expl = remove_node(testdata_expl, sar_index, node_index)
-    #         sar_class_probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-    #         sar_class_probability_diff[i,gamma] = sar_class_probability_orig - sar_class_probability_new
-    #         k_count[i,gamma] = len(feature_index_to_remove)
-    #     print('Done calculating for sar index ', i)
-    
-    # print(sar_class_probability_diff[:100,:])
-    
-    # avg_sar_class_probability_diff = np.mean(sar_class_probability_diff[:100], axis=0)
-    # std_sar_class_probability_diff = np.std(sar_class_probability_diff[:100], axis=0)
-    # avg_k_count = np.mean(k_count[:100], axis=0)
-    
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_pos_avg_diff.npy', avg_sar_class_probability_diff)
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_pos_std_diff.npy', std_sar_class_probability_diff)
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_pos_k_counts.npy', k_count)
-    
-    # #Load the saved arrays
-    # avg_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_pos_avg_diff.npy')
-    # std_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_pos_std_diff.npy')
-    # k_count = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_pos_k_counts.npy')
-    # avg_k_count = np.mean(k_count[:100], axis=0)
-
-    # #print(std_sar_class_probability_diff[:100])
-
-    # plt.figure()
-    # plt.plot(avg_k_count,avg_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('avg_prob_diff')
-    # plt.savefig('SHAP_pos_avg_diff.png')
-
-    # plt.figure()
-    # plt.plot(avg_k_count,std_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('std_prob_diff')
-    # plt.savefig('SHAP_pos_std_diff.png')
-
-    # plt.figure()
-    # plt.plot(thresholds,avg_k_count)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('avg_k')
-    # plt.savefig('SHAP_pos_k_count.png')
-    
-    
-    # thresholds = np.arange(0, 0.4, 0.0005)
-    # print('thresholds: ', thresholds)
-    # n_thresholds = len(thresholds)
-    # sar_class_probability_diff = np.zeros((n_sar_indices, n_thresholds))
-    # k_count = np.zeros((n_sar_indices, n_thresholds))
-    
-    # for i, sar_index in enumerate(sar_indices[:100]):        
-    #     if model_name == 'GAT':
-    #         subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
-    #         org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
-    #         testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
-    #     else:
-    #         raise ValueError('Model not implemented.')
-        
-    #     sar_class_probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-        
-    #     for gamma, thresh in enumerate(thresholds):
-    #         neg_importance_index = np.where(feature_importance_LIME[0][i,:] <= 0)[0]
-    #         feature_index_to_remove = np.where(feature_importance_LIME[0][i,neg_importance_index] > -thresh)[0]
-    #         node_index_to_remove = np.where(node_importance_LIME[i] < thresh)[0] if len(node_importance_LIME) > 0 else np.array([])
-    #         for feature_index in feature_index_to_remove:
-    #             testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
-    #         for node_index in node_index_to_remove:
-    #             testdata_expl = remove_node(testdata_expl, sar_index, node_index)
-    #         sar_class_probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-    #         sar_class_probability_diff[i,gamma] = sar_class_probability_orig - sar_class_probability_new
-    #         k_count[i,gamma] = len(feature_index_to_remove)
-    #     print('Done calculating for sar index ', i)
-    
-    # print(sar_class_probability_diff[:100,:])
-    
-    # avg_sar_class_probability_diff = np.mean(sar_class_probability_diff[:100], axis=0)
-    # std_sar_class_probability_diff = np.std(sar_class_probability_diff[:100], axis=0)
-    # avg_k_count = np.mean(k_count[:100], axis=0)
-    
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_neg_avg_diff.npy', avg_sar_class_probability_diff)
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_neg_std_diff.npy', std_sar_class_probability_diff)
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_neg_k_counts.npy', k_count)
-    
-    # #Load the saved arrays
-    # avg_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_neg_avg_diff.npy')
-    # std_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_neg_std_diff.npy')
-    # k_count = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_neg_k_counts.npy')
-    # avg_k_count = np.mean(k_count[:100], axis=0)
-
-    # #print(std_sar_class_probability_diff[:100])
-
-    # plt.figure()
-    # plt.plot(avg_k_count,avg_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('avg_prob_diff')
-    # plt.savefig('SHAP_neg_avg_diff.png')
-
-    # plt.figure()
-    # plt.plot(avg_k_count,std_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('std_prob_diff')
-    # plt.savefig('SHAP_neg_std_diff.png')
-
-    # plt.figure()
-    # plt.plot(thresholds,avg_k_count)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('avg_k')
-    # plt.savefig('SHAP_neg_k_count.png')
-    
-    # ------------------ FOR TESTING 1 SAMPLE AT A TIME ---------------------
-    # for i in range(100):
-    #     plt.figure()
-    #     plt.plot(k_count[i],sar_class_probability_diff[i])
-    #     plt.xlabel('k')
-    #     plt.ylabel('SAR class probability diff')
-    #     str = f'/home/tomas/desktop/flib/thesis_XAML/compl_onesample_test/noabs_sample_{i}.png'
-    #     plt.savefig(str)
-    # -----------------------------------------------------------------------
-
-    # plt.figure()
-    # plt.plot(thresholds,avg_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('noabs_avg_diff')
-    # plt.savefig('SHAP_noabs_avg_diff.png')
-
-    # plt.figure()
-    # plt.plot(thresholds,std_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('noabs_std_diff')
-    # plt.savefig('SHAP_noabs_std_diff.png')
-
-    # plt.figure()
-    # plt.plot(thresholds,avg_k_count)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('noabs_avg_k')
-    # plt.savefig('SHAP_noabs_avg_k_count.png')
-
-    # #print(std_sar_class_probability_diff[:100])
-
-    # thresholds = np.arange(0, 0.4, 0.0005)
-    # print('thresholds: ', thresholds)
-    # n_thresholds = len(thresholds)
-    # sar_class_probability_diff = np.zeros((n_sar_indices, n_thresholds))
-    # k_count = np.zeros((n_sar_indices, n_thresholds))
-    
-    # for i, sar_index in enumerate(sar_indices[:100]):        
-    #     if model_name == 'GAT':
-    #         subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
-    #         org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
-    #         testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
-    #     else:
-    #         raise ValueError('Model not implemented.')
-        
-    #     sar_class_probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-        
-    #     for gamma, thresh in enumerate(thresholds):
-    #         feature_index_to_remove = np.where(abs(feature_importance_LIME[0][i,:]) < thresh)[0]
-    #         node_index_to_remove = np.where(node_importance_LIME[i] < thresh)[0] if len(node_importance_LIME) > 0 else np.array([])
-    #         for feature_index in feature_index_to_remove:
-    #             testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
-    #         for node_index in node_index_to_remove:
-    #             testdata_expl = remove_node(testdata_expl, sar_index, node_index)
-    #         sar_class_probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-    #         sar_class_probability_diff[i,gamma] = sar_class_probability_orig - sar_class_probability_new
-    #         k_count[i,gamma] = len(feature_index_to_remove)
-    #     print('Done calculating for sar index ', i)
-    
-    #print(sar_class_probability_diff[:100,:])
-    
-    # avg_sar_class_probability_diff = np.mean(sar_class_probability_diff[:100], axis=0)
-    # std_sar_class_probability_diff = np.std(sar_class_probability_diff[:100], axis=0)
-    # avg_k_count = np.mean(k_count[:100], axis=0)
-    
-    #np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_sar_class_probability_diff', sar_class_probability_diff)
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_avg_sar_class_probability_diff.npy', avg_sar_class_probability_diff)
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_std_sar_class_probability_diff.npy', std_sar_class_probability_diff)
-    # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_k_counts.npy', k_count)
-
-    # #Load the saved arrays
-    # avg_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_avg_sar_class_probability_diff.npy')
-    # std_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_std_sar_class_probability_diff.npy')
-    # k_count = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_k_counts.npy')
-    # avg_k_count = np.mean(k_count[:100], axis=0)
-
-    # # ------------------ FOR TESTING 1 SAMPLE AT A TIME ---------------------
-    # for i in range(100):
-    #     plt.figure()
-    #     plt.plot(k_count[i],sar_class_probability_diff[i])
-    #     plt.xlabel('k')
-    #     plt.ylabel('SAR class probability diff')
-    #     str = f'/home/tomas/desktop/flib/thesis_XAML/compl_onesample_test/abs_sample_{i}.png'
-    #     plt.savefig(str)
-    # # -----------------------------------------------------------------------
-
-    # plt.figure()
-    # plt.plot(thresholds,avg_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('avg_prob_diff')
-    # plt.savefig('SHAP_thresh_abs_avg_prob_diff.png')
-
-    # plt.figure()
-    # plt.plot(thresholds,std_sar_class_probability_diff)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('std_prob_diff')
-    # plt.savefig('SHAP_thresh_abs_std_prob_diff.png')
-
-    # plt.figure()
-    # plt.plot(thresholds,avg_k_count)
-    # plt.xlabel('thresholds')
-    # plt.ylabel('avg_k')
-    # plt.savefig('SHAP_thresh_abs_avg_k_count.png')
-    
-    
-    # thresholds = np.arange(0, 0.4, 0.0005)
-    # #print('thresholds: ', thresholds)
-    # n_thresholds = len(thresholds)
-    # sar_class_probability_diff = np.zeros((n_sar_indices, 31))
-    # k_count = np.zeros((n_sar_indices, n_thresholds))
-    
-    # for i, sar_index in enumerate(sar_indices[:100]):        
-    #     if model_name == 'GAT':
-    #         subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(sar_index.item(), 3, testdata.edge_index, relabel_nodes=False)
-    #         org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
-    #         testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
-    #     else:
-    #         raise ValueError('Model not implemented.')
-        
-    #     sar_class_probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-        
-    #     ind_botall = np.argsort(feature_importance_LIME[0][i,:])
-    #     #print(f'feature importance from small to large: ', abs(feature_importance_LIME[0][i,ind_botall]))
-    #     for k in range(31):
-    #         feature_index_to_remove = ind_botall[k]
-    #         testdata_expl = remove_feature(testdata_expl, feature_index_to_remove, mean_feature_values)
-            
-    #         sar_class_probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
-    #         sar_class_probability_diff[i,k] = sar_class_probability_orig - sar_class_probability_new
-    #     print('Done calculating for sar index ', i)
-    
-    # print(sar_class_probability_diff[:100,:])
-    
-    # avg_sar_class_probability_diff = np.mean(sar_class_probability_diff[:100], axis=0)
-    # std_sar_class_probability_diff = np.std(sar_class_probability_diff[:100], axis=0)
-    
-    # #np.save('abs_kwise_diff.npy', sar_class_probability_diff)
-    
-    # # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_n', sar_class_probability_diff)
-    # # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_avg_sar_class_probability_diff.npy', avg_sar_class_probability_diff)
-    # # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_std_sar_class_probability_diff.npy', std_sar_class_probability_diff)
-    # # np.save('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_k_counts.npy', k_count)
-
-    # # #Load the saved arrays
-    # # avg_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_avg_sar_class_probability_diff.npy')
-    # # std_sar_class_probability_diff = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_std_sar_class_probability_diff.npy')
-    # # k_count = np.load('/home/tomas/desktop/flib/thesis_XAML/completeness_figs/SHAP_abs_k_counts.npy')
-    # # avg_k_count = np.mean(k_count[:100], axis=0)
-
-    # plt.figure()
-    # plt.plot(range(31),avg_sar_class_probability_diff)
-    # plt.title('AVG diff')
-    # plt.savefig('/home/tomas/desktop/flib/thesis_XAML/compl_onesample_test/abs_kwise_avg.png')
-    # plt.close()
-    # plt.figure()
-    # plt.plot(range(31),std_sar_class_probability_diff)
-    # plt.title('STD diff')
-    # plt.savefig('/home/tomas/desktop/flib/thesis_XAML/compl_onesample_test/abs_kwise_std.png')
-    # plt.close()
-
-    # # ------------------ FOR TESTING 1 SAMPLE AT A TIME ---------------------
-    # for i in range(100):
-    #     plt.figure()
-    #     plt.plot(range(31),sar_class_probability_diff[i])
-    #     plt.xlabel('k')
-    #     plt.ylabel('SAR class probability diff')
-    #     str = f'/home/tomas/desktop/flib/thesis_XAML/compl_onesample_test/abs_kwise_sample_{i}.png'
-    #     plt.savefig(str)
-    #     plt.close()
-    # -----------------------------------------------------------------------
-    
-    
-            # Skapa kopia av subgrafen kring noden
-        # Om 'model_name' == GraphSAGE
-            # Raise error 'inte implementerad, måste kolla om sage fungerar med LIME och SHAP också'
-        # Beräkna sar_class_probability[sar_index,0] utan att ta bort några features
-        # För k, varje feature_index i enumerate('ind_botall')
-            # Skriv över testdata.x[sar_index, feature_index] med mean_feature_values[index]
-            # Beräkna sar_class_probability[sar_indexd,k+1]
-            # Beräkna gamma[sar_index, k+1] = feature_importance[sar_index, feature_index]
