@@ -494,7 +494,7 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         self.return_type = 'logits'
         self.testdata = []
         self.node_to_explain = []
-        
+        self.masking_mode = 'only_node_to_explain'
     
     def set_return_attention_weights(self, return_attention_weights):
         if return_attention_weights == True or return_attention_weights == False:
@@ -572,6 +572,12 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
     def set_node_to_explain(self, node_to_explain):
         self.node_to_explain = node_to_explain
     
+    def set_masking_mode(self, masking_mode):
+        if masking_mode == 'only_node_to_explain' or masking_mode == 'all_nodes':
+            self.masking_mode = masking_mode
+        else:
+            raise ValueError('masking_mode must be either "only_node_to_explain" or "all_nodes"')
+    
     def forward_NFVinput(self, node_feature_vec):
         print('Starting forward_NFVinput...')
         
@@ -615,12 +621,22 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
             data_list = []
             
             print(f'Loading data iter {k+1}/{len(all_idx_start)}')
-            for i in range(idx_start,idx_stop):
-                new_graph = copy.deepcopy(self.testdata)
-                new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
-                data_list.append(new_graph)
-            #print(f'number of graphs = {len(data_list)}')
-            
+            if self.masking_mode == 'only_node_to_explain':
+                for i in range(idx_start,idx_stop):
+                    new_graph = copy.deepcopy(self.testdata)
+                    new_graph.x[self.node_to_explain,:] = node_feature_vec[i,:]
+                    data_list.append(new_graph)
+            elif self.masking_mode == 'all_nodes':
+                for i in range(idx_start,idx_stop):
+                    new_graph = copy.deepcopy(self.testdata)
+                    
+                    original_NFV = new_graph.x[self.node_to_explain,:].detach().to('cpu')
+                    feature_idx_changed = np.where(node_feature_vec[i,:] != original_NFV)[0]
+                    new_graph.x[:,feature_idx_changed] = node_feature_vec[i,feature_idx_changed].to('cuda:0')
+                    data_list.append(new_graph)
+
+                    
+                
             #print('Loading data into a single batch...')
             #dataset = CustomDataset(data_list)
             batch = torch_geometric.data.Batch.from_data_list(data_list)
@@ -637,6 +653,7 @@ class GAT_GraphSVX_foroptuna(torch.nn.Module):
         print('Finished.')
 
         return out
+
     
     # def forward_NFVinput(self, node_feature_vec):
     #     print('Starting forward_NFVinput...')

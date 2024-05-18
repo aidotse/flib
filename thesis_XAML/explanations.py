@@ -25,14 +25,25 @@ def LIME_explanation(node_to_explain, num_features, class_prob_fn, testdata, fea
 def SHAP_explanation(node_to_explain, class_prob_fn, backgrounddata, explaindata, feature_names, K):
     # Wrap the forward function of the model
     # Note: Make sure that class_prob_fn returns class probabilites for both classes
-    is_sar_class_prob_fn = lambda x: class_prob_fn( Variable( torch.from_numpy(x) ) ).detach().numpy()[:,1].reshape(-1,1)
+    is_sar_class_prob_fn = lambda x: class_prob_fn( Variable( torch.from_numpy(x) ) ).detach().numpy()[:,1].reshape(-1,1) # <--- OBS så var det först, kommenterade bort den 10e maj för att se om det påverkar average prediction
 
     # --- Insert extraction of subgraph here for reducing the runtime by 50% ---
 
     # ...fattar inte riktigt vad NFV ska ha för shape egentligen, men det här verkar funka iaf.
     NFV_to_explain = explaindata.x[node_to_explain].to('cpu').numpy().squeeze() 
     #print(NFV_to_explain)
-    explainer = shap.KernelExplainer(is_sar_class_prob_fn, shap.sample(backgrounddata.x.to('cpu').numpy(), K))
+    
+    # Option 1
+    # explainer = shap.KernelExplainer(is_sar_class_prob_fn, shap.sample(backgrounddata.x.to('cpu').numpy(), K)) # <--- OBS detta funkar, kommenterade bort den 10e maj för att se om det påverkar average prediction som borde ligga kring 0.25
+    
+    # Option 2
+    mean_feature_values = backgrounddata.x.to('cpu').numpy().mean(axis=0).reshape((-1,len(feature_names)))
+    explainer = shap.KernelExplainer(is_sar_class_prob_fn, mean_feature_values)
+    print('average prediction: ', is_sar_class_prob_fn(mean_feature_values))
+    
+    # Option3
+    #explainer = shap.KernelExplainer(is_sar_class_prob_fn, shap.kmeans(backgrounddata.x.to('cpu').numpy(), K))
+    
     shap_values = explainer.shap_values(NFV_to_explain)
     exp_SHAP = shap.Explanation(shap_values[0], explainer.expected_value, data = NFV_to_explain, feature_names = feature_names)
     

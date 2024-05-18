@@ -61,6 +61,7 @@ class GraphSVX():
                 args_g='WLS',
                 regu=None,
                 vizu=False,
+                return_r2 = False,
                 seed=0):
         """ Explain prediction for a given node - GraphSVX method
 
@@ -174,7 +175,7 @@ class GraphSVX():
 
             # --- EXPLANATION GENERATOR --- 
             # Train Surrogate Weighted Linear Regression - learns shapley values
-            phi, base_value = eval('self.' + args_g)(z_,
+            phi, base_value, r2_to_return = eval('self.' + args_g)(z_,
                                                     weights, fz, multiclass, info)
 
             # Rescale
@@ -203,7 +204,10 @@ class GraphSVX():
             phi_list.append(phi)
             self.base_values.append(base_value)
 
-        return phi_list
+        if return_r2:
+            return phi_list, r2_to_return
+        else:
+            return phi_list
 
     def explain_graphs(self,
                        graph_indices=[0],
@@ -1358,11 +1362,12 @@ class GraphSVX():
 
         # Test accuracy
         y_pred = z_.detach().numpy() @ phi
+        r2_to_return = r2_score(fz, y_pred)
         if info:
             print('r2: ', r2_score(fz, y_pred))
             print('weighted r2: ', r2_score(fz, y_pred, sample_weight = weights))
 
-        return phi[:-1], phi[-1]
+        return phi[:-1], phi[-1], r2_to_return
 
     def WLR_sklearn(self, z_, weights, fz, multiclass, info):
         """Train a weighted linear regression
