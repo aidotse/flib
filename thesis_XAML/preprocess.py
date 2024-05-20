@@ -194,16 +194,16 @@ def main():
     
     t = time.time()
     
-    DATASET = '100K_accts_MID5'
+    DATASET = '100K_accts_EASY25'
     #path = f'../AMLsim/outputs/{DATASET}/tx_log.csv'
     #df = load_data(path)
     print('Loading data...')
-    df = load_data('/home/tomas/desktop/flib/AMLsim/outputs/100K_accts_MID5/tx_log.csv')
+    df = load_data(f'/home/tomas/desktop/flib/AMLsim/outputs/{DATASET}/tx_log.csv')
     print('Data loaded.')
     #banks = set(df['bankOrig'].unique().tolist() + df['bankDest'].unique().tolist())
     banks=['bank']
     #banks = ['handelsbanken', 'swedbank']
-    overlap = 0.5 # overlap of training and testing data
+    overlap = 0.9 # overlap of training and testing data
     print('start')
     for bank in banks:
         print('For bank', bank)
@@ -223,7 +223,9 @@ def main():
         df_nodes_test = get_nodes(df_bank_test, bank)
         df_edges_test = get_edges(df_bank_test[(df_bank_test['bankOrig'] == bank) & (df_bank_test['bankDest'] == bank)], aggregated=True, directional=False)
         
+        print(df_nodes_train.head())
         df_nodes_train.reset_index(inplace=True)
+        print(df_nodes_train.head())
         node_to_index = pd.Series(df_nodes_train.index, index=df_nodes_train['account']).to_dict()
         df_edges_train['src'] = df_edges_train['src'].map(node_to_index) # OBS: in the csv files it looks like the edge src refers to the node two rows above the acculat node, this is due to the column head and that it starts counting at 0
         df_edges_train['dst'] = df_edges_train['dst'].map(node_to_index)
@@ -235,13 +237,13 @@ def main():
         df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
         #df_nodes_test.drop(columns=['account'], inplace=True)
 
-        os.makedirs(f'data/{DATASET}/{bank}/train', exist_ok=True)
-        os.makedirs(f'data/{DATASET}/{bank}/test', exist_ok=True)
+        os.makedirs(f'/home/tomas/desktop/flib/thesis_XAML/data/{DATASET}/{bank}/train', exist_ok=True)
+        os.makedirs(f'/home/tomas/desktop/flib/thesis_XAML/data/{DATASET}/{bank}/test', exist_ok=True)
         
-        df_nodes_train.to_csv(f'data/{DATASET}/{bank}/train/nodes.csv', index=False)
-        df_edges_train.to_csv(f'data/{DATASET}/{bank}/train/edges.csv', index=False)
-        df_nodes_test.to_csv(f'data/{DATASET}/{bank}/test/nodes.csv', index=False)
-        df_edges_test.to_csv(f'data/{DATASET}/{bank}/test/edges.csv', index=False)
+        df_nodes_train.to_csv(f'/home/tomas/desktop/flib/thesis_XAML/data/{DATASET}/{bank}/train/nodes.csv', index=False)
+        df_edges_train.to_csv(f'/home/tomas/desktop/flib/thesis_XAML/data/{DATASET}/{bank}/train/edges.csv', index=False)
+        df_nodes_test.to_csv(f'/home/tomas/desktop/flib/thesis_XAML/data/{DATASET}/{bank}/test/nodes.csv', index=False)
+        df_edges_test.to_csv(f'/home/tomas/desktop/flib/thesis_XAML/data/{DATASET}/{bank}/test/edges.csv', index=False)
     
     t = time.time() - t
     print(f'Preprocessing finished in {t:.4f} seconds.')
