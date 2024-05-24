@@ -37,6 +37,8 @@ def SHAP_explanation(node_to_explain, class_prob_fn, backgrounddata, explaindata
     # explainer = shap.KernelExplainer(is_sar_class_prob_fn, shap.sample(backgrounddata.x.to('cpu').numpy(), K)) # <--- OBS detta funkar, kommenterade bort den 10e maj för att se om det påverkar average prediction som borde ligga kring 0.25
     
     # Option 2
+    print('backgrounddata.x.shape[1]: ', backgrounddata.x.shape[1])
+    print('len(feature_names): ', len(feature_names))
     mean_feature_values = backgrounddata.x.to('cpu').numpy().mean(axis=0).reshape((-1,len(feature_names)))
     explainer = shap.KernelExplainer(is_sar_class_prob_fn, mean_feature_values)
     print('average prediction: ', is_sar_class_prob_fn(mean_feature_values))

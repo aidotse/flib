@@ -70,7 +70,7 @@ def load_model(model_name, dataset_name):
     hyperparameters = checkpoint['hyperparameters']
     traindata = checkpoint['traindata']
     testdata = checkpoint['testdata']
-    feature_names = ['sum', 'mean', 'median', 'std', 'max', 'min', 'in_sum', 'out_sum', 'in_mean', 'out_mean', 'in_median', 'out_median', 'in_std', 'out_std', 'in_max', 'out_max', 'in_min', 'out_min', 'count_in', 'count_out', 'n_unique_in', 'n_unique_out', 'count_days_in_bank', 'count_phone_changes', 'sum_spending', 'mean_spending', 'median_spending', 'std_spending', 'max_spending', 'min_spending', 'count_spending']
+    feature_names = ['sums', 'means', 'medians', 'stds', 'maxs', 'mins', 'in_sum', 'out_sum', 'in_mean', 'out_mean', 'in_median', 'out_median', 'in_std', 'out_std', 'in_max', 'out_max', 'in_min', 'out_min', 'count_in', 'count_out', 'count_days_in_bank', 'count_phone_changes', 'sums_spending', 'means_spending', 'medians_spending', 'stds_spending', 'maxs_spending', 'mins_spending', 'counts_spending']
     target_names = checkpoint['target_names']
 
     # Initialize model
@@ -86,7 +86,10 @@ def load_model(model_name, dataset_name):
         hidden_channels = hyperparameters['hidden_channels']
         out_channels = 2
         dropout = hyperparameters['dropout']
-        model = modules.GraphSAGE_GraphSVX_foroptuna(in_channels = in_channels, hidden_channels=hidden_channels, out_channels=out_channels, dropout=dropout)
+        seed = hyperparameters['seed']
+        torch.manual_seed(seed)
+        print('seed: ', seed)
+        model = modules.GraphSAGE_GraphSVX_foroptuna(in_channels = in_channels, hidden_channels=hidden_channels, out_channels=out_channels, dropout=dropout, seed = seed)
     else:
         raise ValueError("model_name must be either 'GraphSAGE' or 'GAT'")
     
@@ -119,7 +122,7 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
     sar_indices = get_sar_indices(model, testdata)
     n_sar_indices = len(sar_indices)
     
-    # Run explainer over all SAR indices
+    # Run explainer over all SAR indices or a random subset of them        
     model.eval()
     model.set_return_type('log_probas')    
     
@@ -128,6 +131,9 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
     node_importance_GraphSVX = list(range(n_sar_indices))
     r2_GraphSVX = np.zeros((n_sar_indices,1))
     feature_name_to_index_dict = {feature_name : i for i, feature_name in enumerate(feature_names)}
+    
+    n_hops = 1
+    print('n_hops used in explanation: ', n_hops)
     
     time_start = time.time()
     for i in range(n_sar_indices):
@@ -146,7 +152,7 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
         # ------------------------------------------------------------------
 
         time_start_SVX = time.time()
-        subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(node_to_explain, 3, testdata.edge_index, relabel_nodes=False)
+        subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(node_to_explain, n_hops, testdata.edge_index, relabel_nodes=False)
         org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
         testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
 
@@ -166,7 +172,7 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
         data.name = 'test'
 
         explainer = GraphSVX(data, model, True)
-        explanations, r2_SVX = explainer.explain(node_indexes=[0], num_samples=num_samples, hops = 3, vizu = False, return_r2 = True)
+        explanations, r2_SVX = explainer.explain(node_indexes=[org_to_new_mapping[node_to_explain]], num_samples=num_samples, hops = n_hops, vizu = False, return_r2 = True)
 
         F = explainer.F
         SV = explanations[0]
@@ -176,7 +182,7 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
         time_spent_SVX = time_stop_SVX - time_start_SVX
         
         # Save feature importance every 100th iteration
-        feat_idx, _ = explainer.feature_selection(0, "Expectation") # Using 0 here since 0 is node_to_explain in the subgraph
+        feat_idx, _ = explainer.feature_selection(org_to_new_mapping[node_to_explain], "Expectation") # Using 0 here since 0 is node_to_explain in the subgraph
 
         feature_names_in_explanation = [feature_names[i] for i in feat_idx]
         
@@ -210,6 +216,8 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
     
     # Load model
     model, _, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    print(len(feature_names))
+    print(testdata.x.shape)
     
     # Calculate SAR indices
     sar_indices = get_sar_indices(model, testdata)
@@ -218,11 +226,15 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
     # Run explainer over all SAR indices
     model.eval()
     model.set_return_type('logits')
+    model.set_masking_mode('all_nodes')
     
     # Placeholders for feature importance
     feature_importance_LIME = np.zeros((n_sar_indices, len(feature_names)))
     r2_LIME = np.zeros((n_sar_indices,1))
     feature_name_to_index_dict = {feature_name : i for i, feature_name in enumerate(feature_names)}
+    
+    n_hops = 1
+    print('n_hops used in explanation: ', n_hops)
     
     time_start = time.time()
     for i in range(n_sar_indices):
@@ -241,8 +253,8 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
         # ------------------------------------------------------------------
 
         time_start_LIME = time.time()
-        subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(node_to_explain, 3, testdata.edge_index, relabel_nodes=False)
-        _, _, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
+        subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(node_to_explain, n_hops, testdata.edge_index, relabel_nodes=False)
+        org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
         testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -251,12 +263,12 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
 
         # --- LIME ---
         print('Running LIME')
-        num_features = 31
+        num_features = 29
         class_prob_fn = model.forward_NFVinput
 
         # Prepare the model for handling the LIME explainer
         model.set_test_data(testdata_expl)
-        model.set_node_to_explain(0)
+        model.set_node_to_explain(org_to_new_mapping[node_to_explain])
 
         exp_LIME = LIME_explanation(node_to_explain = node_to_explain,
                                             num_features = num_features,
@@ -291,6 +303,8 @@ def calculate_feature_importance_SHAP(model_name, dataset_name):
     
     # Load model
     model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    print('traindata: ', traindata.x.shape[1])
+    print('testdata :', testdata.x.shape[1])
     
     # Calculate SAR indices
     sar_indices = get_sar_indices(model, testdata)
@@ -299,10 +313,14 @@ def calculate_feature_importance_SHAP(model_name, dataset_name):
     # Run explainer over all SAR indices
     model.eval()
     model.set_return_type('logits')
+    model.set_masking_mode('all_nodes')
     
     # Placeholders for feature importance
     feature_importance_SHAP = np.zeros((n_sar_indices, len(feature_names)))
     feature_name_to_index_dict = {feature_name : i for i, feature_name in enumerate(feature_names)}
+    
+    n_hops = 1
+    print('n_hops used in explanation: ', n_hops)
     
     time_start = time.time()
     for i in range(n_sar_indices):
@@ -321,8 +339,8 @@ def calculate_feature_importance_SHAP(model_name, dataset_name):
         # ------------------------------------------------------------------
 
         time_start_SHAP = time.time()
-        subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(node_to_explain, 3, testdata.edge_index, relabel_nodes=False)
-        _, _, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
+        subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(node_to_explain, n_hops, testdata.edge_index, relabel_nodes=False)
+        org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
         testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -335,7 +353,7 @@ def calculate_feature_importance_SHAP(model_name, dataset_name):
 
         # Prepare the model for handling the SHAP explainer
         model.set_test_data(testdata_expl)
-        model.set_node_to_explain(0)
+        model.set_node_to_explain(org_to_new_mapping[node_to_explain])
 
         time_start_SHAP = time.time()
         exp_SHAP = SHAP_explanation(node_to_explain = node_to_explain,
@@ -498,6 +516,7 @@ def get_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2
 def get_all_topk_pairwise_agreement(feature_importance_exp1, feature_importance_exp2, agreement_type, importance_order = 'abs'):
     # Returns a list with elements of the form [avg, std] for feature agreement for all k's
     n_features = feature_importance_exp1.shape[1]
+    print('n_features: ', n_features)
     
     # One data point for each k
     avg_std_agreement = np.zeros((n_features+1,2))
@@ -828,12 +847,16 @@ def correctness(model_name, dataset_name):
     feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
     feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
     
+    print('feature_importance_SVX.shape: ', feature_importance_SVX.shape)
+    print('feature_importance_LIME.shape: ', feature_importance_LIME.shape)
+    print('feature_importance_SHAP.shape: ', feature_importance_SHAP.shape)
+    
     # Använd det här för att ladda in feature_importance på riktigt
     #feature_importance_groundtruth = np.load(f'evaluation_data/feature_importance_groundtruth.npy')
     
     # OBS! Byt ut feature_importance_groundtruth till att ladda in rätt data.
     # feature_importance_groundtruth = LADDA IN DATA HÄR
-    feature_importance_groundtruth = np.arange(31).reshape(1,31)
+    feature_importance_groundtruth = np.arange(29).reshape(1,29)
     feature_importance_groundtruth = np.repeat(feature_importance_groundtruth, 11, axis=0)
     for i in range(11):
         feature_importance_groundtruth[i] = np.random.permutation(feature_importance_groundtruth[i])
@@ -866,8 +889,8 @@ def correctness(model_name, dataset_name):
     create_and_save_agreement_plots(feature_agreement_list_3, explainer_names_3, model_name, dataset_name, agreement_type, evaluation_type)
 
 
-def remove_feature(dataset, feature_index, mean_feature_values):
-    dataset.x[0, feature_index] = torch.tensor(mean_feature_values[feature_index])
+def remove_feature(dataset, sar_index, feature_index, mean_feature_values):
+    dataset.x[sar_index, feature_index] = torch.tensor(mean_feature_values[feature_index])
     return dataset
 
 
@@ -891,7 +914,7 @@ def completeness(model_name, dataset_name):
     model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
     mean_feature_values = traindata.x.mean(dim=0, keepdim=True).to('cpu').detach().numpy().squeeze()
 
-    rerun_and_save = 0
+    rerun_and_save = 1
     n_sar_indices_used = 11
     
     print('NOTE')
@@ -942,6 +965,15 @@ def completeness(model_name, dataset_name):
                 else:
                     raise ValueError('Model not implemented.')
                 
+                # print('org_to_new_mapping: ', org_to_new_mapping)
+                # print('subset_expl: ', subset_expl)
+                # print('testdata.x[sar_index.item()]: ', testdata.x[sar_index.item()])
+                # print('testdata_expl.x[0]: ', testdata_expl.x[0])
+                # print('testdata_expl.x[org_to_new_mapping[sar_index.item()]]', testdata_expl.x[org_to_new_mapping[sar_index.item()]])
+                # print('sar_index: ', sar_index)
+                # print('org_to_new_mapping[sar_index]: ', org_to_new_mapping[sar_index])
+                # Shows that the sar index in the new subgraph testdata_expl is org_to_new_mapping[sar_index]
+                
                 # Calculate the original class probability
                 probability_orig = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
                 
@@ -955,9 +987,9 @@ def completeness(model_name, dataset_name):
                     
                     # Remove the features/nodes by replacing with mean values/SAR node feature vector
                     for feature_index in feature_index_to_remove:
-                        testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
+                        testdata_expl = remove_feature(testdata_expl, org_to_new_mapping[sar_index], feature_index, mean_feature_values)
                     for node_index in node_index_to_remove:
-                        testdata_expl = remove_node(testdata_expl, sar_index, node_index)
+                        testdata_expl = remove_node(testdata_expl, org_to_new_mapping[sar_index], node_index)
                     
                     # Calculate the new class probability and the difference to the original class probability
                     probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
@@ -1050,9 +1082,9 @@ def completeness(model_name, dataset_name):
                     
                     # Remove the features/nodes by replacing with mean values/SAR node feature vector
                     for feature_index in feature_index_to_remove:
-                        testdata_expl = remove_feature(testdata_expl, feature_index, mean_feature_values)
+                        testdata_expl = remove_feature(testdata_expl, org_to_new_mapping[sar_index], feature_index, mean_feature_values)
                     for node_index in node_index_to_remove:
-                        testdata_expl = remove_node(testdata_expl, sar_index, node_index)
+                        testdata_expl = remove_node(testdata_expl, org_to_new_mapping[sar_index], node_index)
                     
                     # Calculate the new class probability and the difference to the original class probability
                     probability_new = model.forward(testdata_expl.x, testdata_expl.edge_index)[0][1].exp().to('cpu').detach().numpy()
@@ -1509,32 +1541,29 @@ def test2():
 
 
 def test3():
-    thresholds = np.arange(1, -1.001, -0.001)
-    #thresholds[1000] = 0
-    thresholds = np.round(thresholds, 3)
-    print(thresholds[998:1002])
-    thresholds = np.arange(-1, 1.001, 0.001)
-    #thresholds[1000] = 0
-    thresholds = np.round(thresholds, 3)
-    print(thresholds[998:1002])
+    a = np.arange(10)
+    print(a)
+    a = np.random.permutation(a)
+    print(a)
+    print(a[:3])
 
 
 def main():
     print('Running main.')
     
     model_name = 'GAT'
-    dataset_name = '100K_accts_EASY25'
+    dataset_name = '100K_accts_MID5'
     
     # Calculate feature importance and save data to the folder 'evaluation_data'
-    #calculate_feature_importance_LIME(model_name, dataset_name)
-    #calculate_feature_importance_SHAP(model_name, dataset_name)
-    #calculate_feature_importance_SVX(model_name, dataset_name)
+    calculate_feature_importance_LIME(model_name, dataset_name)
+    calculate_feature_importance_SHAP(model_name, dataset_name)
+    calculate_feature_importance_SVX(model_name, dataset_name)
     
     # Run the different Co12 evaluation methods
-    #correctness(model_name, dataset_name)
-    completeness(model_name, dataset_name)
-    #confidence(model_name, dataset_name)
-    #coherence(model_name, dataset_name)
+    # correctness(model_name, dataset_name)
+    # completeness(model_name, dataset_name)
+    # confidence(model_name, dataset_name)
+    # coherence(model_name, dataset_name)
     #get_feature_importance_groundtruth('hello')
 
     #completeness2(model_name, dataset_name)

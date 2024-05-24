@@ -20,6 +20,8 @@ class AmlsimDataset():
         nodes = nodes.drop(columns=['account','bank'])
         nodes = nodes.fillna(0)
         
+        #print(nodes.shape[1])
+        
         if node_features:
             x = torch.tensor(nodes[nodes.columns[:-1]].values, dtype=torch.float)
         else:
@@ -62,7 +64,7 @@ class AmlsimDatasetWithaccoount():
         edge_index = torch.tensor(edges[['src', 'dst']].values, dtype=torch.long)
         edge_index = edge_index.t().contiguous()
         
-       #nodes = nodes.drop(columns=['bank', 'account'])
+        #nodes = nodes.drop(columns=['bank', 'account'])
 
         nodes = nodes.fillna(0)
         
