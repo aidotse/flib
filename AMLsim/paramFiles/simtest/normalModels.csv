@@ -1,7 +1,0 @@
-count,type,schedule_id,min_accounts,max_accounts,min_period,max_period,bank_id
-200,single,2,1,1,1,100,
-200,fan_out,2,4,4,1,100,
-200,fan_in,2,4,4,1,100,
-200,forward,2,3,3,1,100,
-200,mutual,2,2,2,1,100,
-200,periodical,2,2,2,1,100,
