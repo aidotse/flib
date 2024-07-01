@@ -38,10 +38,10 @@ def train_loop_GAT(dataset_name, hyperparameters = None, verbose = False):
     print('Double check which dataset is being used.')
     
     # Data
-    node_file_train = f'ultra_final_data/{dataset_name}/bank/train/nodes.csv'
-    edge_file_train = f'ultra_final_data/{dataset_name}/bank/train/edges.csv'
-    node_file_test = f'ultra_final_data/{dataset_name}/bank/test/nodes.csv'
-    edge_file_test = f'ultra_final_data/{dataset_name}/bank/test/edges.csv'  
+    node_file_train = f'data/{dataset_name}/bank/train/nodes.csv'
+    edge_file_train = f'data/{dataset_name}/bank/train/edges.csv'
+    node_file_test = f'data/{dataset_name}/bank/test/nodes.csv'
+    edge_file_test = f'data/{dataset_name}/bank/test/edges.csv'  
     
     traindata = data.AmlsimDataset(node_file=node_file_train, edge_file=edge_file_train, node_features=True, node_labels=True).get_data()
     testdata = data.AmlsimDataset(node_file=node_file_test, edge_file=edge_file_test, node_features=True, node_labels=True).get_data()
@@ -141,13 +141,19 @@ def run_GAT_training(dataset_name):
     #                     'epochs': 1000,
     #                     'beta': 0.99991,
     #                     'seed':1}
-    hyperparameters = {'hidden_channels': 10,
-                        'num_heads': 2, #Note: num_heads is hardcoded to 1 in modules
-                        'dropout': 0.2,
-                        'lr': 0.002,
-                        'epochs': 500,
-                        'beta': 0.99991,
-                        'seed':1}
+    
+    model_name = 'GAT'
+    model_path = f'/home/tomas/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    checkpoint = torch.load(model_path)
+    hyperparameters = checkpoint['hyperparameters']
+    
+    # hyperparameters = {'hidden_channels': 10,
+    #                     'num_heads': 2, #Note: num_heads is hardcoded to 1 in modules
+    #                     'dropout': 0.2,
+    #                     'lr': 0.002,
+    #                     'epochs': 500,
+    #                     'beta': 0.99991,
+    #                     'seed':1}
 
     model, traindata, testdata, feature_names, target_names, accuracy, fbeta = train_loop_GAT(dataset_name, hyperparameters, verbose = True)
     return model, hyperparameters, traindata, testdata, feature_names, target_names, accuracy, fbeta
@@ -163,7 +169,7 @@ def run_SAGE_training():
                         'seed':42}
 
     model_name = 'GraphSAGE'
-    dataset_name ='100K_accts_MID5'
+    dataset_name ='100K_accts_EASY25'
 
     model, traindata, valdata, feature_names, target_names, running_train_loss, running_test_loss, accuracy = train_GraphSAGE_foroptuna(dataset_name, hyperparameters, verbose = True)
     return model, traindata, valdata, feature_names, target_names, running_train_loss, running_test_loss, accuracy
@@ -220,7 +226,8 @@ def save_model(model, hyperparameters, traindata, testdata, feature_names, targe
 def load_model(model_name, dataset_name):
     
     # Load model, data, and other variables
-    model_path = f'/home/agnes/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    #model_path = f'/home/agnes/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    model_path = f'/home/tomas/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
     
     checkpoint = torch.load(model_path)
     model_state_dict = checkpoint['model_state_dict']
@@ -281,7 +288,7 @@ def run_GAT_optuna(model_name, dataset_name, n_trials):
         if trial.number == 0:
             save_model(model, hyperparameters, traindata, testdata, feature_names, target_names, model_name, dataset_name)
             print('First save.')
-        elif fbeta < trial.study.best_value:
+        elif fbeta > trial.study.best_value:
             save_model(model, hyperparameters, traindata, testdata, feature_names, target_names, model_name, dataset_name)
             print('Saved new best model.')
         
@@ -314,29 +321,56 @@ def unpack_attention_output(attention_output):
 
 def main():
     model_name = 'GAT'
-    dataset_name = '100K_accts_MID5'
-    n_trials = 50
+    #dataset_name = '100K_accts_EASY25'
+    n_trials = 10
     
-    model, hyperparameters, traindata, testdata, feature_names, target_names, accuracy, fbeta = run_GAT_training(dataset_name)
+    # dataset_name = '100K_accts_EASY25'
+    # model, hyperparameters, traindata, testdata, feature_names, target_names, accuracy, fbeta = run_GAT_training(dataset_name)
+    # model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    # evaluate_performance(model, testdata, model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_MID5'
+    # model, hyperparameters, traindata, testdata, feature_names, target_names, accuracy, fbeta = run_GAT_training(dataset_name)
+    # model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    # evaluate_performance(model, testdata, model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_HARD1'
+    # model, hyperparameters, traindata, testdata, feature_names, target_names, accuracy, fbeta = run_GAT_training(dataset_name)
+    # model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    # evaluate_performance(model, testdata, model_name, dataset_name)
+    
     # #model, traindata, testdata, feature_names, target_names, running_train_loss, running_test_loss, accuracy = run_SAGE_training()
     
     # evaluate_performance(model, testdata, model_name, dataset_name)
-    save_model(model = model,
-               hyperparameters = hyperparameters,
-               traindata = traindata,
-               testdata = testdata,
-               feature_names = feature_names,
-               target_names = target_names,
-               model_name = model_name,
-               dataset_name = dataset_name)
+    # save_model(model = model,
+    #            hyperparameters = hyperparameters,
+    #            traindata = traindata,
+    #            testdata = testdata,
+    #            feature_names = feature_names,
+    #            target_names = target_names,
+    #            model_name = model_name,
+    #            dataset_name = dataset_name)
     
-    # time_start = time.perf_counter()
-    # run_GAT_optuna(model_name, dataset_name, n_trials)
-    # time_stop = time.perf_counter()
-    # print(f'Running {n_trials} took {time_stop - time_start} seconds.')
+    dataset_name = '100K_accts_EASY25'
+    time_start = time.perf_counter()
+    run_GAT_optuna(model_name, dataset_name, n_trials)
+    time_stop = time.perf_counter()
+    print(f'Running {n_trials} took {time_stop - time_start} seconds.')
     
-    model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
-    evaluate_performance(model, testdata, model_name, dataset_name)
+    dataset_name = '100K_accts_MID5'
+    time_start = time.perf_counter()
+    run_GAT_optuna(model_name, dataset_name, n_trials)
+    time_stop = time.perf_counter()
+    print(f'Running {n_trials} took {time_stop - time_start} seconds.')
+    
+    dataset_name = '100K_accts_HARD1'
+    time_start = time.perf_counter()
+    run_GAT_optuna(model_name, dataset_name, n_trials)
+    time_stop = time.perf_counter()
+    print(f'Running {n_trials} took {time_stop - time_start} seconds.')
+    
+    # model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    # evaluate_performance(model, testdata, model_name, dataset_name)
     
     # model.set_return_attention_weights(True)
     # x, attention_output = model.forward(testdata.x, testdata.edge_index)

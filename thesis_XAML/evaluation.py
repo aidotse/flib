@@ -75,7 +75,8 @@ def get_true_sar_indices(sar_indices, testdata):
 def load_model(model_name, dataset_name):
     
     # Load model, data, and other variables
-    model_path = f'/home/agnes/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    # model_path = f'/home/agnes/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    model_path = f'/home/tomas/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
     
     checkpoint = torch.load(model_path)
     model_state_dict = checkpoint['model_state_dict']
@@ -231,7 +232,8 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
             # np.save(f'evaluation_data/{model_name}_{dataset_name}_r2_GraphSVX.npy', r2_GraphSVX)
             
     print('Finished.')
-    
+
+
 def calculate_feature_importance_LIME(model_name, dataset_name):
     # Set saving directory
     data_save_dir = f'{WD_PATH}/evaluation_data/feature_importance'
@@ -499,6 +501,84 @@ def calculate_feature_importance_SHAP(model_name, dataset_name):
     print('Finished.')
 
 
+def calculate_feature_importance_GraphLIME(model_name, dataset_name):
+    # Set saving directory
+    data_save_dir = f'{WD_PATH}/evaluation_data/feature_importance'
+    if not os.path.isdir(data_save_dir):
+        os.makedirs(data_save_dir)
+    
+    # Load model
+    model, _, testdata, feature_names, _ = load_model(model_name, dataset_name)
+    
+    # Calculate SAR indices
+    sar_indices = get_sar_indices(model, testdata)
+    n_sar_indices = len(sar_indices)
+    n_sar_indices_to_use = 500
+    
+    # Run explainer over all SAR indices or a random subset of them        
+    model.eval()
+    model.set_return_type('log_probas')    
+    
+    # Placeholders for feature importance and r2 matrices
+    feature_importance_GraphLIME = np.zeros((n_sar_indices_to_use, len(feature_names)))
+    
+    n_hops = 4
+    print('n_hops used in explanation: ', n_hops)
+    
+    time_start = time.time()
+
+    for i in range(n_sar_indices_to_use):
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        time_checkpoint = time.time()
+        time_elapsed = time_checkpoint - time_start
+        print('Running GraphLIME')
+        print(f'Progress: {i}/{n_sar_indices_to_use}.')
+        print(f'Time elapsed: {time_elapsed/60:.2f} minutes.')
+        if i > 0:
+            print(f'Last iteration: Time spent in GraphLIME = {time_spent_GraphLIME:.2f} seconds')
+
+        # ------------ OBSERVE, HERE IS NODE TO EXPLAIN --------------------
+        node_to_explain = sar_indices[i].item()
+        # ------------------------------------------------------------------
+
+        time_start_GraphLIME = time.time()
+        subset_expl, edge_index_expl, _, _ = torch_geometric.utils.k_hop_subgraph(node_to_explain, n_hops, testdata.edge_index, relabel_nodes=False)
+        org_to_new_mapping, new_to_org_mapping, edges_new = utils.node_index_mapping(subset_expl, edge_index_expl)
+        testdata_expl = Data(x = testdata.x[subset_expl], edge_index = edges_new, y = testdata.y[subset_expl])
+
+        n_nodes = subset_expl.shape[0]
+        n_features = testdata.x.shape[1]
+
+        # Running the explainer
+        testdata_expl = testdata_expl.to('cpu')
+        model = model.to('cpu')
+
+        data = SimpleNamespace()
+        data.x = testdata_expl.x
+        data.edge_index  = testdata_expl.edge_index
+        data.y = testdata_expl.y
+        data.num_classes = 2
+        data.num_nodes = testdata_expl.x.shape[0]
+        data.num_features = n_features
+        data.name = 'test'
+
+        # explainer = GraphSVX(data, model, True)
+        # explanations, r2_SVX = explainer.explain(node_indexes=[org_to_new_mapping[node_to_explain]], num_samples=num_samples, hops = n_hops, vizu = False, return_r2 = True)
+        explainer = GraphLIME(data, model, gpu=True, hop=n_hops, rho=0.05, cached=False)
+        #feature_importance_GraphLIME[i] = explainer.explain(org_to_new_mapping[node_to_explain], hops = 3, num_samples = 1000)
+        feature_importance_GraphLIME[i] = explainer.explain_node(org_to_new_mapping[node_to_explain], testdata_expl.x, testdata_expl.edge_index)
+        
+        time_stop_GraphLIME = time.time()
+        time_spent_GraphLIME = time_stop_GraphLIME - time_start_GraphLIME
+        
+        if i % 100 == 0 or i == 10 or i == n_sar_indices_to_use-1:
+            with open(f'{data_save_dir}/{model_name}_{dataset_name}_feature_importance_GraphLIME.pkl', 'wb') as f:
+                pickle.dump(feature_importance_GraphLIME, f)
+            
+    print('Finished.')
+
+
 def load_evaluation_data_SVX(model_name, dataset_name):
     with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_feature_importance_GraphSVX.pkl', 'rb') as f:
         feature_importance_SVX = pickle.load(f)
@@ -523,6 +603,13 @@ def load_evaluation_data_SHAP(model_name, dataset_name):
     with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_feature_importance_SHAP.pkl', 'rb') as f:
         feature_importance_SHAP = pickle.load(f)
     return feature_importance_SHAP
+
+
+def load_evaluation_data_GraphLIME(model_name, dataset_name):
+    with open(f'{WD_PATH}/evaluation_data/feature_importance/{model_name}_{dataset_name}_feature_importance_GraphLIME.pkl', 'rb') as f:
+        feature_importance_GraphLIME = pickle.load(f)
+
+    return feature_importance_GraphLIME
 
 
 # --- Functions for calculating coherence metrics ---
@@ -682,8 +769,9 @@ def create_and_save_agreement_plots(agreement_list: list, explainer_names: list,
             plt.plot(range(1,len(avg)), avg[1:])
             plt.fill_between(range(1,len(avg)), avg[1:]-std[1:], avg[1:]+std[1:], alpha=0.3)
             plt.xlabel('k')
-            plt.ylabel('agreement (%)')
-            plt.title(f'{agreement_type} agreement between {explainer_names[i]} and {explainer_names[j]}')
+            plt.ylabel('Agreement (%)')
+            plt.title(f'{agreement_type} Agreement between {explainer_names[i]} and {explainer_names[j]}')
+            plt.ylim(0, 1)
             plt.show()
             
             save_dir = f'{WD_PATH}/evaluation_figures/{model_name}/{dataset_name}/{evaluation_type}'
@@ -1078,8 +1166,8 @@ def completeness(model_name, dataset_name):
     model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
     mean_feature_values = traindata.x.mean(dim=0, keepdim=True).to('cpu').detach().numpy().squeeze()
 
-    rerun_and_save = 1
-    n_sar_indices_used = 11
+    rerun_and_save = 0
+    n_sar_indices_used = 500
     
     print('NOTE')
     print(f'rerun_and_save == {rerun_and_save}')
@@ -1211,6 +1299,15 @@ def completeness(model_name, dataset_name):
         plt.show()
         plt.savefig(f'{figures_save_dir}/noabs_{explanation_name}.png')
 
+        plt.figure()
+        plt.plot(avg_k_count,avg_probability_diff)
+        plt.xlabel('Average number of features removed (k)')
+        plt.ylabel('Average difference in model output after removing k features')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')    
+        plt.show()
+        plt.savefig(f'{figures_save_dir}/noabs_{explanation_name}_singleplot.png')
+        
         avg_k_count_noabs = avg_k_count
 
         # --- noabs, from positive to negative ---
@@ -1307,6 +1404,16 @@ def completeness(model_name, dataset_name):
         plt.subplots_adjust(wspace=0.5, hspace=0.5)
         plt.show()
         plt.savefig(f'{figures_save_dir}/noabs_reversed_{explanation_name}.png')
+        
+        plt.figure()
+        plt.plot(avg_k_count,avg_probability_diff)
+        plt.xlabel('Average number of features removed (k)')
+        plt.ylabel('Average difference in model output after removing k features')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='r', linestyle='--')   
+        print('idx: ', idx) 
+        plt.show()
+        plt.savefig(f'{figures_save_dir}/noabs_reversed_{explanation_name}_singleplot.png')
         
         avg_k_count_noabs_reversed = avg_k_count
         
@@ -1524,7 +1631,7 @@ def completeness2(model_name, dataset_name):
     
     
     plt.subplot(2,2,4)
-    plt.errorbar(alphas, avg_k_features_removed,yerr=std_k_features_removed, fmt='o')
+    plt.errorbar(alphas, avg_k_features_removed, yerr=std_k_features_removed, fmt='o')
     plt.xlabel('Alpha')
     plt.ylabel('Average number of features removed')
     plt.xticks(rotation='vertical')
@@ -1541,10 +1648,10 @@ def confidence(model_name, dataset_name):
     _, r2_LIME = load_evaluation_data_LIME(model_name, dataset_name)
 
     # Boxplot for r2 values
-    data = [r2_SVX[:10].squeeze(), r2_LIME[:10].squeeze()]
+    data = [r2_SVX.squeeze(), r2_LIME.squeeze()]
     labels = ['SVX', 'LIME']
 
-    plt.figure()
+    plt.figure(figsize = (6, 10))
     plt.boxplot(data, labels=labels)
     plt.xlabel('Explainer')
     plt.ylabel('r2 values')
@@ -1569,305 +1676,155 @@ def coherence(model_name, dataset_name):
     feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
     feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
     feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
+    feature_importance_GraphLIME = load_evaluation_data_GraphLIME(model_name, dataset_name)
     
-    feature_importance_list = [feature_importance_SVX[:11], feature_importance_LIME[:11], feature_importance_SHAP[:11]]
+    # feature_importance_list = [feature_importance_SVX, feature_importance_LIME, feature_importance_SHAP]
+    feature_importance_list = [feature_importance_SVX, feature_importance_GraphLIME]
     
     agreement_type = 'feature'
     evaluation_type = 'coherence'
-    explainer_names = ['SVX', 'LIME', 'SHAP']
+    # explainer_names = ['SVX', 'LIME', 'SHAP']
+    explainer_names = ['SVX', 'GraphLIME']
     
     for agreement_type in ['feature', 'rank', 'sign', 'signed_rank']:
-        feature_agreement_list = get_agreement(feature_importance_list, agreement_type)
+        feature_agreement_list = get_agreement(feature_importance_list, agreement_type, importance_order = 'noabs')
         create_and_save_agreement_plots(feature_agreement_list, explainer_names, model_name, dataset_name, agreement_type, evaluation_type)
 
-# def calculate_agreement_and_save_plots_combined(model_name, agreement_type: str, evaluation_type: str, type: str):
-#     if agreement_type != 'feature' and agreement_type != 'rank' and agreement_type != 'sign' and agreement_type != 'signed_rank':
-#         raise ValueError("agreement_type must be either 'feature', 'rank', 'sign', or 'signed_rank'")
-#     index = 0
-    
-#     dataset_names = ['100K_accts_EASY25', '100K_accts_MID5', '100K_accts_HARD1']
-#     explainer_pairs = [['groundtruth', 'LIME'],['groundtruth', 'SHAP'], ['groundtruth', 'SVX']]
 
-
-
-#     #convert to numpy
+def SVX_node_accuracy(model_name, dataset_name):
     
-#     plt.figure(figsize = (15,5))
-#     for index, dataset_name in enumerate(dataset_names):
-#         feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
-#         feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
-#         feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
-        
-#         #create groundtruth
-#         model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
-        
-#         sar_indices = get_sar_indices(model, testdata)
-#         n_sar_indices_used = 500
-        
-#         sar_indices_used=sar_indices[:n_sar_indices_used]
-        
-#         model.set_return_attention_weights(True)
-#         model.eval()
-#         with torch.no_grad():
-#             _,attention_weights = model.forward(testdata.x, testdata.edge_index)
-        
-#         dc = SyntheticDatacheck.Datacheck(dataset_name,importance=type,aggregated=True,attention_weights=attention_weights,sar_indices_used=sar_indices_used)
-        
-#         feature_importance_groundtruth = dc.importance_test.iloc[sar_indices_used]
-#         feature_importance_groundtruth = feature_importance_groundtruth.to_numpy()
-#         feature_importance_dict = {'LIME': feature_importance_LIME, 'SHAP': feature_importance_SHAP,'SVX': feature_importance_SVX,  'groundtruth':feature_importance_groundtruth}
-#         explainer_colors_dict = {'groundtruth_LIME': '#009E73', # Green
-#                                 'groundtruth_SHAP': '#0072B2' ,  # Blue
-#                                 'groundtruth_SVX': '#D55E00' # Orange
-#                                 }
-        
-#         plt.subplot(1,3,index + 1)
-        
-#         if type =='llr':
-#             importance_order='abs'
-#         else:
-#             importance_order='noabs'
-            
-#         for explainer_pair in explainer_pairs:
-#             feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
-#             agreement_list = get_agreement(feature_importance_list, agreement_type, importance_order)
-            
-#             color_key = f'{explainer_pair[0]}_{explainer_pair[1]}'
-            
-#             agreement_measure = agreement_list[1]
-#             avg = agreement_measure[:,0]
-#             plt.plot(range(1,len(avg)), avg[1:], color = explainer_colors_dict[color_key])
-        
-#         plt.xlabel('k')
-#         plt.ylabel('Average agreement (%)')
-#         plt.ylim(0, 1)
-        
-#         if index == 0:
-#             plt.title('EASY')
-#         elif index == 1:
-#             plt.title('MID')
-#         elif index == 2:
-#             plt.title('HARD')
-#         else:
-#             raise ValueError('index not recognized.')
-        
-#         plt.legend([f'Ground truth {type.upper()} vs. LIME',f'Ground truth {type.upper()} vs. SHAP', f'Ground truth {type.upper()} vs. SVX'])
-        
-#     save_dir = f'{WD_PATH}/evaluation_figures_final/{model_name}/{evaluation_type}'
-#     if not os.path.isdir(save_dir):
-#         os.makedirs(save_dir)
-#     plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_expcomparison_{type.upper()}.png')
+    save_dir = f'{WD_PATH}/evaluation_figures/{model_name}/{dataset_name}/SVX_node_accuracy'
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
     
-#     plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_expcomparison_{type.upper()}.eps', format = 'eps', bbox_inches='tight')
+    model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    _, node_importance, _ = load_evaluation_data_SVX(model_name, dataset_name)
+    
+    # print(type(node_importance))
+    # print(len(node_importance))
+    # print(node_importance[0])
+    # raise ValueError('stop')
 
-#     plt.close()
-        
-#     plt.figure(figsize = (15,5))
-#     for index, explainer_pair in enumerate(explainer_pairs):
-#         explainer_colors_dict = {
+    sar_indices = get_sar_indices(model, testdata)
+    # true_labels = testdata.y[sar_indices].to('cpu').detach().numpy()
+    # sar_indices_TP = sar_indices[true_labels == 1]
+    n_sar_indices_to_use = 500
     
-            
-#             'groundtruth_LIME_100K_accts_EASY25': '#66C2A5',  # Lighter Green
-#             'groundtruth_LIME_100K_accts_MID5': '#009E73',    # Original Green
-#             'groundtruth_LIME_100K_accts_HARD1': '#006D2C',   # Darker Green
+    threshold = np.arange(0,1,0.01)
+    thresh_stop = np.zeros(n_sar_indices_to_use)
+    n_sus_neighbours = np.zeros((n_sar_indices_to_use,len(threshold)))
+    SVX_accuracy = np.zeros((n_sar_indices_to_use,len(threshold)))
+
+    print(threshold.shape)
+    print(n_sus_neighbours.shape)
+    print(SVX_accuracy.shape)
+    print(thresh_stop.shape)
+    
+    time_start = time.time()
+    for i in range(n_sar_indices_to_use):
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        time_checkpoint = time.time()
+        time_elapsed = time_checkpoint - time_start
+        print(f'Progress: {i}/{n_sar_indices_to_use}.')
+        print(f'Time elapsed: {time_elapsed/60:.2f} minutes.')
+
+        SV_nodes = node_importance[i][0].squeeze()
+        new_to_org_mapping = node_importance[i][2]
+        # print(new_to_org_mapping)
+        # print(new_to_org_mapping[0].item())
+        # print(len(SV_nodes))
+        # print(len(new_to_org_mapping))
+        # print(sar_indices[:5])
+        # raise ValueError('stop')
         
-#             'groundtruth_SHAP_100K_accts_EASY25': '#66B3FF',   # Lighter Blue
-#             'groundtruth_SHAP_100K_accts_MID5': '#0072B2',     # Original Blue
-#             'groundtruth_SHAP_100K_accts_HARD1': '#0055A4',    # Darker Blue
+        # print(SV_nodes)
+        # raise ValueError('stop')
+
+        for j, thresh in enumerate(threshold):
+            suspicious_neighbours_orgidx = []
+            suspicious_neighbours_sv = []
+            suspicious_neighbours_ypred = []
+            suspicious_neighbours_y = []
             
-#             'groundtruth_SVX_100K_accts_EASY25': '#F0E442',   # Lighter Yellow
-#             'groundtruth_SVX_100K_accts_MID5': '#D55E00',     # Original Orange
-#             'groundtruth_SVX_100K_accts_HARD1': '#A14800'     # Darker Orange
-            
-           
-#         }
-        
-#         plt.subplot(1,3,index+1)
-#         for dataset_name in dataset_names:
-#             feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
-#             feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
-#             feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
-#             model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+            for node_idx, sv in enumerate(SV_nodes):
                 
-#             sar_indices = get_sar_indices(model, testdata)
-#             n_sar_indices_used = 500
-            
-#             sar_indices_used=sar_indices[:n_sar_indices_used]
-            
-#             model.set_return_attention_weights(True)
-#             model.eval()
-#             with torch.no_grad():
-#                 _,attention_weights = model.forward(testdata.x, testdata.edge_index)
-            
-#             dc = SyntheticDatacheck.Datacheck(dataset_name,importance=type,aggregated=True,attention_weights=attention_weights,sar_indices_used=sar_indices_used)
+                node_idx = node_idx + 1 #sv at position 0 corresponds to node 1 (since node 0 is not assigned a Shapley value)
+                node_orgidx = new_to_org_mapping[node_idx].item()
+                if sv > thresh:
+                    #suspicious_neighbours_orgidx.append(new_to_org_mapping[node_idx].item())
+                    suspicious_neighbours_orgidx.append(node_orgidx)
+                    suspicious_neighbours_sv.append(sv)
+                    suspicious_neighbours_ypred.append(1)
+                    suspicious_neighbours_y.append(testdata.y[node_orgidx].item())
 
-#             feature_importance_groundtruth = dc.importance_test.iloc[sar_indices_used]
-#             feature_importance_groundtruth = feature_importance_groundtruth.to_numpy()
-#             feature_importance_dict = { 'LIME': feature_importance_LIME, 'SHAP': feature_importance_SHAP, 'SVX': feature_importance_SVX, 'groundtruth':feature_importance_groundtruth}
-#             feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
+            if len(suspicious_neighbours_orgidx) == 0:
+                thresh_stop[i] = thresh
+                break
             
-#             if type =='llr':
-#                 importance_order='abs'
-#             else:
-#                 importance_order='noabs'
-#             agreement_list = get_agreement(feature_importance_list, agreement_type,  importance_order)
+            SVX_accuracy[i,j] = accuracy_score(suspicious_neighbours_y, suspicious_neighbours_ypred)
+            n_sus_neighbours[i,j] = len(suspicious_neighbours_ypred)
             
-#             color_key = f'{explainer_pair[0]}_{explainer_pair[1]}_{dataset_name}'
-        
-#             agreement_measure = agreement_list[1]
-#             avg = agreement_measure[:,0]
-#             plt.plot(range(1,len(avg)), avg[1:], color = explainer_colors_dict[color_key])
+            # if i % 100 == 0:
+            #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/threshold.npy', threshold)
+            #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/n_sus_neighbours.npy', n_sus_neighbours)
+            #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/SVX_accuracy.npy', SVX_accuracy)
+            #     np.save('/home/tomas/desktop/flib/thesis_XAML/SVX_accuracy_save/thresh_stop.npy', thresh_stop)
             
-            
-#         plt.xlabel('k')
-#         plt.ylabel('Average agreement (%)')
-#         plt.ylim(0, 1)
-        
-#         if index == 0:
-#             plt.title(f'Ground truth {type.upper()} vs. LIME')
-#         elif index == 1:
-#             plt.title(f'Ground truth {type.upper()} vs. SHAP')
-#         elif index == 2:
-#             plt.title(f'Ground truth {type.upper()} vs. SVX')
-#         else:
-#             raise ValueError('index not recognized.')
-        
-#         plt.legend(['EASY', 'MID', 'HARD'])
-        
-#     save_dir = f'{WD_PATH}/evaluation_figures_final/{model_name}/{evaluation_type}'
+    time_stop = time.time()
+    time_elapsed = time_stop - time_start
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print('Done. Time elapsed: {:.2f} minutes.'.format(time_elapsed/60))
+    print('Creating and saving plots...')
     
-#     if not os.path.isdir(save_dir):
-#         os.makedirs(save_dir)
-        
-#     plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_datacomparison_{type.upper()}.png')
-#     plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_datacomparison_{type.upper()}.eps', format = 'eps', bbox_inches='tight')
-#     plt.close()
+    thresh_interval = [0,100]
+    n_samples = 1000
+    threshold = threshold[thresh_interval[0]:thresh_interval[1]]
+    SVX_accuracy = SVX_accuracy[:,thresh_interval[0]:thresh_interval[1]]
+    n_sus_neighbours = n_sus_neighbours[:,thresh_interval[0]:thresh_interval[1]]
 
-import os
-import matplotlib.pyplot as plt
-import torch
 
-def calculate_agreement_and_save_plots_combined(model_name, agreement_type: str, evaluation_type: str, importance_type: str):
-    if agreement_type not in ['feature', 'rank', 'sign', 'signed_rank']:
-        raise ValueError("agreement_type must be either 'feature', 'rank', 'sign', or 'signed_rank'")
+    plt.figure()
+    plt.imshow(SVX_accuracy, interpolation='nearest', aspect='auto')
+    plt.colorbar()
+    plt.savefig(f'{save_dir}/SVX_accuracy.png')
 
-    dataset_names = ['100K_accts_EASY25', '100K_accts_MID5', '100K_accts_HARD1']
-    explainer_pairs = [['groundtruth', 'LIME'], ['groundtruth', 'SHAP'], ['groundtruth', 'SVX']]
+    plt.figure()
+    plt.imshow(n_sus_neighbours > 0, interpolation='nearest', aspect='auto')
+    plt.colorbar()
+    plt.savefig(f'{save_dir}/n_sus_neighbours.png')
 
-    # Precompute feature importance ground truths
-    groundtruth_importances = {}
-    for dataset_name in dataset_names:
-        model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+    mean_SVX_accuracy = np.mean(SVX_accuracy, axis = 0)
+    plt.figure()
+    plt.plot(threshold, mean_SVX_accuracy)
+    plt.savefig(f'{save_dir}/mean_SVX_accuracy.png')
 
-        sar_indices = get_sar_indices(model, testdata)
-        n_sar_indices_used = 500
-        sar_indices_used = sar_indices[:n_sar_indices_used]
+    adjusted_mean_SVX_accuracy = np.zeros(len(threshold))
+    adjusted_count = np.zeros(len(threshold))
+    for i in range(len(threshold)):
+        tmp_mean = np.mean(SVX_accuracy[n_sus_neighbours[:,i] > 0,i])
+        if tmp_mean > 0:
+            adjusted_mean_SVX_accuracy[i] = tmp_mean # Mean of accuracy for those with at least one neighbour with shapley value > thresh
+        adjusted_count[i] = np.sum(n_sus_neighbours[:,i] > 0)/n_samples # Percentage of nodes with at least one neighbour with shapley value > thresh
+    plt.figure()
+    plt.plot(threshold, adjusted_mean_SVX_accuracy)
+    plt.plot(threshold, adjusted_count, linestyle = '--')
+    plt.xlabel('Shapley value threshold')
+    plt.legend(['Accuracy', 'Percentage of samples with a SV > thresh'])
+    plt.savefig(f'{save_dir}/adjusted_mean_SVX_accuracy.png')
 
-        model.set_return_attention_weights(True)
-        model.eval()
-        with torch.no_grad():
-            _, attention_weights = model.forward(testdata.x, testdata.edge_index)
 
-        dc = SyntheticDatacheck.Datacheck(dataset_name, importance=importance_type, aggregated=True, attention_weights=attention_weights, sar_indices_used=sar_indices_used)
-        feature_importance_groundtruth = dc.importance_test.iloc[sar_indices_used].to_numpy()
+    mean_n_sus_neighbours = np.mean(n_sus_neighbours, axis = 0)
+    plt.figure()
+    plt.plot(threshold, mean_n_sus_neighbours)
+    plt.savefig(f'{save_dir}/mean_n_sus_neighbours.png')
+    
+    print('All finished.')
 
-        groundtruth_importances[dataset_name] = feature_importance_groundtruth
-
-    # Plot for each dataset
-    plt.figure(figsize=(15, 5))
-    explainer_colors_dict = {
-        'groundtruth_LIME': '#009E73',  # Green
-        'groundtruth_SHAP': '#0072B2',  # Blue
-        'groundtruth_SVX': '#D55E00'    # Orange
-    }
-
-    for index, dataset_name in enumerate(dataset_names):
-        feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
-        feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
-        feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
-
-        feature_importance_dict = {
-            'LIME': feature_importance_LIME,
-            'SHAP': feature_importance_SHAP,
-            'SVX': feature_importance_SVX,
-            'groundtruth': groundtruth_importances[dataset_name]
-        }
-
-        plt.subplot(1, 3, index + 1)
-
-        for explainer_pair in explainer_pairs:
-            feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
-            importance_order = 'abs' if importance_type == 'llr' else 'noabs'
-            agreement_list = get_agreement(feature_importance_list, agreement_type, importance_order)
-
-            color_key = f'{explainer_pair[0]}_{explainer_pair[1]}'
-            agreement_measure = agreement_list[1]
-            avg = agreement_measure[:, 0]
-            plt.plot(range(1, len(avg)), avg[1:], color=explainer_colors_dict[color_key])
-
-        plt.xlabel('k')
-        plt.ylabel('Average agreement (%)')
-        plt.ylim(0, 1)
-        plt.title(['EASY', 'MID', 'HARD'][index])
-        plt.legend([f'Ground truth {importance_type.upper()} vs. LIME', f'Ground truth {importance_type.upper()} vs. SHAP', f'Ground truth {importance_type.upper()} vs. SVX'])
-
-    save_dir = f'{WD_PATH}/evaluation_figures_final/{model_name}/{evaluation_type}'
-    os.makedirs(save_dir, exist_ok=True)
-    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_expcomparison_{importance_type.upper()}.png')
-    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_expcomparison_{importance_type.upper()}.eps', format='eps', bbox_inches='tight')
-    plt.close()
-
-    # Plot for each explainer pair
-    plt.figure(figsize=(15, 5))
-    explainer_colors_dict = {
-        'groundtruth_LIME_100K_accts_EASY25': '#66C2A5',  # Lighter Green
-        'groundtruth_LIME_100K_accts_MID5': '#009E73',    # Original Green
-        'groundtruth_LIME_100K_accts_HARD1': '#006D2C',   # Darker Green
-        'groundtruth_SHAP_100K_accts_EASY25': '#66B3FF',  # Lighter Blue
-        'groundtruth_SHAP_100K_accts_MID5': '#0072B2',    # Original Blue
-        'groundtruth_SHAP_100K_accts_HARD1': '#0055A4',   # Darker Blue
-        'groundtruth_SVX_100K_accts_EASY25': '#F0E442',   # Lighter Yellow
-        'groundtruth_SVX_100K_accts_MID5': '#D55E00',     # Original Orange
-        'groundtruth_SVX_100K_accts_HARD1': '#A14800'     # Darker Orange
-    }
-
-    for index, explainer_pair in enumerate(explainer_pairs):
-        plt.subplot(1, 3, index + 1)
-
-        for dataset_name in dataset_names:
-            feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
-            feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
-            feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
-
-            feature_importance_dict = {
-                'LIME': feature_importance_LIME,
-                'SHAP': feature_importance_SHAP,
-                'SVX': feature_importance_SVX,
-                'groundtruth': groundtruth_importances[dataset_name]
-            }
-
-            feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
-            importance_order = 'abs' if importance_type == 'llr' else 'noabs'
-            agreement_list = get_agreement(feature_importance_list, agreement_type, importance_order)
-
-            color_key = f'{explainer_pair[0]}_{explainer_pair[1]}_{dataset_name}'
-            agreement_measure = agreement_list[1]
-            avg = agreement_measure[:, 0]
-            plt.plot(range(1, len(avg)), avg[1:], color=explainer_colors_dict[color_key])
-
-        plt.xlabel('k')
-        plt.ylabel('Average agreement (%)')
-        plt.ylim(0, 1)
-        plt.title(f'Ground truth {importance_type.upper()} vs. {explainer_pair[1]}')
-        plt.legend(['EASY', 'MID', 'HARD'])
-
-    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_datacomparison_{importance_type.upper()}.png')
-    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_datacomparison_{importance_type.upper()}.eps', format='eps', bbox_inches='tight')
-    plt.close()
 
 def test():
     model_name = 'GAT'
-    dataset_name = '100K_accts_MID5'
+    dataset_name = '100K_accts_EASY25'
     
     node_to_inspect = 3
     
@@ -1996,6 +1953,398 @@ def test3():
     print(a[:3])
 
 
+def test4():
+    model_name = 'GAT'
+    dataset_name = '100K_accts_EASY25'
+    
+    model_path = f'/home/tomas/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    checkpoint = torch.load(model_path)
+    
+    h = checkpoint['hyperparameters']
+    print(h)
+    
+    model_name = 'GAT'
+    dataset_name = '100K_accts_MID5'
+    
+    model_path = f'/home/tomas/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    checkpoint = torch.load(model_path)
+    
+    h = checkpoint['hyperparameters']
+    print(h)
+    
+    model_name = 'GAT'
+    dataset_name = '100K_accts_HARD1'
+    
+    model_path = f'/home/tomas/desktop/flib/thesis_XAML/trained_models/{model_name}_{dataset_name}.pth'
+    checkpoint = torch.load(model_path)
+    
+    h = checkpoint['hyperparameters']
+    print(h)
+
+
+def calculate_agreement_and_save_plots_combined(model_name, agreement_type: str, evaluation_type: str):
+    if agreement_type != 'feature' and agreement_type != 'rank' and agreement_type != 'sign' and agreement_type != 'signed_rank':
+        raise ValueError("agreement_type must be either 'feature', 'rank', 'sign', or 'signed_rank'")
+    index = 0
+    
+    dataset_names = ['100K_accts_EASY25', '100K_accts_MID5', '100K_accts_HARD1']
+    explainer_pairs = [['LIME', 'SHAP'], ['LIME', 'SVX'], ['SHAP', 'SVX']]
+    
+    plt.figure(figsize = (15,5))
+    for index, dataset_name in enumerate(dataset_names):
+        feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
+        feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
+        feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
+        
+        feature_importance_dict = {'SVX': feature_importance_SVX, 'LIME': feature_importance_LIME, 'SHAP': feature_importance_SHAP}
+        explainer_colors_dict = {'LIME_SHAP': '#009E73',  # Green
+                                'LIME_SVX': '#0072B2',  # Blue
+                                'SHAP_SVX': '#D55E00'  # Orange
+                                }
+        
+        plt.subplot(1,3,index + 1)
+        for explainer_pair in explainer_pairs:
+            feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
+            agreement_list = get_agreement(feature_importance_list, agreement_type)
+            
+            color_key = f'{explainer_pair[0]}_{explainer_pair[1]}'
+            
+            agreement_measure = agreement_list[1]
+            avg = agreement_measure[:,0]
+            plt.plot(range(1,len(avg)), avg[1:], color = explainer_colors_dict[color_key])
+        
+        plt.xlabel('k')
+        plt.ylabel('Average agreement (%)')
+        plt.ylim(0, 1)
+        
+        if index == 0:
+            plt.title('EASY')
+        elif index == 1:
+            plt.title('MID')
+        elif index == 2:
+            plt.title('HARD')
+        else:
+            raise ValueError('index not recognized.')
+        
+        plt.legend(['LIME vs. SHAP', 'LIME vs. SVX', 'SHAP vs. SVX'])
+        
+    save_dir = f'{WD_PATH}/evaluation_figures_final/{model_name}/{evaluation_type}'
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_expcomparison.eps', format = 'eps', bbox_inches='tight')
+    plt.close()
+        
+    plt.figure(figsize = (15,5))
+    for index, explainer_pair in enumerate(explainer_pairs):
+        explainer_colors_dict = {
+            'LIME_SHAP_100K_accts_EASY25': '#66C2A5',  # Lighter Green
+            'LIME_SHAP_100K_accts_MID5': '#009E73',    # Original Green
+            'LIME_SHAP_100K_accts_HARD1': '#006D2C',   # Darker Green
+            
+            'LIME_SVX_100K_accts_EASY25': '#66B3FF',   # Lighter Blue
+            'LIME_SVX_100K_accts_MID5': '#0072B2',     # Original Blue
+            'LIME_SVX_100K_accts_HARD1': '#0055A4',    # Darker Blue
+            
+            'SHAP_SVX_100K_accts_EASY25': '#F0E442',   # Lighter Yellow
+            'SHAP_SVX_100K_accts_MID5': '#D55E00',     # Original Orange
+            'SHAP_SVX_100K_accts_HARD1': '#A14800'     # Darker Orange
+        }
+        
+        plt.subplot(1,3,index+1)
+        for dataset_name in dataset_names:
+            feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
+            feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
+            feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
+            feature_importance_dict = {'SVX': feature_importance_SVX, 'LIME': feature_importance_LIME, 'SHAP': feature_importance_SHAP}
+            
+            feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
+            agreement_list = get_agreement(feature_importance_list, agreement_type)
+            
+            color_key = f'{explainer_pair[0]}_{explainer_pair[1]}_{dataset_name}'
+        
+            agreement_measure = agreement_list[1]
+            avg = agreement_measure[:,0]
+            plt.plot(range(1,len(avg)), avg[1:], color = explainer_colors_dict[color_key])
+        
+        plt.xlabel('k')
+        plt.ylabel('Average agreement (%)')
+        plt.ylim(0, 1)
+        
+        if index == 0:
+            plt.title('LIME vs. SHAP')
+        elif index == 1:
+            plt.title('LIME vs. SVX')
+        elif index == 2:
+            plt.title('SHAP vs. SVX')
+        else:
+            raise ValueError('index not recognized.')
+        
+        plt.legend(['EASY', 'MID', 'HARD'])
+    save_dir = f'{WD_PATH}/evaluation_figures_final/{model_name}/{evaluation_type}'
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_datacomparison.eps', format = 'eps', bbox_inches='tight')
+    plt.close()
+
+
+def completeness_save_plots_combined(model_name):
+    
+    evaluation_type = 'completeness'
+    figures_save_dir = f'{WD_PATH}/evaluation_figures_final/{evaluation_type}'
+    if not os.path.isdir(figures_save_dir):
+        os.makedirs(figures_save_dir)
+    
+    explanation_names = ['LIME', 'SHAP', 'SVX']
+    dataset_names = ['100K_accts_EASY25', '100K_accts_MID5', '100K_accts_HARD1']
+    
+    explainer_colors_dict = {
+        'LIME_100K_accts_EASY25': '#66C2A5',  # Lighter Green
+        'LIME_100K_accts_MID5': '#009E73',    # Original Green
+        'LIME_100K_accts_HARD1': '#006D2C',   # Darker Green
+        
+        'SHAP_100K_accts_EASY25': '#66B3FF',   # Lighter Blue
+        'SHAP_100K_accts_MID5': '#0072B2',     # Original Blue
+        'SHAP_100K_accts_HARD1': '#0055A4',    # Darker Blue
+        
+        'SVX_100K_accts_EASY25': '#F0E442',   # Lighter Yellow
+        'SVX_100K_accts_MID5': '#D55E00',     # Original Orange
+        'SVX_100K_accts_HARD1': '#A14800'     # Darker Orange
+    }
+    
+    # Negative to positive
+    thresholds = np.arange(-1, 1.001, 0.001)
+    
+    plt.figure(figsize = (15,5))
+    for index, explanation_name in enumerate(explanation_names):
+        
+        plt.subplot(1, 3, index+1)
+        
+        for dataset_name in dataset_names:
+            data_save_dir = f'{WD_PATH}/evaluation_data/{evaluation_type}_data/{model_name}/{dataset_name}/{evaluation_type}'
+            probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_probability_diff.npy')
+            avg_probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_avg_probability_diff.npy')
+            std_probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_std_probability_diff.npy')
+            k_count = np.load(f'{data_save_dir}/noabs_{explanation_name}_k_count.npy')
+            avg_k_count = np.load(f'{data_save_dir}/noabs_{explanation_name}_avg_k_count.npy')
+            
+            color_key = f'{explanation_name}_{dataset_name}'
+            plt.plot(avg_k_count,avg_probability_diff, color = explainer_colors_dict[color_key])
+            
+        plt.title(f'{explanation_name}')
+        plt.legend(['EASY', 'MID', 'HARD'])
+        plt.xlabel('Average number of features removed (k)')
+        plt.ylabel('Average difference in model output after removing k features')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='black', linestyle='--')   
+        print('idx: ', idx)
+        
+    plt.subplots_adjust(wspace=0.3)
+    plt.savefig(f'{figures_save_dir}/neg_to_pos.eps', format = 'eps', bbox_inches='tight')
+    plt.savefig(f'{figures_save_dir}/neg_to_pos.png', bbox_inches='tight')
+
+
+    # Positive to negative (reversed)
+    thresholds = np.arange(1, -1.001, -0.001)
+    
+    plt.figure(figsize = (15,5))
+    for index, explanation_name in enumerate(explanation_names):
+        
+        plt.subplot(1, 3, index+1)
+        
+        for dataset_name in dataset_names:
+            data_save_dir = f'{WD_PATH}/evaluation_data/{evaluation_type}_data/{model_name}/{dataset_name}/{evaluation_type}'
+            probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_probability_diff.npy')
+            avg_probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_probability_diff.npy')
+            std_probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_std_probability_diff.npy')
+            k_count = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_k_count.npy')
+            avg_k_count = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_k_count.npy')
+            
+            color_key = f'{explanation_name}_{dataset_name}'
+            plt.plot(avg_k_count,avg_probability_diff, color = explainer_colors_dict[color_key])
+            
+        plt.title(f'{explanation_name}')
+        plt.legend(['EASY', 'MID', 'HARD'])
+        plt.xlabel('Average number of features removed (k)')
+        plt.ylabel('Average difference in model output after removing k features')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='black', linestyle='--')   
+        print('idx: ', idx)
+        
+    plt.subplots_adjust(wspace=0.3)
+    plt.savefig(f'{figures_save_dir}/pos_to_neg.eps', format = 'eps', bbox_inches='tight')
+    plt.savefig(f'{figures_save_dir}/pos_to_neg.png', bbox_inches='tight')
+    
+    
+    # neg to pos (top), pos to neg (bottom), 2x6 figures    
+    plt.figure(figsize = (15,10))
+    for index, explanation_name in enumerate(explanation_names):
+        
+        thresholds = np.arange(-1, 1.001, 0.001)
+        
+        plt.subplot(2, 3, index+1)
+        
+        for dataset_name in dataset_names:
+            data_save_dir = f'{WD_PATH}/evaluation_data/{evaluation_type}_data/{model_name}/{dataset_name}/{evaluation_type}'
+            probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_probability_diff.npy')
+            avg_probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_avg_probability_diff.npy')
+            std_probability_diff = np.load(f'{data_save_dir}/noabs_{explanation_name}_std_probability_diff.npy')
+            k_count = np.load(f'{data_save_dir}/noabs_{explanation_name}_k_count.npy')
+            avg_k_count = np.load(f'{data_save_dir}/noabs_{explanation_name}_avg_k_count.npy')
+            
+            color_key = f'{explanation_name}_{dataset_name}'
+            plt.plot(avg_k_count,avg_probability_diff, color = explainer_colors_dict[color_key])
+            
+        plt.title(f'{explanation_name} (neg to pos)')
+        plt.legend(['EASY', 'MID', 'HARD'])
+        plt.xlabel('Average number of features removed (k)')
+        plt.ylabel('Average difference in model output after removing k features')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='black', linestyle='--')   
+        print('idx: ', idx)
+        
+
+        thresholds = np.arange(1, -1.001, -0.001)
+        
+        plt.subplot(2, 3, index+4)
+        
+        for dataset_name in dataset_names:
+            data_save_dir = f'{WD_PATH}/evaluation_data/{evaluation_type}_data/{model_name}/{dataset_name}/{evaluation_type}'
+            probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_probability_diff.npy')
+            avg_probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_probability_diff.npy')
+            std_probability_diff = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_std_probability_diff.npy')
+            k_count = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_k_count.npy')
+            avg_k_count = np.load(f'{data_save_dir}/noabs_reversed_{explanation_name}_avg_k_count.npy')
+            
+            color_key = f'{explanation_name}_{dataset_name}'
+            plt.plot(avg_k_count,avg_probability_diff, color = explainer_colors_dict[color_key])
+            
+        plt.title(f'{explanation_name} (pos to neg)')
+        plt.legend(['EASY', 'MID', 'HARD'])
+        plt.xlabel('Average number of features removed (k)')
+        plt.ylabel('Average difference in model output after removing k features')
+        idx = np.where(abs(thresholds) < 0.0001)[0][0]
+        plt.axvline(x=avg_k_count[idx], color='black', linestyle='--')   
+        print('idx: ', idx)
+        
+    plt.subplots_adjust(wspace=0.3, hspace = 0.3)
+    plt.savefig(f'{figures_save_dir}/all.eps', format = 'eps', bbox_inches='tight')
+    plt.savefig(f'{figures_save_dir}/all.png', bbox_inches='tight')
+
+
+def SVX_node_accuracy_save_plots_combined(model_name):
+    
+    save_dir = f'{WD_PATH}/evaluation_figures_final/SVX_node_accuracy'
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+    
+    dataset_names = ['100K_accts_EASY25', '100K_accts_MID5', '100K_accts_HARD1']
+
+    explainer_colors_dict = {
+        'SVX_100K_accts_EASY25': '#F0E442',   # Lighter Yellow
+        'SVX_100K_accts_MID5': '#D55E00',     # Original Orange
+        'SVX_100K_accts_HARD1': '#A14800'     # Darker Orange
+    }
+    
+    plt.figure(figsize = (17,5))
+    for index, dataset_name in enumerate(dataset_names):
+        _, _, testdata, _, _ = load_model(model_name, dataset_name)
+        _, node_importance, _ = load_evaluation_data_SVX(model_name, dataset_name)
+        
+        n_sar_indices_to_use = 500
+        
+        threshold = np.arange(0,1,0.01)
+        thresh_stop = np.zeros(n_sar_indices_to_use)
+        n_sus_neighbours = np.zeros((n_sar_indices_to_use,len(threshold)))
+        SVX_accuracy = np.zeros((n_sar_indices_to_use,len(threshold)))
+
+        print(threshold.shape)
+        print(n_sus_neighbours.shape)
+        print(SVX_accuracy.shape)
+        print(thresh_stop.shape)
+        
+        time_start = time.time()
+        for i in range(n_sar_indices_to_use):
+            os.system('cls' if os.name == 'nt' else 'clear')
+
+            time_checkpoint = time.time()
+            time_elapsed = time_checkpoint - time_start
+            print(f'Progress: {i}/{n_sar_indices_to_use}.')
+            print(f'Time elapsed: {time_elapsed/60:.2f} minutes.')
+
+            SV_nodes = node_importance[i][0].squeeze()
+            new_to_org_mapping = node_importance[i][2]
+
+            for j, thresh in enumerate(threshold):
+                suspicious_neighbours_orgidx = []
+                suspicious_neighbours_sv = []
+                suspicious_neighbours_ypred = []
+                suspicious_neighbours_y = []
+                
+                for node_idx, sv in enumerate(SV_nodes):
+                    
+                    node_idx = node_idx + 1 #sv at position 0 corresponds to node 1 (since node 0 is not assigned a Shapley value)
+                    node_orgidx = new_to_org_mapping[node_idx].item()
+                    if sv > thresh:
+                        #suspicious_neighbours_orgidx.append(new_to_org_mapping[node_idx].item())
+                        suspicious_neighbours_orgidx.append(node_orgidx)
+                        suspicious_neighbours_sv.append(sv)
+                        suspicious_neighbours_ypred.append(1)
+                        suspicious_neighbours_y.append(testdata.y[node_orgidx].item())
+
+                if len(suspicious_neighbours_orgidx) == 0:
+                    thresh_stop[i] = thresh
+                    break
+                
+                SVX_accuracy[i,j] = accuracy_score(suspicious_neighbours_y, suspicious_neighbours_ypred)
+                n_sus_neighbours[i,j] = len(suspicious_neighbours_ypred)
+                
+        time_stop = time.time()
+        time_elapsed = time_stop - time_start
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print('Done. Time elapsed: {:.2f} minutes.'.format(time_elapsed/60))
+        print('Creating subplot...')
+        
+        thresh_interval = [0,100]
+        n_samples = 1000
+        threshold = threshold[thresh_interval[0]:thresh_interval[1]]
+        SVX_accuracy = SVX_accuracy[:,thresh_interval[0]:thresh_interval[1]]
+        n_sus_neighbours = n_sus_neighbours[:,thresh_interval[0]:thresh_interval[1]]
+
+        adjusted_mean_SVX_accuracy = np.zeros(len(threshold))
+        adjusted_count = np.zeros(len(threshold))
+        for i in range(len(threshold)):
+            tmp_mean = np.mean(SVX_accuracy[n_sus_neighbours[:,i] > 0,i])
+            if tmp_mean > 0:
+                adjusted_mean_SVX_accuracy[i] = tmp_mean # Mean of accuracy for those with at least one neighbour with shapley value > thresh
+            adjusted_count[i] = np.sum(n_sus_neighbours[:,i] > 0)/n_samples # Percentage of nodes with at least one neighbour with shapley value > thresh
+        
+        print('dataset: ', dataset_name)
+        print('adjusted_count: ', adjusted_count[-10:])
+        input('Press enter to continue.')   
+        
+        plt.subplot(1, 3, index+1)
+        color_key = f'SVX_{dataset_name}'
+        plt.plot(threshold, adjusted_mean_SVX_accuracy, color = explainer_colors_dict[color_key])
+        plt.plot(threshold, adjusted_count, color = 'black', linestyle = '--')
+        plt.ylim(0,1.2)
+        plt.xlabel('Shapley value threshold')
+        plt.legend(['Average accuracy', 'Percentage of samples with a SV > thresh'])
+        
+        if index == 0:
+            plt.title('EASY')
+        elif index == 1:
+            plt.title('MID')
+        elif index == 2:
+            plt.title('HARD')
+        else:
+            raise ValueError('index not recognized.')
+
+    plt.savefig(f'{save_dir}/adjusted_mean_SVX_accuracy.png')
+    plt.savefig(f'{save_dir}/adjusted_mean_SVX_accuracy.eps', format = 'eps', bbox_inches='tight')
+        
+    print('All finished.')
+
+
 def main():
     print('Running main.')
     
@@ -2019,6 +2368,82 @@ def main():
     type='llr'
     evaluation_type='correctness_'+type
     calculate_agreement_and_save_plots_combined(model_name, agreement_type, evaluation_type, type)
+    # dataset_name = '100K_accts_EASY25'
+    
+    # agreement_type = 'feature'
+    # evaluation_type = 'coherence'
+    # calculate_agreement_and_save_plots_combined(model_name, agreement_type, evaluation_type)
+
+    # agreement_type = 'sign'
+    # evaluation_type = 'coherence'
+    # calculate_agreement_and_save_plots_combined(model_name, agreement_type, evaluation_type)
+    
+    # agreement_type = 'rank'
+    # evaluation_type = 'coherence'
+    # calculate_agreement_and_save_plots_combined(model_name, agreement_type, evaluation_type)
+    
+    # agreement_type = 'signed_rank'
+    # evaluation_type = 'coherence'
+    # calculate_agreement_and_save_plots_combined(model_name, agreement_type, evaluation_type)
+
+    #completeness_save_plots_combined(model_name)
+    
+    SVX_node_accuracy_save_plots_combined(model_name)
+
+    # dataset_name = '100K_accts_EASY25'
+    # SVX_node_accuracy(model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_MID5'
+    # SVX_node_accuracy(model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_HARD1'
+    # SVX_node_accuracy(model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_HARD1'
+    # calculate_feature_importance_LIME(model_name, dataset_name)
+    # calculate_feature_importance_SHAP(model_name, dataset_name)
+    # calculate_feature_importance_SVX(model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_MID5'
+    # calculate_feature_importance_LIME(model_name, dataset_name)
+    # calculate_feature_importance_SHAP(model_name, dataset_name)
+    # calculate_feature_importance_SVX(model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_EASY25'
+    # calculate_feature_importance_LIME(model_name, dataset_name)
+    # calculate_feature_importance_SHAP(model_name, dataset_name)
+    # calculate_feature_importance_SVX(model_name, dataset_name)
+    # calculate_feature_importance_GraphLIME(model_name, dataset_name)
+
+
+    # dataset_name = '100K_accts_HARD1'
+    # completeness(model_name, dataset_name)
+    # confidence(model_name, dataset_name)
+    # coherence(model_name, dataset_name)
+
+    # dataset_name = '100K_accts_MID5'
+    # completeness(model_name, dataset_name)
+    # confidence(model_name, dataset_name)
+    # coherence(model_name, dataset_name)
+
+    # dataset_name = '100K_accts_EASY25'
+    # completeness(model_name, dataset_name)
+    # confidence(model_name, dataset_name)
+    # coherence(model_name, dataset_name)
+    
+    
+    # dataset_name = '100K_accts_HARD1'
+    # correctness(model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_MID5'
+    # correctness(model_name, dataset_name)
+    
+    # dataset_name = '100K_accts_EASY25'
+    # correctness(model_name, dataset_name)
+    
+    
+    # Run the different Co12 evaluation methods
+    # correctness(model_name, dataset_name)
     # completeness(model_name, dataset_name)
     # confidence(model_name, dataset_name)
     # coherence(model_name, dataset_name)

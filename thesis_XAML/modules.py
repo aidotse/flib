@@ -812,6 +812,7 @@ class GAT(torch.nn.Module):
         node_feature_vec = node_feature_vec.reshape(-1,self.in_channels)
         num_samples = node_feature_vec.shape[0]
         out = torch.zeros((num_samples,2))
+        #print('node_feature_vec: ', node_feature_vec)
         
         n_iters = num_nodes//50+1
         n_samples_per_iter = num_samples//n_iters+1
