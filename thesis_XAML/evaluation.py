@@ -2087,6 +2087,129 @@ def calculate_agreement_and_save_plots_combined(model_name, agreement_type: str,
     plt.close()
 
 
+import os
+import matplotlib.pyplot as plt
+import torch
+
+def calculate_agreement_and_save_plots_combined_correctness(model_name, agreement_type: str, evaluation_type: str, importance_type: str):
+    if agreement_type not in ['feature', 'rank', 'sign', 'signed_rank']:
+        raise ValueError("agreement_type must be either 'feature', 'rank', 'sign', or 'signed_rank'")
+
+    dataset_names = ['100K_accts_EASY25', '100K_accts_MID5', '100K_accts_HARD1']
+    explainer_pairs = [['groundtruth', 'LIME'], ['groundtruth', 'SHAP'], ['groundtruth', 'SVX']]
+
+    # Precompute feature importance ground truths
+    groundtruth_importances = {}
+    for dataset_name in dataset_names:
+        model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
+
+        sar_indices = get_sar_indices(model, testdata)
+        n_sar_indices_used = 500
+        sar_indices_used = sar_indices[:n_sar_indices_used]
+
+        model.set_return_attention_weights(True)
+        model.eval()
+        with torch.no_grad():
+            _, attention_weights = model.forward(testdata.x, testdata.edge_index)
+
+        dc = SyntheticDatacheck.Datacheck(dataset_name, importance=importance_type, aggregated=True, attention_weights=attention_weights, sar_indices_used=sar_indices_used)
+        feature_importance_groundtruth = dc.importance_test.iloc[sar_indices_used].to_numpy()
+
+        groundtruth_importances[dataset_name] = feature_importance_groundtruth
+
+    # Plot for each dataset
+    plt.figure(figsize=(15, 5))
+    explainer_colors_dict = {
+        'groundtruth_LIME': '#009E73',  # Green
+        'groundtruth_SHAP': '#0072B2',  # Blue
+        'groundtruth_SVX': '#D55E00'    # Orange
+    }
+
+    for index, dataset_name in enumerate(dataset_names):
+        feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
+        feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
+        feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
+
+        feature_importance_dict = {
+            'LIME': feature_importance_LIME,
+            'SHAP': feature_importance_SHAP,
+            'SVX': feature_importance_SVX,
+            'groundtruth': groundtruth_importances[dataset_name]
+        }
+
+        plt.subplot(1, 3, index + 1)
+
+        for explainer_pair in explainer_pairs:
+            feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
+            importance_order = 'abs' if importance_type == 'llr' else 'noabs'
+            agreement_list = get_agreement(feature_importance_list, agreement_type, importance_order)
+
+            color_key = f'{explainer_pair[0]}_{explainer_pair[1]}'
+            agreement_measure = agreement_list[1]
+            avg = agreement_measure[:, 0]
+            plt.plot(range(1, len(avg)), avg[1:], color=explainer_colors_dict[color_key])
+
+        plt.xlabel('k')
+        plt.ylabel('Average agreement (%)')
+        plt.ylim(0, 1)
+        plt.title(['EASY', 'MID', 'HARD'][index])
+        plt.legend([f'Ground truth {importance_type.upper()} vs. LIME', f'Ground truth {importance_type.upper()} vs. SHAP', f'Ground truth {importance_type.upper()} vs. SVX'])
+
+    save_dir = f'{WD_PATH}/evaluation_figures_final/{model_name}/{evaluation_type}'
+    os.makedirs(save_dir, exist_ok=True)
+    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_expcomparison_{importance_type.upper()}.png')
+    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_expcomparison_{importance_type.upper()}.eps', format='eps', bbox_inches='tight')
+    plt.close()
+
+    # Plot for each explainer pair
+    plt.figure(figsize=(15, 5))
+    explainer_colors_dict = {
+        'groundtruth_LIME_100K_accts_EASY25': '#66C2A5',  # Lighter Green
+        'groundtruth_LIME_100K_accts_MID5': '#009E73',    # Original Green
+        'groundtruth_LIME_100K_accts_HARD1': '#006D2C',   # Darker Green
+        'groundtruth_SHAP_100K_accts_EASY25': '#66B3FF',  # Lighter Blue
+        'groundtruth_SHAP_100K_accts_MID5': '#0072B2',    # Original Blue
+        'groundtruth_SHAP_100K_accts_HARD1': '#0055A4',   # Darker Blue
+        'groundtruth_SVX_100K_accts_EASY25': '#F0E442',   # Lighter Yellow
+        'groundtruth_SVX_100K_accts_MID5': '#D55E00',     # Original Orange
+        'groundtruth_SVX_100K_accts_HARD1': '#A14800'     # Darker Orange
+    }
+
+    for index, explainer_pair in enumerate(explainer_pairs):
+        plt.subplot(1, 3, index + 1)
+
+        for dataset_name in dataset_names:
+            feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
+            feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
+            feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
+
+            feature_importance_dict = {
+                'LIME': feature_importance_LIME,
+                'SHAP': feature_importance_SHAP,
+                'SVX': feature_importance_SVX,
+                'groundtruth': groundtruth_importances[dataset_name]
+            }
+
+            feature_importance_list = [feature_importance_dict[explainer_pair[0]], feature_importance_dict[explainer_pair[1]]]
+            importance_order = 'abs' if importance_type == 'llr' else 'noabs'
+            agreement_list = get_agreement(feature_importance_list, agreement_type, importance_order)
+
+            color_key = f'{explainer_pair[0]}_{explainer_pair[1]}_{dataset_name}'
+            agreement_measure = agreement_list[1]
+            avg = agreement_measure[:, 0]
+            plt.plot(range(1, len(avg)), avg[1:], color=explainer_colors_dict[color_key])
+
+        plt.xlabel('k')
+        plt.ylabel('Average agreement (%)')
+        plt.ylim(0, 1)
+        plt.title(f'Ground truth {importance_type.upper()} vs. {explainer_pair[1]}')
+        plt.legend(['EASY', 'MID', 'HARD'])
+
+    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_datacomparison_{importance_type.upper()}.png')
+    plt.savefig(f'{save_dir}/combined_{agreement_type}_agreement_datacomparison_{importance_type.upper()}.eps', format='eps', bbox_inches='tight')
+    plt.close()
+
+
 def completeness_save_plots_combined(model_name):
     
     evaluation_type = 'completeness'
@@ -2367,7 +2490,7 @@ def main():
     agreement_type='feature'
     type='llr'
     evaluation_type='correctness_'+type
-    calculate_agreement_and_save_plots_combined(model_name, agreement_type, evaluation_type, type)
+    calculate_agreement_and_save_plots_combined_correctness(model_name, agreement_type, evaluation_type, type)
     # dataset_name = '100K_accts_EASY25'
     
     # agreement_type = 'feature'
