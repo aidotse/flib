@@ -1,0 +1,27 @@
+certifi==2023.5.7
+cycler @ file:///home/conda/feedstock_root/build_artifacts/cycler_1635519461629/work
+decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
+Faker @ file:///home/conda/feedstock_root/build_artifacts/faker_1683209252258/work
+fonttools @ file:///home/conda/feedstock_root/build_artifacts/fonttools_1666389892786/work
+kiwisolver @ file:///home/conda/feedstock_root/build_artifacts/kiwisolver_1657953088445/work
+matplotlib @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-suite_1661439848456/work
+mpmath @ file:///home/conda/feedstock_root/build_artifacts/mpmath_1678228039184/work
+munkres==1.1.4
+networkx==1.11
+numpy @ file:///home/conda/feedstock_root/build_artifacts/numpy_1649806299270/work
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1681337016113/work
+Pillow @ file:///home/conda/feedstock_root/build_artifacts/pillow_1660385854171/work
+ply==3.11
+powerlaw @ file:///home/conda/feedstock_root/build_artifacts/powerlaw_1589637974211/work
+pygraphviz @ file:///home/conda/feedstock_root/build_artifacts/pygraphviz_1636131185849/work
+pyparsing @ file:///home/conda/feedstock_root/build_artifacts/pyparsing_1652235407899/work
+PyQt5==5.15.7
+PyQt5-sip==12.11.0
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1626286286081/work
+scipy @ file:///home/conda/feedstock_root/build_artifacts/scipy_1637806658031/work
+sip @ file:///home/conda/feedstock_root/build_artifacts/sip_1665592359543/work
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+toml @ file:///home/conda/feedstock_root/build_artifacts/toml_1604308577558/work
+tornado @ file:///home/conda/feedstock_root/build_artifacts/tornado_1656937818679/work
+typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1678559861143/work
+unicodedata2 @ file:///home/conda/feedstock_root/build_artifacts/unicodedata2_1649111917568/work

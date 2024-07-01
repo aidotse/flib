@@ -1,0 +1,3 @@
+count,min_balance,max_balance,country,business_type,bank_id
+500,1000,100000,SWE,I,swedbank
+500,1000,50000,SWE,I,swedbank
