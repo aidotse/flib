@@ -1166,7 +1166,7 @@ def completeness(model_name, dataset_name):
     model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
     mean_feature_values = traindata.x.mean(dim=0, keepdim=True).to('cpu').detach().numpy().squeeze()
 
-    rerun_and_save = 0
+    rerun_and_save = 1
     n_sar_indices_used = 5
     
     print('NOTE')
@@ -1676,15 +1676,15 @@ def coherence(model_name, dataset_name):
     feature_importance_SVX, _, _ = load_evaluation_data_SVX(model_name, dataset_name)
     feature_importance_LIME, _ = load_evaluation_data_LIME(model_name, dataset_name)
     feature_importance_SHAP = load_evaluation_data_SHAP(model_name, dataset_name)
-    feature_importance_GraphLIME = load_evaluation_data_GraphLIME(model_name, dataset_name)
+    # feature_importance_GraphLIME = load_evaluation_data_GraphLIME(model_name, dataset_name)
     
-    # feature_importance_list = [feature_importance_SVX, feature_importance_LIME, feature_importance_SHAP]
-    feature_importance_list = [feature_importance_SVX, feature_importance_GraphLIME]
+    feature_importance_list = [feature_importance_SVX, feature_importance_LIME, feature_importance_SHAP]
+    # feature_importance_list = [feature_importance_SVX, feature_importance_GraphLIME]
     
     agreement_type = 'feature'
     evaluation_type = 'coherence'
-    # explainer_names = ['SVX', 'LIME', 'SHAP']
-    explainer_names = ['SVX', 'GraphLIME']
+    explainer_names = ['SVX', 'LIME', 'SHAP']
+    # explainer_names = ['SVX', 'GraphLIME']
     
     for agreement_type in ['feature', 'rank', 'sign', 'signed_rank']:
         feature_agreement_list = get_agreement(feature_importance_list, agreement_type, importance_order = 'noabs')
