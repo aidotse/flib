@@ -144,7 +144,7 @@ def calculate_feature_importance_SVX(model_name, dataset_name):
     # Calculate SAR indices
     sar_indices = get_sar_indices(model, testdata)
     n_sar_indices = len(sar_indices)
-    n_sar_indices_to_use = 500
+    n_sar_indices_to_use = 5
     
     # Run explainer over all SAR indices or a random subset of them        
     model.eval()
@@ -248,7 +248,7 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
     # Calculate SAR indices
     sar_indices = get_sar_indices(model, testdata)
     n_sar_indices = len(sar_indices)
-    n_sar_indices_to_use = 500
+    n_sar_indices_to_use = 5
     
     # Run explainer over all SAR indices
     model.eval()
@@ -289,12 +289,12 @@ def calculate_feature_importance_LIME(model_name, dataset_name):
         model = model.to(device)
         testdata_expl = testdata_expl.to(device)
 
-        if i <= 3:
-            #save testdata_expl for debugging
-            with open(f'{data_save_dir}/{model_name}_{dataset_name}_testdata_expl_{node_to_explain}.pkl', 'wb') as f:
-                pickle.dump(testdata_expl.x[org_to_new_mapping[node_to_explain]], f)
-            if i==3:
-                raise ValueError('testdata_expl saved for debugging')
+        # if i <= 3:
+        #     #save testdata_expl for debugging
+        #     with open(f'{data_save_dir}/{model_name}_{dataset_name}_testdata_expl_{node_to_explain}.pkl', 'wb') as f:
+        #         pickle.dump(testdata_expl.x[org_to_new_mapping[node_to_explain]], f)
+        #     if i==3:
+        #         raise ValueError('testdata_expl saved for debugging')
         # --- LIME ---
         print('Running LIME')
         num_features = 31
@@ -431,7 +431,7 @@ def calculate_feature_importance_SHAP(model_name, dataset_name):
     # Calculate SAR indices
     sar_indices = get_sar_indices(model, testdata)
     n_sar_indices = len(sar_indices)
-    n_sar_indices_to_use = 500
+    n_sar_indices_to_use = 5
     
     # Run explainer over all SAR indices
     model.eval()
@@ -513,7 +513,7 @@ def calculate_feature_importance_GraphLIME(model_name, dataset_name):
     # Calculate SAR indices
     sar_indices = get_sar_indices(model, testdata)
     n_sar_indices = len(sar_indices)
-    n_sar_indices_to_use = 500
+    n_sar_indices_to_use = 5
     
     # Run explainer over all SAR indices or a random subset of them        
     model.eval()
@@ -1075,7 +1075,7 @@ def correctness(model_name, dataset_name):
         
         sar_indices = get_sar_indices(model, testdata)
         
-        n_sar_indices_used = 500
+        n_sar_indices_used = 5
 
         print(f'n_sar_indices_used == {n_sar_indices_used}')
         
@@ -1167,7 +1167,7 @@ def completeness(model_name, dataset_name):
     mean_feature_values = traindata.x.mean(dim=0, keepdim=True).to('cpu').detach().numpy().squeeze()
 
     rerun_and_save = 0
-    n_sar_indices_used = 500
+    n_sar_indices_used = 5
     
     print('NOTE')
     print(f'rerun_and_save == {rerun_and_save}')
@@ -1708,7 +1708,7 @@ def SVX_node_accuracy(model_name, dataset_name):
     sar_indices = get_sar_indices(model, testdata)
     # true_labels = testdata.y[sar_indices].to('cpu').detach().numpy()
     # sar_indices_TP = sar_indices[true_labels == 1]
-    n_sar_indices_to_use = 500
+    n_sar_indices_to_use = 5
     
     threshold = np.arange(0,1,0.01)
     thresh_stop = np.zeros(n_sar_indices_to_use)
@@ -2104,7 +2104,7 @@ def calculate_agreement_and_save_plots_combined_correctness(model_name, agreemen
         model, traindata, testdata, feature_names, target_names = load_model(model_name, dataset_name)
 
         sar_indices = get_sar_indices(model, testdata)
-        n_sar_indices_used = 500
+        n_sar_indices_used = 5
         sar_indices_used = sar_indices[:n_sar_indices_used]
 
         model.set_return_attention_weights(True)
@@ -2373,7 +2373,7 @@ def SVX_node_accuracy_save_plots_combined(model_name):
         _, _, testdata, _, _ = load_model(model_name, dataset_name)
         _, node_importance, _ = load_evaluation_data_SVX(model_name, dataset_name)
         
-        n_sar_indices_to_use = 500
+        n_sar_indices_to_use = 5
         
         threshold = np.arange(0,1,0.01)
         thresh_stop = np.zeros(n_sar_indices_to_use)
@@ -2406,7 +2406,7 @@ def SVX_node_accuracy_save_plots_combined(model_name):
                 for node_idx, sv in enumerate(SV_nodes):
                     
                     node_idx = node_idx + 1 #sv at position 0 corresponds to node 1 (since node 0 is not assigned a Shapley value)
-                    node_orgidx = new_to_org_mapping[node_idx].item()
+                    node_orgidx = new_to_org_mapping[node_idx]
                     if sv > thresh:
                         #suspicious_neighbours_orgidx.append(new_to_org_mapping[node_idx].item())
                         suspicious_neighbours_orgidx.append(node_orgidx)
