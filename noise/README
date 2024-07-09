@@ -1,0 +1,15 @@
+These scripts generate both missing labels from normal data and noisy datasets from missing labels.
+
+Here a lot is hardcoded unfortunately.
+
+Put these scripts in a folder with the datasets that AMLSim output, and define the names of the datasets at the top of each scripts.
+
+Ratios of missing label and noise are hardcoded so they need to be changed manually if something else than 10% and 25% is needed.
+
+generate_missing_labels.py generates a dataset with missing labels for both the normal and SAR class.
+
+generate_FP_FN.py generates a dataset with false positives and false negatives.
+
+generate_topology.py NEEDS the list of alert members that is in the tmp folder in AMLSim. It generates a dataset with noist on specific topologies.
+
+generat_neighbour.py generates a dataset with noise on the normal accounts connected to money-laundering accounts.
