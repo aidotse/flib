@@ -81,21 +81,21 @@ def init_params(seed:int=0) -> dict:
             (10000, 1000, 100000, 'SWE', 'I', 'bank'),
         ],
         'alertPatterns': [
-            (8, 'fan_out', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
-            (8, 'fan_in', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
-            (8, 'cycle', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
-            (8, 'bipartite', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
-            (8, 'stack', 2, 4, 4, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
-            (8, 'scatter_gather', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
-            (8, 'gather_scatter', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (40, 'fan_out', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (40, 'fan_in', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (40, 'cycle', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (40, 'bipartite', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (40, 'stack', 2, 4, 4, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (40, 'scatter_gather', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
+            (40, 'gather_scatter', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'TRANSFER'),
         ],
         'normalModels': [
-            (6000, 'single', 2, 2, 2, 1, 28),
-            (6000, 'fan_out', 2, 3, 3, 1, 28),
-            (6000, 'fan_in', 2, 3, 3, 1, 28),
-            (6000, 'forward', 2, 3, 3, 1, 28),
-            (6000, 'periodical', 2, 2, 2, 1, 28),
-            (6000, 'mutual', 2, 2, 2, 1, 28)
+            (10000, 'single', 2, 2, 2, 1, 28),
+            (10000, 'fan_out', 2, 2, 2, 1, 28),
+            (10000, 'fan_in', 2, 2, 2, 1, 28),
+            (10000, 'forward', 2, 3, 3, 1, 28),
+            (10000, 'periodical', 2, 2, 2, 1, 28),
+            (10000, 'mutual', 2, 2, 2, 1, 28)
         ]
     }
     return params
