@@ -16,9 +16,6 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: Ruff Linting
-        uses: chartboost/ruff-action@v1
-
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -27,15 +24,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.7
 
       - name: provision-with-micromamba
         uses: mamba-org/provision-with-micromamba@main
         with:
-          environment-file: amlsim.yml
+          environment-file: AMLsim/amlsim.yml
           environment-name: amlsim
           cache-downloads: true
 
