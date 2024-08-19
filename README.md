@@ -1,5 +1,7 @@
 **OBS: under construction!**
 
+THIS IS PUBLIC
+
 This is the repsitory for all the code in the project.
 
 **Currently containing**
