@@ -1,1 +1,48 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+name: Running tests
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  code-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Ruff Linting
+        uses: chartboost/ruff-action@v1
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write  # Ensure write permission for contents
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: provision-with-micromamba
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-file: amlsim.yml
+          environment-name: amlsim
+          cache-downloads: true
+
+      - name: Test with pytest
+        shell: bash -l {0}
+        run: |
+          micromamba activate amlsim
+          micromamba install pytest pytest-cov
+          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=leakpro leakpro/tests/ | tee pytest-coverage.txt
+          cat ./pytest-coverage.txt
