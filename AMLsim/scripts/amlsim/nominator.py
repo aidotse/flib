@@ -1,4 +1,3 @@
-import networkx as nx
 import random
 
 class Nominator:
@@ -59,7 +58,7 @@ class Nominator:
         Returns:
             list: A list of vertices ranked by the number of in- and outgoing edges.
         """        
-        candidates = [n for n in self.g.nodes() if 
+        candidates = [n for n in list(self.g.nodes()) if 
                       self.g.in_degree(n) >= 1 and 
                       self.g.out_degree(n) >= 1 and 
                        (self.g.in_degree(n) != 1 or self.g.out_degree(n) != 1 or set(self.g.successors(n)) != set(self.g.predecessors(n)))]
@@ -73,7 +72,7 @@ class Nominator:
         Returns:
             list: A list of vertices ranked by the number of outgoing edges.
         """        
-        candidates = [n for n in self.g.nodes() if self.g.out_degree(n) >= 1]
+        candidates = [n for n in list(self.g.nodes()) if self.g.out_degree(n) >= 1]
         random.shuffle(candidates) 
         return candidates
 
@@ -89,7 +88,7 @@ class Nominator:
         self.min_fan_in_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
 
         # return a list of nodes with at least enough incoming edges as the minimum number of accounts, sorted with respect to how many in degrees there are
-        candidates = [n for n in self.g.nodes() if self.g.in_degree(n) >= self.min_fan_in_threshold]
+        candidates = [n for n in list(self.g.nodes()) if self.g.in_degree(n) >= self.min_fan_in_threshold]
         random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
         return candidates
 
@@ -102,7 +101,7 @@ class Nominator:
         """        
         nm_min_requirement = min(self.model_params_dict["fan_out"] , key=lambda x: x[1]) # get the normal model parameters with the smallest minimum number of accounts
         self.min_fan_out_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
-        candidates = [n for n in self.g.nodes() if self.g.out_degree(n) >= self.min_fan_out_threshold]
+        candidates = [n for n in list(self.g.nodes()) if self.g.out_degree(n) >= self.min_fan_out_threshold]
         random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
         return candidates
 
@@ -283,7 +282,7 @@ class Nominator:
         # Simulate an ordered set using OrderedDict
         node_ids_ordered = OrderedDict.fromkeys(node_ids)
         # Getting the normal models associated with main_id
-        normal_models = self.g.node[main_id]['normal_models']
+        normal_models = self.g.nodes[main_id]['normal_models']
         # Filter out the normal models that are of the specified type and have the main_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id)
         # Check if any of the filtered normal models contain the node_ids in order
@@ -334,7 +333,7 @@ class Nominator:
             bool: True if any of the node_ids are already in a type relationship with the main_id.
         """        
         node_ids = set(node_ids) # make sure it's a set
-        normal_models = self.g.node[main_id]['normal_models'] # get the transaction models associated with main_id
+        normal_models = self.g.nodes[main_id]['normal_models'] # get the transaction models associated with main_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id) # filter out the normal models that are of the type and have the main_id
         return any(node_ids.issubset(filtered.node_ids) for filtered in filtereds) # return True if any of the filtered normal models contain the node_ids
 
@@ -351,7 +350,7 @@ class Nominator:
             list: A list of normal models where main_id is the main_id and the node_ids are a subset of the node_ids in the normal model.
         """        
         node_ids = set(node_ids)
-        normal_models = self.g.node[main_id]['normal_models'] # get the transaction models associated with main_id
+        normal_models = self.g.nodes[main_id]['normal_models'] # get the transaction models associated with main_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id) # filter out the normal models that are of the type and have the main_id
         return [filtered for filtered in filtereds if node_ids.issubset(filtered.node_ids)] # return list of filtered normal models where node_ids are a subset of the node_ids
 
@@ -366,7 +365,7 @@ class Nominator:
         Returns:
             list: A list of sets of node_ids that are in a fan relationship with the node_id.
         """        
-        normal_models = self.g.node[node_id]['normal_models'] # get the transaction models associated with node_id
+        normal_models = self.g.nodes[node_id]['normal_models'] # get the transaction models associated with node_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == node_id) # create generator to iterate over the normal models that are of the type and have the main_id = node_id
         nodes_in_relation = [filtered.node_ids_without_main() for filtered in filtereds] # return the node_ids without the main_id
         if len(nodes_in_relation) == 0:

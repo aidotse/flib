@@ -9,7 +9,7 @@
     "max_amount": 150000,
     "mean_amount": 637,
     "std_amount": 500,
-    "mean_amount_sar": 1000,
+    "mean_amount_sar": 900,
     "std_amount_sar": 500,
     "prob_income": 0.0,
     "mean_income": 0.0,
@@ -42,7 +42,8 @@
     "normal_models": "normalModels.csv",
     "degree": "degree.csv",
     "transaction_type": "transactionType.csv",
-    "is_aggregated_accounts": true
+    "is_aggregated_accounts": true,
+    "insert_patterns": "insertPatterns.csv"
   },
   "temporal": {
     "directory": "tmp",
@@ -59,7 +60,7 @@
     "degree_threshold": 1
   },
   "simulator": {
-    "transaction_limit": 1000000,
+    "transaction_limit": 10000000,
     "transaction_interval": 7,
     "sar_interval": 7
   },

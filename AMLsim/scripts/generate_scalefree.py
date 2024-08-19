@@ -4,7 +4,6 @@ Generate scale-free graph and output degree-distribution CSV file
 
 import numpy as np
 import networkx as nx
-from collections import Counter
 import csv
 import sys
 import json
