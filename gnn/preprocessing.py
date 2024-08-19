@@ -7,6 +7,7 @@ import time
 def load_data(path:str) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = df[df['bankOrig'] != 'source'] # TODO: create features based on source transactions
+    df = df[df['type'] != 'CASH']
     df.drop(columns=['type', 'oldbalanceOrig', 'oldbalanceDest', 'newbalanceOrig', 'newbalanceDest', 'alertID', 'modelType'], inplace=True)
     return df
 
@@ -140,12 +141,12 @@ def main():
     
     t = time.time()
     
-    dataset = '10K_accts'
-    path = f'../AMLsim/outputs/{dataset}/tx_log.csv'
+    dataset = 'deliodata'
+    path = '/home/edvin/Desktop/flib/gnn/data/deliodata/tx_log.csv' #f'../AMLsim/outputs/{dataset}/tx_log.csv'
     df = load_data(path)
-    banks = ['handelsbanken', 'swedbank']
+    banks = ['bank'] #['handelsbanken', 'swedbank']
     overlap = 0.9 # overlap of training and testing data
-    windows = [(0, 182), (183, 365), (0, 365)] # int or list of tuples - if int then the number of windows, if list of tuples then the start and end step for each window
+    windows = [(0, 14), (14, 28), (0, 28)] # int or list of tuples - if int then the number of windows, if list of tuples then the start and end step for each window
     
     for bank in banks:
         df_bank = df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]

@@ -423,6 +423,7 @@ class TransactionGenerator:
             #    if member == 181:
             #        print("181")
             
+            accts = list(self.acct_to_bank.keys())
             members = []
             for m in range(num):
                 bin = 0
@@ -433,9 +434,9 @@ class TransactionGenerator:
                         break
                     else:
                         bin += 1
-                candidates = [] #[candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                candidates = [] 
                 while candidates == []:
-                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in accts]
                     bin += 1
                 member = random.sample(candidates, 1)[0]
                 members.append(member)
@@ -1661,7 +1662,7 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
-        PARAM_FILES = '10K_accts'
+        PARAM_FILES = '100K_accts'
         argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]

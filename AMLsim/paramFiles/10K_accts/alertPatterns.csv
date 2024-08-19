@@ -1,2 +1,2 @@
 count,type,schedule_id,min_accounts,max_accounts,min_amount,max_amount,min_period,max_period,bank_id,is_sar,source_type
-1000,stack,2,10,20,100,1000,1,28,bank,True,CASH
+50,stack,2,10,20,100,1000,1,28,bank,True,CASH

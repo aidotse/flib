@@ -92,20 +92,20 @@ class Optimizer():
             ],
             'alertPatterns': [
                 (int(3300*self.ratio), 'fan_out', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'CASH'),
-                (int(3300*self.ratio), 'fan_in', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'CASH'),
-                (int(3300*self.ratio), 'cycle', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'CASH'),
-                (int(3300*self.ratio), 'bipartite', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'CASH'),
-                (int(3300*self.ratio), 'stack', 2, 4, 4, 100, 1000, 1, 28, 'bank', True, 'CASH'),
-                (int(3300*self.ratio), 'scatter_gather', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'CASH'),
-                (int(3300*self.ratio), 'gather_scatter', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'CASH'),
+                #(int(3300*self.ratio), 'fan_in', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'CASH'),
+                #(int(3300*self.ratio), 'cycle', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'CASH'),
+                #(int(3300*self.ratio), 'bipartite', 2, 2, 2, 100, 1000, 1, 28, 'bank', True, 'CASH'),
+                #(int(3300*self.ratio), 'stack', 2, 4, 4, 100, 1000, 1, 28, 'bank', True, 'CASH'),
+                #(int(3300*self.ratio), 'scatter_gather', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'CASH'),
+                #(int(3300*self.ratio), 'gather_scatter', 2, 5, 5, 100, 1000, 1, 28, 'bank', True, 'CASH'),
             ],
             'normalModels': [
                 (int(4000), 'single', 2, 2, 2, 1, 28),
-                (int(4000), 'fan_out', 2, 3, 3, 1, 28),
-                (int(4000), 'fan_in', 2, 3, 3, 1, 28),
-                (int(4000), 'forward', 2, 3, 3, 1, 28),
-                (int(4000), 'periodical', 2, 2, 2, 1, 28),
-                (int(4000), 'mutual', 2, 2, 2, 1, 28)
+                #(int(4000), 'fan_out', 2, 3, 3, 1, 28),
+                #(int(4000), 'fan_in', 2, 3, 3, 1, 28),
+                #(int(4000), 'forward', 2, 3, 3, 1, 28),
+                #(int(4000), 'periodical', 2, 2, 2, 1, 28),
+                #(int(4000), 'mutual', 2, 2, 2, 1, 28)
             ]
         }
         
