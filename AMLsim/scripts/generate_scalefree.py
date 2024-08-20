@@ -4,77 +4,11 @@ Generate scale-free graph and output degree-distribution CSV file
 
 import numpy as np
 import networkx as nx
-from collections import Counter
 import csv
 import sys
 import json
 import os
 from scipy import stats
-
-def kronecker_generator(scale, edge_factor):
-    """Kronecker graph generator
-  Ported from octave code in https://graph500.org/?page_id=12#alg:generator
-  """
-    N = 2 ** scale  # Number of vertices
-    M = N * edge_factor  # Number of edges
-    A, B, C = (0.57, 0.19, 0.19)  # Initiator probabilities
-    ijw = np.ones((3, M))  # Index arrays
-
-    ab = A + B
-    c_norm = C / (1 - (A + B))
-    a_norm = A / (A + B)
-
-    for ib in range(scale):
-        ii_bit = (np.random.rand(1, M) > ab).astype(int)
-        ac = c_norm * ii_bit + a_norm * (1 - ii_bit)
-        jj_bit = (np.random.rand(1, M) > ac).astype(int)
-        ijw[:2, :] = ijw[:2, :] + 2 ** ib * np.vstack((ii_bit, jj_bit))
-
-    ijw[2, :] = np.random.rand(1, M)
-    ijw[:2, :] = ijw[:2, :] - 1
-    q = range(M)
-    np.random.shuffle(q)
-    ijw = ijw[:, q]
-    edges = ijw[:2, :].astype(int).T
-    _g = nx.DiGraph()
-    _g.add_edges_from(edges)
-    return _g
-
-
-def kronecker_generator_general(_n, _m):
-    # TODO: Accept general number of nodes and edges
-    A, B, C = (0.57, 0.19, 0.19)  # Initiator probabilities
-    ijw = np.ones((3, _m))  # Index arrays
-    ab = A + B
-    c_norm = C / (1 - (A + B))
-    a_norm = A / (A + B)
-    tmp = _n
-    while tmp > 0:
-        tmp //= 2
-        ii_bit = (np.random.rand(1, _m) > ab).astype(int)
-        ac = c_norm * ii_bit + a_norm * (1 - ii_bit)
-        jj_bit = (np.random.rand(1, _m) > ac).astype(int)
-        ijw[:2, :] = ijw[:2, :] + tmp * np.vstack((ii_bit, jj_bit))
-    ijw[2, :] = np.random.rand(1, _m)
-    ijw[:2, :] = ijw[:2, :] - 1
-    q = range(_m)
-    np.random.shuffle(q)
-    ijw = ijw[:, q]
-    edges = ijw[:2, :].astype(int).T
-    _g = nx.DiGraph()
-    _g.add_edges_from(edges)
-    return _g
-
-
-def powerlaw_cluster_generator(_n, _edge_factor):
-    edges = nx.barabasi_albert_graph(_n, _edge_factor, seed=0).edges()  # Undirected edges
-
-    # Swap the direction of half edges to diffuse degree
-    di_edges = [(edges[i][0], edges[i][1]) if i % 2 == 0 else (edges[i][1], edges[i][0]) for i in range(len(edges))]
-    _g = nx.DiGraph()
-    _g.add_edges_from(di_edges)  # Create a directed graph
-    return _g
-
 
 def get_n(conf_file):
     # open conf.json and get accounts file
@@ -219,45 +153,6 @@ def powerlaw_degree_distrubution(n, gamma=2.0, loc=1.0, scale=1.0, seed=0):
         in_degrees[np.argmax(in_degrees)] += diff / 2
         out_degrees[np.argmax(out_degrees)] -= diff / 2
     
-    '''
-    in_degrees = stats.pareto.rvs(gamma, loc=loc, scale=scale, size=n, random_state=42).round()
-    out_degrees = stats.pareto.rvs(gamma, loc=loc, scale=scale, size=n, random_state=43).round()
-    in_degrees = in_degrees // 2
-    out_degrees = out_degrees // 2 
-    
-    if (in_degrees.sum() + out_degrees.sum()) % 2 != 0:
-        if in_degrees.sum() > out_degrees.sum():
-            rand_idx = np.random.choice(np.where(in_degrees > 0)[0])
-            in_degrees[rand_idx] -= 1
-        else:
-            rand_idx = np.random.choice(np.where(out_degrees > 0)[0])
-            out_degrees[rand_idx] -= 1
-    
-    i = 0
-    while in_degrees.sum() != out_degrees.sum() and i < 100000:
-        if in_degrees.sum() > out_degrees.sum():
-            rand_idx = np.random.choice(np.where(in_degrees > 1)[0])
-            in_degrees[rand_idx] -= 1
-            out_degrees[rand_idx] += 1
-        else:
-            rand_idx = np.random.choice(np.where(out_degrees > 1)[0])
-            in_degrees[rand_idx] += 1
-            out_degrees[rand_idx] -= 1
-        i += 1
-    
-    if in_degrees.sum() != out_degrees.sum():
-        if in_degrees.sum() > out_degrees.sum():
-            diff = in_degrees.sum() - out_degrees.sum()
-            assert diff % 2 == 0
-            in_degrees[np.argmax(in_degrees)] -= diff / 2
-            out_degrees[np.argmax(out_degrees)] += diff / 2
-        elif in_degrees.sum() < out_degrees.sum():
-            diff = out_degrees.sum() - in_degrees.sum()
-            assert diff % 2 == 0
-            in_degrees[np.argmax(in_degrees)] += diff / 2
-            out_degrees[np.argmax(out_degrees)] -= diff / 2
-    '''
-    
     degrees = np.column_stack((in_degrees,out_degrees))
     
     values, counts = np.unique(degrees, return_counts=True, axis=0)
@@ -284,8 +179,8 @@ if __name__ == "__main__":
         # build degree file path
         deg_file_path = os.path.join(directory, deg_file)
     elif len(argv) == 1:
-        deg_file_path = "paramFiles/100K_accts/degree.csv"
-        n = 100000
+        deg_file_path = "paramFiles/10K_accts/degree.csv"
+        n = 10000
         gamma = 2.0
         loc = 1.0
         scale = 1.0

@@ -14,11 +14,13 @@ import logging
 from scipy import stats
 
 from collections import Counter, defaultdict
-from amlsim.nominator import Nominator
-from amlsim.normal_model import NormalModel
 
-from amlsim.random_amount import RandomAmount
-from amlsim.rounded_amount import RoundedAmount
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from scripts.amlsim.nominator import Nominator
+from scripts.amlsim.normal_model import NormalModel
+from scripts.amlsim.random_amount import RandomAmount
+from scripts.amlsim.rounded_amount import RoundedAmount
 
 
 logging.basicConfig(level=logging.INFO)
@@ -379,7 +381,10 @@ class TransactionGenerator:
                         break
                     else:
                         bin += 1
-                candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                candidates = [] #[candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                while candidates == []:
+                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
+                    bin += 1
                 member = random.sample(candidates, 1)[0]
                 members.append(member)
             for member in members:
@@ -420,6 +425,7 @@ class TransactionGenerator:
             #    if member == 181:
             #        print("181")
             
+            accts = list(self.acct_to_bank.keys())
             members = []
             for m in range(num):
                 bin = 0
@@ -430,7 +436,10 @@ class TransactionGenerator:
                         break
                     else:
                         bin += 1
-                candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members]
+                candidates = [] 
+                while candidates == []:
+                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in accts]
+                    bin += 1
                 member = random.sample(candidates, 1)[0]
                 members.append(member)
             for member in members:
@@ -605,7 +614,7 @@ class TransactionGenerator:
         self.g = G
 
         logger.info("Add %d base transactions" % self.g.number_of_edges())
-        nodes = self.g.nodes()
+        nodes = list(self.g.nodes())
         for src_i, dst_i in self.g.edges():
             src = nodes[src_i]
             dst = nodes[dst_i]
@@ -628,7 +637,7 @@ class TransactionGenerator:
         if attr['bank_id'] is None:
             attr['bank_id'] = self.default_bank_id
 
-        self.g.node[acct_id] = attr # load attributes onto the node
+        self.g.nodes[acct_id].update(attr)
 
         self.bank_to_accts[attr['bank_id']].add(acct_id)
         self.acct_to_bank[acct_id] = attr['bank_id']
@@ -656,7 +665,7 @@ class TransactionGenerator:
         self.check_account_exist(bene)
         if orig == bene:
             raise ValueError("Self loop from/to %s is not allowed for transaction networks" % str(orig))
-        self.g.edge[orig][bene]['edge_id'] = self.edge_id
+        self.g.edges[orig, bene]['edge_id'] = self.edge_id
         self.edge_id += 1
 
 
@@ -690,10 +699,10 @@ class TransactionGenerator:
 
 
     def mark_active_edges(self):
-        nx.set_edge_attributes(self.g, 'active', False)
+        nx.set_edge_attributes(self.g, False, 'active')
         for normal_model in self.normal_models:
             subgraph = self.g.subgraph(normal_model.node_ids)
-            nx.set_edge_attributes(subgraph, 'active', True)
+            nx.set_edge_attributes(subgraph, True, 'active')
 
 
     def load_normal_models(self):
@@ -782,7 +791,7 @@ class TransactionGenerator:
         normal_model.set_params(schedule_id, start_step, end_step)
 
         for result_id in result_ids:
-            self.g.node[result_id]['normal_models'].append(normal_model)
+            self.g.nodes[result_id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
         
@@ -807,7 +816,7 @@ class TransactionGenerator:
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
-            self.g.node[id]['normal_models'].append(normal_model)
+            self.g.nodes[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
         
@@ -821,8 +830,8 @@ class TransactionGenerator:
         if node_id is None:
             return False
 
-        succ_ids = self.g.successors(node_id)
-        pred_ids = self.g.predecessors(node_id)
+        succ_ids = list(self.g.successors(node_id))
+        pred_ids = list(self.g.predecessors(node_id))
 
         # find all input-node_id-output sets avialable where input and output are different
         sets = [[node_id, pred_id, succ_id] for pred_id in pred_ids for succ_id in succ_ids if pred_id != succ_id]
@@ -840,7 +849,7 @@ class TransactionGenerator:
         normal_model.set_params(schedule_id, start_step, end_step)
         
         for id in chosen_nodes:
-            self.g.node[id]['normal_models'].append(normal_model)
+            self.g.nodes[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
         self.nominator.post_update(node_id, type)
@@ -852,7 +861,7 @@ class TransactionGenerator:
         if node_id is None:
             return False
         
-        succ_ids = self.g.successors(node_id) # find the accounts connected to this node_id
+        succ_ids = list(self.g.successors(node_id)) # find the accounts connected to this node_id
         # find the first account that is not in a single relationship with this node_id
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id})) # TODO: this takes a lot of time... 
         
@@ -861,7 +870,7 @@ class TransactionGenerator:
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
-            self.g.node[id]['normal_models'].append(normal_model) # add the normal model to the nodes
+            self.g.nodes[id]['normal_models'].append(normal_model) # add the normal model to the nodes
 
         self.normal_models.append(normal_model)
 
@@ -874,7 +883,7 @@ class TransactionGenerator:
         if node_id is None:
             return False
         
-        succ_ids = self.g.successors(node_id)
+        succ_ids = list(self.g.successors(node_id))
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
 
         result_ids = { node_id, succ_id }
@@ -882,7 +891,7 @@ class TransactionGenerator:
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
-            self.g.node[id]['normal_models'].append(normal_model)
+            self.g.nodes[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
 
@@ -895,7 +904,7 @@ class TransactionGenerator:
         if node_id is None:
             return False
         
-        succ_ids = self.g.successors(node_id)
+        succ_ids = list(self.g.successors(node_id))
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
 
         result_ids = { node_id, succ_id }
@@ -903,7 +912,7 @@ class TransactionGenerator:
         schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
-            self.g.node[id]['normal_models'].append(normal_model)
+            self.g.nodes[id]['normal_models'].append(normal_model)
 
         self.normal_models.append(normal_model)
 
@@ -1018,10 +1027,10 @@ class TransactionGenerator:
             :param _acct: Account ID
             :param _bank_id: Bank ID
             """
-            attr_dict = self.g.node[_acct] # Get attributes of the account from main transaction graph
+            attr_dict = self.g.nodes[_acct] # Get attributes of the account from main transaction graph
             attr_dict[IS_SAR_KEY] = True # Set SAR flag
 
-            sub_g.add_node(_acct, attr_dict) # Add the account to the AML typology subgraph
+            sub_g.add_node(_acct, **attr_dict) # Add the account to the AML typology subgraph
 
         def add_main_acct():
             """Create a main account ID and a bank ID from hub accounts
@@ -1563,9 +1572,12 @@ class TransactionGenerator:
                 src = e[0]
                 dst = e[1]
                 attr = e[2]
+                tid = attr.get('edge_id', None)
+                is_active = attr.get('active', False)
+    
                 tid = attr['edge_id']
                 tx_type = random.choice(self.tx_types)
-                if attr['active']:
+                if is_active:
                     writer.writerow([tid, src, dst, tx_type])
         logger.info("Exported %d transactions to %s" % (self.g.number_of_edges(), tx_file))
 
@@ -1598,10 +1610,10 @@ class TransactionGenerator:
                     max_amt = '{:.2f}'.format(max(get_out_edge_attrs(sub_g, n, "amount")))
                     min_step = start
                     max_step = end
-                    bank_id = sub_g.node[n]["bank_id"]
+                    bank_id = sub_g.nodes[n]["bank_id"]
                     values = [gid, reason, n, is_main, is_sar, model_id, min_amt, max_amt,
                               min_step, max_step, schedule_id, bank_id, source_type] # read out all the values
-                    prop = self.g.node[n] # get the current node from the main graph
+                    prop = self.g.nodes[n] # get the current node from the main graph
                     for attr_name in self.attr_names: # read out all the user-defined attributes
                         values.append(prop[attr_name]) # append the values to the list
                     writer.writerow(values) # write the values to the CSV file

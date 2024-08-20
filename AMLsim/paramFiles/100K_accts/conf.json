@@ -9,7 +9,7 @@
     "max_amount": 150000,
     "mean_amount": 637,
     "std_amount": 500,
-    "mean_amount_sar": 1000,
+    "mean_amount_sar": 900,
     "std_amount_sar": 500,
     "prob_income": 0.0,
     "mean_income": 0.0,
@@ -25,12 +25,12 @@
     "n_steps_balance_history": 56,
     "mean_phone_change_frequency": 1460,
     "std_phone_change_frequency": 365,
-    "mean_phone_change_frequency_sar": 365,
-    "std_phone_change_frequency_sar": 182,
+    "mean_phone_change_frequency_sar": 1095,
+    "std_phone_change_frequency_sar": 365,
     "mean_bank_change_frequency": 1460,
-    "std_bank_change_frequency": 1,
-    "mean_bank_change_frequency_sar": 1460,
-    "std_bank_change_frequency_sar": 1,
+    "std_bank_change_frequency": 365,
+    "mean_bank_change_frequency_sar": 1095,
+    "std_bank_change_frequency_sar": 365,
     "margin_ratio": 0.1,
     "prob_participate_in_multiple_sars": 0.2
   },
@@ -42,7 +42,8 @@
     "normal_models": "normalModels.csv",
     "degree": "degree.csv",
     "transaction_type": "transactionType.csv",
-    "is_aggregated_accounts": true
+    "is_aggregated_accounts": true,
+    "insert_patterns": "insertPatterns.csv"
   },
   "temporal": {
     "directory": "tmp",
@@ -59,12 +60,12 @@
     "degree_threshold": 1
   },
   "simulator": {
-    "transaction_limit": 1000000,
+    "transaction_limit": 10000000,
     "transaction_interval": 7,
     "sar_interval": 7
   },
   "scale-free": {
-    "gamma": 2.0,
+    "gamma": 1.6,
     "loc": 1.0,
     "scale": 1.0
   }

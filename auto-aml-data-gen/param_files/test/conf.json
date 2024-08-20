@@ -9,7 +9,7 @@
     "max_amount": 150000,
     "mean_amount": 637,
     "std_amount": 500,
-    "mean_amount_sar": 1000,
+    "mean_amount_sar": [637, 1000],
     "std_amount_sar": 500,
     "prob_income": 0.0,
     "mean_income": 0.0,

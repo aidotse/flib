@@ -75,7 +75,7 @@ class AmlsimDataset():
         edge_index = edge_index.t().contiguous()
         
         if node_features:
-            x = torch.tensor(nodes[nodes.columns[:-1]].values, dtype=torch.float)
+            x = torch.tensor(nodes[nodes.columns[2:-1]].values, dtype=torch.float)
         else:
             x = torch.ones(nodes.shape[0], 1)
         if edge_features:
