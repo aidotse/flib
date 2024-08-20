@@ -1,4 +1,4 @@
-name: amlsim2
+name: amlsim
 channels:
   - conda-forge
   - defaults
