@@ -283,8 +283,8 @@ if __name__ == "__main__":
         # build degree file path
         deg_file_path = os.path.join(directory, deg_file)
     elif len(argv) == 1:
-        deg_file_path = "paramFiles/100K_accts/degree.csv"
-        n = 100000
+        deg_file_path = "paramFiles/10K_accts/degree.csv"
+        n = 10000
         gamma = 2.0
         loc = 1.0
         scale = 1.0

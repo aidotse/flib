@@ -58,11 +58,12 @@ if __name__ == "__main__":
     
     argv = sys.argv
     
-    # debug 
-    PARAM_FILES = '100K_accts_inserted_alerts'
-    argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
-    
-    if len(argv) == 2:
+    if len(argv) == 1:
+        # debug 
+        PARAM_FILES = '100K_accts_inserted_alerts'
+        conf_file = f'paramFiles/{PARAM_FILES}/conf.json'
+        insert_alert_patterns(conf_file)
+    elif len(argv) == 2:
         conf_file = argv[1]
         insert_alert_patterns(conf_file)
     elif len(argv) == 3:
