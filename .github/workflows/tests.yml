@@ -34,5 +34,5 @@ jobs:
           set -e
           micromamba activate amlsim
           micromamba install pytest pytest-cov
-          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=amlsim AMLsim/amlsim/tests/ | tee pytest-coverage.txt
+          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=amlsim AMLsim/tests/ | tee pytest-coverage.txt
           cat ./pytest-coverage.txt
