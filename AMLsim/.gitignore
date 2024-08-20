@@ -2,3 +2,4 @@ outputs
 tmp
 __pycache__
 target
+.vscode
