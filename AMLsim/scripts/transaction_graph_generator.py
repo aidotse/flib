@@ -14,11 +14,11 @@ import logging
 from scipy import stats
 
 from collections import Counter, defaultdict
-from amlsim.nominator import Nominator
-from amlsim.normal_model import NormalModel
+from scripts.amlsim.nominator import Nominator
+from scripts.amlsim.normal_model import NormalModel
 
-from amlsim.random_amount import RandomAmount
-from amlsim.rounded_amount import RoundedAmount
+from scripts.amlsim.random_amount import RandomAmount
+from scripts.amlsim.rounded_amount import RoundedAmount
 
 
 logging.basicConfig(level=logging.INFO)

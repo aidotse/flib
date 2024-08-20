@@ -31,8 +31,9 @@ jobs:
       - name: Run tests with pytest
         shell: bash -l {0}
         run: |
+          cd AMLsim
           set -e
           micromamba activate amlsim
           micromamba install pytest pytest-cov
-          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=amlsim AMLsim/tests/ | tee pytest-coverage.txt
+          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=amlsim ./tests/ | tee pytest-coverage.txt
           cat ./pytest-coverage.txt

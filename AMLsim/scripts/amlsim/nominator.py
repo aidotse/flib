@@ -393,7 +393,7 @@ class Nominator:
             max_threshold = self.model_params_dict[type][indx][2]-1 # get the maximum number of allowed accounts
             n_max = min(len(candidates), max_threshold) # get the maximum number of accounts that can be used
             n_candidates = random.randint(min_threshold, n_max) # decide number of nodes in fan pattern
-            candidates = set(random.sample(candidates, n_candidates)) # randomly select n_candidates from the candidates
+            candidates = set(random.sample(list(candidates), n_candidates)) # randomly select n_candidates from the candidates
             return candidates
         else:
             raise ValueError(f"There are not enough candidate for {type}")
