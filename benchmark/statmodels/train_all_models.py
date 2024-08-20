@@ -20,7 +20,7 @@ def calculate_ROC_AUC(model, X_test, y_test):
     roc_auc = roc_auc_score(y_test, y_score)
     return roc_auc
 
-def get_dataset(name, ratio, noise,GROUND_DATASET):
+def get_dataset(name, ratio, noise, GROUND_DATASET):
 
     train_path = f'{GROUND_DATASET}/{name}/bank/train/{ratio}/{noise}'
     test_path = f'{GROUND_DATASET}/{name}/bank/test/nodes.csv'
@@ -57,7 +57,7 @@ def get_dataset(name, ratio, noise,GROUND_DATASET):
     return X_train, y_train, X_test, y_test
 
 
-def train_model(model, model_name,dataset,ratio, noise, GROUND_DATASET):
+def train_model(model, model_name, dataset,ratio, noise, GROUND_DATASET):
 
     X_train, y_train, X_test, y_test = get_dataset(dataset, ratio, noise, GROUND_DATASET)
 
@@ -69,6 +69,26 @@ def train_model(model, model_name,dataset,ratio, noise, GROUND_DATASET):
     ROC_AUC = calculate_ROC_AUC(model, X_test, y_test)
 
     return AP, ROC_AUC
+
+def train_models(datasets:list, model_names:list=['XGB','RF','SVM','KNN','LOG']):
+    
+    results_df = pd.DataFrame(columns=['model', 'dataset', 'ratio', 'noise', 'AP','ROC_AUC'])
+    
+    for dataset in datasets:
+        for model_name in model_names:
+            if model_name == 'SVM':
+                model = svm.SVC(kernel='rbf',probability=True)
+            elif model_name == 'KNN':
+                model = KNeighborsClassifier(metric='euclidean', n_neighbors=43, weights='distance')
+            elif model_name == 'LOG':
+                model = LogisticRegression(C=10, max_iter=1000, penalty='l1', solver='liblinear') 
+            elif model_name == 'RF':
+                model = RandomForestClassifier(n_estimators=200, max_depth=10, min_samples_leaf=2, min_samples_split=5) 
+            elif model_name == 'XGB':
+                model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.05, max_depth=5,min_samples_leaf=5, min_samples_split=5)
+            
+            AP, ROC_AUC = train_model(dataset, model)
+
 
 def main():
 
@@ -105,9 +125,6 @@ def main():
                     new_results = pd.DataFrame({'model': model_name, 'dataset': dataset, 'ratio': ratio, 'noise': noise, 'AP': AP,'ROC_AUC': ROC_AUC}, index=[0])
                     results_df = pd.concat([results_df, new_results], ignore_index=True)
                     results_df.to_csv(f'{RESULTS_FOLDER}/{model_name}.csv', index=False)
-
-
-
 
 if __name__ == '__main__':
     main()    
