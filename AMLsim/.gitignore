@@ -4,3 +4,4 @@ scripts/amlsim/__pycache__
 image.tar.gz
 image.tar
 target
+*.class
