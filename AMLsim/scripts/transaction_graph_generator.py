@@ -14,9 +14,11 @@ import logging
 from scipy import stats
 
 from collections import Counter, defaultdict
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from scripts.amlsim.nominator import Nominator
 from scripts.amlsim.normal_model import NormalModel
-
 from scripts.amlsim.random_amount import RandomAmount
 from scripts.amlsim.rounded_amount import RoundedAmount
 
