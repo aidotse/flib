@@ -1,6 +1,6 @@
 outputs
 tmp
-scripts/amlsim/__pycache__
+__pycache__
 image.tar.gz
 image.tar
 target
