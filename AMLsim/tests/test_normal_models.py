@@ -1,12 +1,7 @@
 
-import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts')))
-
-
+from scripts.transaction_graph_generator import TransactionGenerator
 import json
-
-from transaction_graph_generator import TransactionGenerator
 
 TYPES = ["single", "forward", "mutual", "periodical", "fan_in", "fan_out"]
 

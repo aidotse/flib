@@ -1,4 +1,3 @@
-import networkx as nx
 import random
 
 class Nominator:
@@ -249,7 +248,7 @@ class Nominator:
 
 
     def is_done_fan_in(self, node_id, type, threshold = None):
-        pred_ids = self.g.predecessors(node_id) # get node-ids of incoming edges
+        pred_ids = list(self.g.predecessors(node_id)) # get node-ids of incoming edges
         fan_in_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, pred_id}) for pred_id in pred_ids] #get boolean list of whether each predecessor has a fan_in relationship with node_id
         num_to_work_with = fan_in_or_not_list.count(False) # count the number of predecessors that do not have a fan_in relationship with node_id
         
@@ -259,7 +258,7 @@ class Nominator:
         
 
     def is_done_fan_out(self, node_id, type, threshold = None):
-        succ_ids = self.g.successors(node_id) # get successors
+        succ_ids = list(self.g.successors(node_id)) # get successors
         fan_out_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, succ_id}) for succ_id in succ_ids] # check if each successor has a fan_out relationship
         num_to_work_with = fan_out_or_not_list.count(False) # count the number of successors that do not have a fan_out relationship
 
@@ -270,8 +269,8 @@ class Nominator:
 
     def is_done_forward(self, node_id, type):
         # forward is done when when all combinations of forwards have been found
-        pred_ids = self.g.predecessors(node_id)
-        succ_ids = self.g.successors(node_id)
+        pred_ids = list(self.g.predecessors(node_id))
+        succ_ids = list(self.g.successors(node_id))
 
         sets = ([node_id, pred_id, succ_id] for pred_id in pred_ids for succ_id in succ_ids if pred_id != succ_id)
 
@@ -283,7 +282,7 @@ class Nominator:
         # Simulate an ordered set using OrderedDict
         node_ids_ordered = OrderedDict.fromkeys(node_ids)
         # Getting the normal models associated with main_id
-        normal_models = self.g.node[main_id]['normal_models']
+        normal_models = self.g.nodes[main_id]['normal_models']
         # Filter out the normal models that are of the specified type and have the main_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id)
         # Check if any of the filtered normal models contain the node_ids in order
@@ -334,7 +333,7 @@ class Nominator:
             bool: True if any of the node_ids are already in a type relationship with the main_id.
         """        
         node_ids = set(node_ids) # make sure it's a set
-        normal_models = self.g.node[main_id]['normal_models'] # get the transaction models associated with main_id
+        normal_models = self.g.nodes[main_id]['normal_models'] # get the transaction models associated with main_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id) # filter out the normal models that are of the type and have the main_id
         return any(node_ids.issubset(filtered.node_ids) for filtered in filtereds) # return True if any of the filtered normal models contain the node_ids
 
@@ -351,7 +350,7 @@ class Nominator:
             list: A list of normal models where main_id is the main_id and the node_ids are a subset of the node_ids in the normal model.
         """        
         node_ids = set(node_ids)
-        normal_models = self.g.node[main_id]['normal_models'] # get the transaction models associated with main_id
+        normal_models = self.g.nodes[main_id]['normal_models'] # get the transaction models associated with main_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == main_id) # filter out the normal models that are of the type and have the main_id
         return [filtered for filtered in filtereds if node_ids.issubset(filtered.node_ids)] # return list of filtered normal models where node_ids are a subset of the node_ids
 
@@ -366,7 +365,7 @@ class Nominator:
         Returns:
             list: A list of sets of node_ids that are in a fan relationship with the node_id.
         """        
-        normal_models = self.g.node[node_id]['normal_models'] # get the transaction models associated with node_id
+        normal_models = self.g.nodes[node_id]['normal_models'] # get the transaction models associated with node_id
         filtereds = (nm for nm in normal_models if nm.type == type and nm.main_id == node_id) # create generator to iterate over the normal models that are of the type and have the main_id = node_id
         nodes_in_relation = [filtered.node_ids_without_main() for filtered in filtereds] # return the node_ids without the main_id
         if len(nodes_in_relation) == 0:
@@ -394,7 +393,7 @@ class Nominator:
             max_threshold = self.model_params_dict[type][indx][2]-1 # get the maximum number of allowed accounts
             n_max = min(len(candidates), max_threshold) # get the maximum number of accounts that can be used
             n_candidates = random.randint(min_threshold, n_max) # decide number of nodes in fan pattern
-            candidates = set(random.sample(candidates, n_candidates)) # randomly select n_candidates from the candidates
+            candidates = set(random.sample(list(candidates), n_candidates)) # randomly select n_candidates from the candidates
             return candidates
         else:
             raise ValueError(f"There are not enough candidate for {type}")
