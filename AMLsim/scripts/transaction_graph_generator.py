@@ -699,10 +699,10 @@ class TransactionGenerator:
 
 
     def mark_active_edges(self):
-        nx.set_edge_attributes(self.g, 'active', False)
+        nx.set_edge_attributes(self.g, False, 'active')
         for normal_model in self.normal_models:
             subgraph = self.g.subgraph(normal_model.node_ids)
-            nx.set_edge_attributes(subgraph, 'active', True)
+            nx.set_edge_attributes(subgraph, True, 'active')
 
 
     def load_normal_models(self):
