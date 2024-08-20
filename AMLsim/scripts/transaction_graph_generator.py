@@ -828,8 +828,8 @@ class TransactionGenerator:
         if node_id is None:
             return False
 
-        succ_ids = self.g.successors(node_id)
-        pred_ids = self.g.predecessors(node_id)
+        succ_ids = list(self.g.successors(node_id))
+        pred_ids = list(self.g.predecessors(node_id))
 
         # find all input-node_id-output sets avialable where input and output are different
         sets = [[node_id, pred_id, succ_id] for pred_id in pred_ids for succ_id in succ_ids if pred_id != succ_id]
@@ -859,7 +859,7 @@ class TransactionGenerator:
         if node_id is None:
             return False
         
-        succ_ids = self.g.successors(node_id) # find the accounts connected to this node_id
+        succ_ids = list(self.g.successors(node_id)) # find the accounts connected to this node_id
         # find the first account that is not in a single relationship with this node_id
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id})) # TODO: this takes a lot of time... 
         
@@ -881,7 +881,7 @@ class TransactionGenerator:
         if node_id is None:
             return False
         
-        succ_ids = self.g.successors(node_id)
+        succ_ids = list(self.g.successors(node_id))
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
 
         result_ids = { node_id, succ_id }
@@ -902,7 +902,7 @@ class TransactionGenerator:
         if node_id is None:
             return False
         
-        succ_ids = self.g.successors(node_id)
+        succ_ids = list(self.g.successors(node_id))
         succ_id = next(succ_id for succ_id in succ_ids if not self.nominator.is_in_type_relationship(type, node_id, {node_id, succ_id}))
 
         result_ids = { node_id, succ_id }
@@ -1601,7 +1601,7 @@ class TransactionGenerator:
                 start = sub_g.graph["start"] # starting step 
                 end = sub_g.graph["end"] # ending step
                 source_type = sub_g.graph["source_type"] # source type
-                for n in list(sub_g.nodes()): # go over all nodes in the subgraph
+                for n in sub_g.nodes(): # go over all nodes in the subgraph
                     is_main = "true" if n == main_id else "false"
                     is_sar = "true" if sub_g.graph[IS_SAR_KEY] else "false"
                     min_amt = '{:.2f}'.format(min(get_out_edge_attrs(sub_g, n, "amount")))
@@ -1665,7 +1665,7 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
-        PARAM_FILES = '100K_accts'
+        PARAM_FILES = '10K_accts'
         argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
 
     _conf_file = argv[1]

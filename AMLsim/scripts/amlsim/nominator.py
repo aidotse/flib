@@ -58,7 +58,7 @@ class Nominator:
         Returns:
             list: A list of vertices ranked by the number of in- and outgoing edges.
         """        
-        candidates = [n for n in list(self.g.nodes()) if 
+        candidates = [n for n in self.g.nodes() if 
                       self.g.in_degree(n) >= 1 and 
                       self.g.out_degree(n) >= 1 and 
                        (self.g.in_degree(n) != 1 or self.g.out_degree(n) != 1 or set(self.g.successors(n)) != set(self.g.predecessors(n)))]
@@ -72,7 +72,7 @@ class Nominator:
         Returns:
             list: A list of vertices ranked by the number of outgoing edges.
         """        
-        candidates = [n for n in list(self.g.nodes()) if self.g.out_degree(n) >= 1]
+        candidates = [n for n in self.g.nodes() if self.g.out_degree(n) >= 1]
         random.shuffle(candidates) 
         return candidates
 
@@ -88,7 +88,7 @@ class Nominator:
         self.min_fan_in_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
 
         # return a list of nodes with at least enough incoming edges as the minimum number of accounts, sorted with respect to how many in degrees there are
-        candidates = [n for n in list(self.g.nodes()) if self.g.in_degree(n) >= self.min_fan_in_threshold]
+        candidates = [n for n in self.g.nodes() if self.g.in_degree(n) >= self.min_fan_in_threshold]
         random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
         return candidates
 
@@ -101,7 +101,7 @@ class Nominator:
         """        
         nm_min_requirement = min(self.model_params_dict["fan_out"] , key=lambda x: x[1]) # get the normal model parameters with the smallest minimum number of accounts
         self.min_fan_out_threshold = nm_min_requirement[1] - 1 # get the minimum number of accounts in normal model (note that min_accts = total number of accounts in pattern)
-        candidates = [n for n in list(self.g.nodes()) if self.g.out_degree(n) >= self.min_fan_out_threshold]
+        candidates = [n for n in self.g.nodes() if self.g.out_degree(n) >= self.min_fan_out_threshold]
         random.shuffle(candidates) # shuffle the list of candidates (in-place execution)
         return candidates
 
@@ -248,7 +248,7 @@ class Nominator:
 
 
     def is_done_fan_in(self, node_id, type, threshold = None):
-        pred_ids = self.g.predecessors(node_id) # get node-ids of incoming edges
+        pred_ids = list(self.g.predecessors(node_id)) # get node-ids of incoming edges
         fan_in_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, pred_id}) for pred_id in pred_ids] #get boolean list of whether each predecessor has a fan_in relationship with node_id
         num_to_work_with = fan_in_or_not_list.count(False) # count the number of predecessors that do not have a fan_in relationship with node_id
         
@@ -258,7 +258,7 @@ class Nominator:
         
 
     def is_done_fan_out(self, node_id, type, threshold = None):
-        succ_ids = self.g.successors(node_id) # get successors
+        succ_ids = list(self.g.successors(node_id)) # get successors
         fan_out_or_not_list = [self.is_in_type_relationship(type, node_id, {node_id, succ_id}) for succ_id in succ_ids] # check if each successor has a fan_out relationship
         num_to_work_with = fan_out_or_not_list.count(False) # count the number of successors that do not have a fan_out relationship
 
@@ -269,8 +269,8 @@ class Nominator:
 
     def is_done_forward(self, node_id, type):
         # forward is done when when all combinations of forwards have been found
-        pred_ids = self.g.predecessors(node_id)
-        succ_ids = self.g.successors(node_id)
+        pred_ids = list(self.g.predecessors(node_id))
+        succ_ids = list(self.g.successors(node_id))
 
         sets = ([node_id, pred_id, succ_id] for pred_id in pred_ids for succ_id in succ_ids if pred_id != succ_id)
 
