@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: 3.10.14
 
       - name: Provision with Micromamba
         uses: mamba-org/provision-with-micromamba@main
