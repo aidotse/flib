@@ -21,8 +21,9 @@ def calculate_ROC_AUC(model, X_test, y_test):
     roc_auc = roc_auc_score(y_test, y_score)
     return roc_auc
 
-def get_dataset(trainset_path, testset_path):
+def get_dataset(dataset_path):
 
+    trainset_path, testset_path = dataset_path
     trainset = pd.read_csv(trainset_path)
     testset = pd.read_csv(testset_path)
 
@@ -55,9 +56,9 @@ def get_dataset(trainset_path, testset_path):
     return X_train, y_train, X_test, y_test
 
 
-def train_model(model, trainset_path, testset_path):
+def train_model(model, dataset_path):
 
-    X_train, y_train, X_test, y_test = get_dataset(trainset_path, testset_path)
+    X_train, y_train, X_test, y_test = get_dataset(dataset_path)
 
     model.fit(X_train, y_train)
 
@@ -67,14 +68,14 @@ def train_model(model, trainset_path, testset_path):
 
     return AP, ROC_AUC
 
-def train_models(datasets:list, model_names:list=['XGB','RF','SVM','KNN','LOG']):
+def train_models(dataset_paths:list, model_names:list=['XGB','RF','SVM','KNN','LOG']):
     
     metrics = {}
     
     for model_name in tqdm(model_names, desc='Models'):
         metrics[model_name] = {}
         
-        for dataset in tqdm(datasets, desc='Datasets', leave=False):
+        for dataset_path in tqdm(dataset_paths, desc='Datasets', leave=False):
             if model_name == 'SVM':
                 model = svm.SVC(kernel='rbf',probability=True)
             elif model_name == 'KNN':
@@ -86,7 +87,7 @@ def train_models(datasets:list, model_names:list=['XGB','RF','SVM','KNN','LOG'])
             elif model_name == 'XGB':
                 model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.05, max_depth=5,min_samples_leaf=5, min_samples_split=5)
             
-            AP, ROC_AUC = train_model(dataset, model)
+            AP, ROC_AUC = train_model(dataset_path, model)
             metrics['model_name']['dataset'] = {'AP': AP, 'ROC_AUC': ROC_AUC}
     
     return metrics
@@ -126,9 +127,9 @@ def main():
                     
                     trainset_path = f'{GROUND_DATASET}/{dataset}/bank/train/{ratio}/{noise}'
                     testset_path = f'{GROUND_DATASET}/{dataset}/bank/test/nodes.csv'
-                    
+                    datasets_path = (trainset_path, testset_path)
                     print(f'Training model {model_name} on {dataset} with ratio {ratio} and noise {noise}')
-                    AP,ROC_AUC = train_model(model, trainset_path, testset_path)
+                    AP,ROC_AUC = train_model(model, datasets_path)
                     
                     new_results = pd.DataFrame({'model': model_name, 'dataset': dataset, 'ratio': ratio, 'noise': noise, 'AP': AP,'ROC_AUC': ROC_AUC}, index=[0])
                     results_df = pd.concat([results_df, new_results], ignore_index=True)
