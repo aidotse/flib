@@ -9,6 +9,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 import os
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import roc_auc_score
+from tqdm import tqdm
 
 def calculate_AP(model, X_test, y_test):
     y_score = model.predict_proba(X_test)[:,1]
@@ -20,22 +21,19 @@ def calculate_ROC_AUC(model, X_test, y_test):
     roc_auc = roc_auc_score(y_test, y_score)
     return roc_auc
 
-def get_dataset(name, ratio, noise, GROUND_DATASET):
+def get_dataset(trainset_path, testset_path):
 
-    train_path = f'{GROUND_DATASET}/{name}/bank/train/{ratio}/{noise}'
-    test_path = f'{GROUND_DATASET}/{name}/bank/test/nodes.csv'
-
-    train_data = pd.read_csv(train_path)
-    test_data = pd.read_csv(test_path)
+    trainset = pd.read_csv(trainset_path)
+    testset = pd.read_csv(testset_path)
 
     # If column 'true_label' exists, remove it
-    if 'true_label' in train_data.columns:
-        X_train = train_data.drop(['is_sar','account','bank','true_label'], axis=1)
+    if 'true_label' in trainset.columns:
+        X_train = trainset.drop(['is_sar','account','bank','true_label'], axis=1)
     else:
-        X_train = train_data.drop(['is_sar','account','bank'], axis=1)
-    y_train = train_data[['is_sar']]
-    X_test = test_data.drop(['is_sar','account','bank'], axis=1)
-    y_test = test_data[['is_sar']]
+        X_train = trainset.drop(['is_sar','account','bank'], axis=1)
+    y_train = trainset[['is_sar']]
+    X_test = testset.drop(['is_sar','account','bank'], axis=1)
+    y_test = testset[['is_sar']]
 
     # Removing rows with missing labels
     X_train = X_train[y_train['is_sar'] != -1]
@@ -57,14 +55,13 @@ def get_dataset(name, ratio, noise, GROUND_DATASET):
     return X_train, y_train, X_test, y_test
 
 
-def train_model(model, model_name, dataset,ratio, noise, GROUND_DATASET):
+def train_model(model, trainset_path, testset_path):
 
-    X_train, y_train, X_test, y_test = get_dataset(dataset, ratio, noise, GROUND_DATASET)
-
-    print(f'Training model {model_name} on {dataset} with ratio {ratio} and noise {noise}')
+    X_train, y_train, X_test, y_test = get_dataset(trainset_path, testset_path)
 
     model.fit(X_train, y_train)
 
+    # TODO: Instead calculate TP, FP, TN, FN for 100 different thresholds
     AP = calculate_AP(model, X_test, y_test)
     ROC_AUC = calculate_ROC_AUC(model, X_test, y_test)
 
@@ -72,10 +69,12 @@ def train_model(model, model_name, dataset,ratio, noise, GROUND_DATASET):
 
 def train_models(datasets:list, model_names:list=['XGB','RF','SVM','KNN','LOG']):
     
-    results_df = pd.DataFrame(columns=['model', 'dataset', 'ratio', 'noise', 'AP','ROC_AUC'])
+    metrics = {}
     
-    for dataset in datasets:
-        for model_name in model_names:
+    for model_name in tqdm(model_names, desc='Models'):
+        metrics[model_name] = {}
+        
+        for dataset in tqdm(datasets, desc='Datasets', leave=False):
             if model_name == 'SVM':
                 model = svm.SVC(kernel='rbf',probability=True)
             elif model_name == 'KNN':
@@ -88,6 +87,9 @@ def train_models(datasets:list, model_names:list=['XGB','RF','SVM','KNN','LOG'])
                 model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.05, max_depth=5,min_samples_leaf=5, min_samples_split=5)
             
             AP, ROC_AUC = train_model(dataset, model)
+            metrics['model_name']['dataset'] = {'AP': AP, 'ROC_AUC': ROC_AUC}
+    
+    return metrics
 
 
 def main():
@@ -121,7 +123,13 @@ def main():
                             model = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1, max_depth=3,min_samples_leaf=2, min_samples_split=2)
                         else:
                             model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.05, max_depth=5,min_samples_leaf=5, min_samples_split=5)
-                    AP,ROC_AUC = train_model(model, model_name,dataset, ratio, noise, GROUND_DATASET)
+                    
+                    trainset_path = f'{GROUND_DATASET}/{dataset}/bank/train/{ratio}/{noise}'
+                    testset_path = f'{GROUND_DATASET}/{dataset}/bank/test/nodes.csv'
+                    
+                    print(f'Training model {model_name} on {dataset} with ratio {ratio} and noise {noise}')
+                    AP,ROC_AUC = train_model(model, trainset_path, testset_path)
+                    
                     new_results = pd.DataFrame({'model': model_name, 'dataset': dataset, 'ratio': ratio, 'noise': noise, 'AP': AP,'ROC_AUC': ROC_AUC}, index=[0])
                     results_df = pd.concat([results_df, new_results], ignore_index=True)
                     results_df.to_csv(f'{RESULTS_FOLDER}/{model_name}.csv', index=False)
