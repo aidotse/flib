@@ -7,14 +7,22 @@ def flip_labels(data:pd.DataFrame, labels:list=[0, 1], fracs:list=[0.01, 0.1], s
         data['true_label'] = data['is_sar']
     
     for label, frac in zip(labels, fracs):
-        accounts_to_flip = data[data['true_label'] == label]['account'].sample(frac=frac, random_state=seed)
-        data.loc[data['account'].isin(accounts_to_flip), 'is_sar'] = 1 - label
+        accounts = data[data['true_label'] == label]['account'].sample(frac=frac, random_state=seed)
+        data.loc[data['account'].isin(accounts), 'is_sar'] = 1 - label
     
     return data
 
 
-def missing_labels():
-    return
+def missing_labels(data:pd.DataFrame, labels:list=[0, 1], fracs:list=[0.01, 0.1], seed:int=42):
+    
+    if 'true_label' not in data.columns:
+        data['true_label'] = data['is_sar']
+    
+    for label, frac in zip(labels, fracs):
+        accounts = data[data['true_label'] == label]['account'].sample(frac=frac, random_state=seed)
+        data.loc[data['account'].isin(accounts), 'is_sar'] = -1
+    
+    return data
 
 
 def flip_neighbours():
@@ -34,8 +42,14 @@ def main():
     })
     
     # test functions
-    flipped_data = flip_labels(data=data, labels=[0, 1], fracs=[0.17, 0.25], seed=42)
-    print(flipped_data)
+    
+    # data_flipped = flip_labels(data=data, labels=[0, 1], fracs=[0.17, 0.25], seed=42)
+    # print(data_flipped)
+    
+    data_missing = missing_labels(data=data, labels=[0, 1], fracs=[0.17, 0.25], seed=42)
+    print(data_missing)
+
+    
 
 if __name__ == '__main__':
     main()
