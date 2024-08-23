@@ -7,9 +7,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 import os
-from sklearn.metrics import average_precision_score
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import average_precision_score, roc_auc_score, confusion_matrix
 from tqdm import tqdm
+from typing import List, Tuple
+
+# stop warnings
+import warnings
+warnings.filterwarnings("ignore")
 
 def calculate_AP(model, X_test, y_test):
     y_score = model.predict_proba(X_test)[:,1]
@@ -21,11 +25,25 @@ def calculate_ROC_AUC(model, X_test, y_test):
     roc_auc = roc_auc_score(y_test, y_score)
     return roc_auc
 
-def get_dataset(dataset_path):
+def calculate_tnfpfntp(model, X_test, ground_truths, thresholds=[0.5]):
+    predictions = model.predict_proba(X_test)[:,1]
+    tnfpfntp = {}
+    for i, threshold in enumerate(thresholds):
+        prediction = (predictions >= threshold).astype(int)
+        tn, fp, fn, tp = confusion_matrix(ground_truths, prediction).ravel()
+        tnfpfntp[threshold] = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp}
+    return tnfpfntp
 
-    trainset_path, testset_path = dataset_path
-    trainset = pd.read_csv(trainset_path)
-    testset = pd.read_csv(testset_path)
+def get_dataset(dataset):
+
+    trainset, testset = dataset
+    if type(trainset) == str and type(testset) == str:
+        trainset = pd.read_csv(trainset)
+        testset = pd.read_csv(testset)
+    elif type(trainset) == pd.DataFrame and type(testset) == pd.DataFrame:
+        pass
+    else:
+        raise ValueError('trainset and testset must be either paths to csv files or pandas DataFrames')
 
     # If column 'true_label' exists, remove it
     if 'true_label' in trainset.columns:
@@ -56,41 +74,32 @@ def get_dataset(dataset_path):
     return X_train, y_train, X_test, y_test
 
 
-def train_model(model, dataset_path):
-
-    X_train, y_train, X_test, y_test = get_dataset(dataset_path)
-
+def train_model(dataset, model):
+    X_train, y_train, X_test, y_test = get_dataset(dataset)
     model.fit(X_train, y_train)
+    tnfpfntp = calculate_tnfpfntp(model, X_test, y_test, np.round(np.linspace(0,1,101), 2))
+    return tnfpfntp
 
-    # TODO: Instead calculate TP, FP, TN, FN for 100 different thresholds
-    AP = calculate_AP(model, X_test, y_test)
-    ROC_AUC = calculate_ROC_AUC(model, X_test, y_test)
-
-    return AP, ROC_AUC
-
-def train_models(dataset_paths:list, model_names:list=['XGB','RF','SVM','KNN','LOG']):
+def train_models(dataset, model_names:list=['XGB','RF','SVM','KNN','LOG']):
     
-    metrics = {}
+    results = {}
     
-    for model_name in tqdm(model_names, desc='Models'):
-        metrics[model_name] = {}
+    for model_name in tqdm(model_names):
+        if model_name == 'SVM':
+            model = svm.SVC(kernel='rbf',probability=True)
+        elif model_name == 'KNN':
+            model = KNeighborsClassifier(metric='euclidean', n_neighbors=43, weights='distance')
+        elif model_name == 'LOG':
+            model = LogisticRegression(C=10, max_iter=1000, penalty='l1', solver='liblinear') 
+        elif model_name == 'RF':
+            model = RandomForestClassifier(n_estimators=200, max_depth=10, min_samples_leaf=2, min_samples_split=5) 
+        elif model_name == 'XGB':
+            model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.05, max_depth=5,min_samples_leaf=5, min_samples_split=5)
         
-        for dataset_path in tqdm(dataset_paths, desc='Datasets', leave=False):
-            if model_name == 'SVM':
-                model = svm.SVC(kernel='rbf',probability=True)
-            elif model_name == 'KNN':
-                model = KNeighborsClassifier(metric='euclidean', n_neighbors=43, weights='distance')
-            elif model_name == 'LOG':
-                model = LogisticRegression(C=10, max_iter=1000, penalty='l1', solver='liblinear') 
-            elif model_name == 'RF':
-                model = RandomForestClassifier(n_estimators=200, max_depth=10, min_samples_leaf=2, min_samples_split=5) 
-            elif model_name == 'XGB':
-                model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.05, max_depth=5,min_samples_leaf=5, min_samples_split=5)
-            
-            AP, ROC_AUC = train_model(dataset_path, model)
-            metrics['model_name']['dataset'] = {'AP': AP, 'ROC_AUC': ROC_AUC}
+        tnfpfntp = train_model(dataset, model)
+        results[model_name] = tnfpfntp
     
-    return metrics
+    return results
 
 
 def main():

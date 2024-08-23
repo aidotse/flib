@@ -151,7 +151,6 @@ def main():
         df_nodes_test.to_csv(f'data/{dataset}/{bank}/test/nodes.csv', index=False)
         df_edges_test.to_csv(f'data/{dataset}/{bank}/test/edges.csv', index=False)
     
-    print(f'Preprocessing finished in {t:.4f} seconds.')
 
 if __name__ == "__main__":
     main()

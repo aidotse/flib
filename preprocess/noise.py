@@ -4,6 +4,9 @@ from typing import Optional, Union, List
 
 def flip_labels(nodes:pd.DataFrame, labels:list=[0, 1], fracs:list=[0.01, 0.1], seed:int=42):
     
+    # copy nodes
+    nodes = nodes.copy()
+    
     if 'true_label' not in nodes.columns:
         nodes['true_label'] = nodes['is_sar']
     
@@ -16,6 +19,9 @@ def flip_labels(nodes:pd.DataFrame, labels:list=[0, 1], fracs:list=[0.01, 0.1], 
 
 def missing_labels(nodes:pd.DataFrame, labels:list=[0, 1], fracs:list=[0.01, 0.1], seed:int=42):
     
+    # copy nodes
+    nodes = nodes.copy()
+    
     if 'true_label' not in nodes.columns:
         nodes['true_label'] = nodes['is_sar']
     
@@ -27,6 +33,9 @@ def missing_labels(nodes:pd.DataFrame, labels:list=[0, 1], fracs:list=[0.01, 0.1
 
 
 def flip_neighbours(nodes:pd.DataFrame, edges:pd.DataFrame, frac:float=0.1, seed:int=42):
+    
+    # copy nodes
+    nodes = nodes.copy()
     
     if 'true_label' not in nodes.columns:
         nodes['true_label'] = nodes['is_sar']
@@ -43,12 +52,15 @@ def flip_neighbours(nodes:pd.DataFrame, edges:pd.DataFrame, frac:float=0.1, seed
     accounts_to_flip = normal_accounts_with_edges_to_sar_accounts['account'].sample(frac=frac, random_state=seed)
     nodes.loc[nodes['account'].isin(accounts_to_flip), 'is_sar'] = 1 - nodes.loc[nodes['account'].isin(accounts_to_flip), 'true_label']
     
-    return nodes, edges
+    return nodes
 
 
-def topology_noise(nodes:pd.DataFrame, alert_members:pd.DataFrame, topologies:list=['fan_in', 'fan_out', 'stack'], fracs:Optional[Union[float, List[float]]]=None, seed:int=42):
+def topology_noise(nodes:pd.DataFrame, alert_members:pd.DataFrame, topologies:list=['fan_in', 'fan_out', 'cycle', 'bipartite', 'stack', 'gather_scatter', 'scatter_gather'], fracs:Optional[Union[float, List[float]]]=None, seed:int=42):
     
     # TODO: remove alert_members, future updates should ensure that nodes has the necessary information to find the topologies
+    
+    # copy nodes
+    nodes = nodes.copy()
     
     if 'true_label' not in nodes.columns:
         nodes['true_label'] = nodes['is_sar']
