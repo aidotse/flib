@@ -58,7 +58,7 @@ def cal_node_features(df:pd.DataFrame, bank, windows=1) -> pd.DataFrame:
     # calculate network features
     for window in windows:
         gb = df_network[(df_network['step']>=window[0])&(df_network['step']<=window[1])].groupby(['account'])
-        df_nodes[f'in_sums_{window[0]}_{window[1]}'] = gb['amount'].sum()
+        df_nodes[f'in_sums_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: x[x > 0].sum())
         df_nodes[f'out_sums_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: x[x < 0].sum())
         df_nodes[f'sums_{window[0]}_{window[1]}'] = gb['amount'].sum()
         df_nodes[f'means_{window[0]}_{window[1]}'] = gb['amount'].mean()
