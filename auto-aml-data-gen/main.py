@@ -1,34 +1,63 @@
-from simulate import init_params, create_param_files, run_simulation
+import simulate as sim 
 from preprocess import preprocess
 from classifier import Classifier
 from optimizer import Optimizer
+import utils
 import optuna
 import time
+import sys
 
 
-def main(n_trials:int=10, ratio=0.05, operating_recall:float=0.8, target:float=0.95):
-    optimizer = Optimizer(target=target, max=0.4244, operating_recall=operating_recall, ratio=ratio)
-    best_trials = optimizer.optimize(n_trials=n_trials)
-    for trial in best_trials:
-        print(f'\ntrial: {trial.number}')
-        print(f'values: {trial.values}')
-        with open('log.txt', 'a') as f:
-            f.write(f'\ntrial: {trial.number}\n')
-            f.write(f'values: {trial.values}\n')
-        for param in trial.params:
-            print(f'{param}: {trial.params[param]}')
-            with open('log.txt', 'a') as f:
-                f.write(f'{param}: {trial.params[param]}\n')
+def main(config_path:str, n_trials:int=10, ratio=0.05, operating_recall:float=0.8, fpr_target:float=0.95):
+    print('\n##======== Automatic tuner for AMLsim parameters ========##\n')
+    print(f'config_path: {config_path}')
+    print(f'n_trials: {n_trials}')
+    print(f'ratio: {ratio}')
+    print(f'operating_recall: {operating_recall}')
+    print(f'target: {fpr_target}')
+    
+    # set output dir
+    utils.set_output_path(config_path)
+    
+    # find max fpr
+    utils.set_same_temp_params(config_path)
+    sim.run_simulation(config_path)
+    
+    #optimizer = Optimizer(target=fpr_target, max=0.4244, operating_recall=operating_recall, ratio=ratio)
+    #best_trials = optimizer.optimize(n_trials=n_trials)
+    #for trial in best_trials:
+    #    print(f'\ntrial: {trial.number}')
+    #    print(f'values: {trial.values}')
+    #    with open('log.txt', 'a') as f:
+    #        f.write(f'\ntrial: {trial.number}\n')
+    #        f.write(f'values: {trial.values}\n')
+    #    for param in trial.params:
+    #        print(f'{param}: {trial.params[param]}')
+    #        with open('log.txt', 'a') as f:
+    #            f.write(f'{param}: {trial.params[param]}\n')
     return
 
 if __name__ == '__main__':
+    
+    # Default values
+    config_path = '/home/edvin/Desktop/flib/auto-aml-data-gen/param_files/tmp/conf.json'
     n_trials = 1
-    ratio = 0.05 # OBS: approximate ratio of SARs in the dataset, error of about 0.02 percentage points
+    ratio = 0.01
     operating_recall = 0.9
-    target = 0.95
+    fpr_target = 0.95
     
-    t = time.time()
+    argv = sys.argv
+    for i, arg in enumerate(argv):
+        if '--config' == arg:
+            config_path = argv[i+1]
+        if '--n_trials' == arg:
+            n_trials = int(argv[i+1])
+        if '--ratio' == arg:
+            ratio = float(argv[i+1])
+        if '--operating_recall' == arg:
+            operating_recall = float(argv[i+1])
+        if '--fpr_target' == arg:
+            fpr_target = float(argv[i+1])
     
-    main(n_trials, ratio, operating_recall, target)
+    main(config_path, n_trials, ratio, operating_recall, fpr_target)
     
-    print(f'\nTime elapsed: {time.time()-t:.2f} seconds')

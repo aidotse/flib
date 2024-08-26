@@ -62,4 +62,35 @@ def read_bounds(folder:str):
     return conf_bounds
 
 
-read_bounds('param_files/test')
+def set_output_path(config_path):
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    sim_name = config['general']['simulation_name'] 
+    pwd = os.getcwd()
+    config['output']['directory'] = f'{pwd}/data/{sim_name}'
+    with open(config_path, 'w') as f:
+        json.dump(config, f, indent=2)
+    return
+
+
+def set_same_temp_params(config_path:str):
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    
+        config["default"]["mean_amount_sar"] = config["default"]["mean_amount"]
+        config["default"]["std_amount_sar"] = config["default"]["std_amount"]
+        config["default"]["mean_income_sar"] = config["default"]["mean_income"]
+        config["default"]["std_income_sar"] = config["default"]["std_income"]
+        config["default"]["mean_outcome_sar"] = config["default"]["mean_outcome"]
+        config["default"]["std_outcome_sar"] = config["default"]["std_outcome"]
+        config["default"]["mean_phone_change_frequency_sar"] = config["default"]["mean_phone_change_frequency"]
+        config["default"]["std_phone_change_frequency_sar"] = config["default"]["std_phone_change_frequency"]
+        config["default"]["mean_bank_change_frequency_sar"] = config["default"]["mean_bank_change_frequency"]
+        config["default"]["std_bank_change_frequency_sar"] = config["default"]["std_bank_change_frequency"]
+        config["default"]["prob_spend_cash"] = 0.0
+        config["default"]["prob_participate_in_multiple_sars"] = 0.0
+    
+    with open(config_path, 'w') as f:
+        json.dump(config, f, indent=2)
+    
+    return

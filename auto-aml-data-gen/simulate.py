@@ -148,9 +148,9 @@ def create_param_files(params:dict, param_files_folder:str):
         f.write('Transfer,1\n')
 
 
-def run_simulation(param_files_folder:str):
-    os.system(f'cd /home/edvin/Desktop/flib/AMLsim && python3 scripts/transaction_graph_generator.py "{param_files_folder}/conf.json"')
-    os.system(f'cd /home/edvin/Desktop/flib/AMLsim && mvn exec:java -Dexec.mainClass=amlsim.AMLSim -Dexec.args="{param_files_folder}/conf.json"')
+def run_simulation(config_path:str):
+    os.system(f'cd ../AMLsim && python3 scripts/transaction_graph_generator.py "{config_path}"')
+    os.system(f'cd ../AMLsim && mvn exec:java -Dexec.mainClass=amlsim.AMLSim -Dexec.args="{config_path}"')
     return
 
 
