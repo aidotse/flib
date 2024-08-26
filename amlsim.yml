@@ -7,3 +7,6 @@ dependencies:
   - networkx=3.3
   - numpy=2.1.0
   - scipy=1.14.0
+  - pandas=2.2.2
+  - tqdm=4.66.5
+  - scikit-learn=1.5.1
