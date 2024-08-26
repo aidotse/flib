@@ -1,6 +1,0 @@
-{
-    "java.compile.nullAnalysis.mode": "disabled",
-    "python.analysis.extraPaths": [
-        "./AMLsim/scripts"
-    ]
-}
