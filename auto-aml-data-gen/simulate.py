@@ -151,7 +151,11 @@ def create_param_files(params:dict, param_files_folder:str):
 def run_simulation(config_path:str):
     os.system(f'cd ../AMLsim && python3 scripts/transaction_graph_generator.py "{config_path}"')
     os.system(f'cd ../AMLsim && mvn exec:java -Dexec.mainClass=amlsim.AMLSim -Dexec.args="{config_path}"')
-    return
+    
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    tx_log_path = os.path.join(config['output']['directory'], config['general']['simulation_name'], config['output']['transaction_log'])
+    return tx_log_path
 
 
 # for debugging and testing
