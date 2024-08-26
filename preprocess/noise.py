@@ -81,10 +81,3 @@ def topology_noise(nodes:pd.DataFrame, alert_members:pd.DataFrame, topologies:li
         nodes.loc[nodes['account'].isin(accounts_to_flip), 'is_sar'] = 0
     
     return nodes
-
-
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
