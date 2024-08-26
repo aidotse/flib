@@ -9,7 +9,6 @@ from sklearn.ensemble import GradientBoostingClassifier
 import os
 from sklearn.metrics import average_precision_score, roc_auc_score, confusion_matrix
 from tqdm import tqdm
-from typing import List, Tuple
 
 # stop warnings
 import warnings
