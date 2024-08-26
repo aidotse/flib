@@ -84,7 +84,7 @@ class Classifier:
         y_pred = (y_pred > threshold).astype(int)
         
         tn, fp, fn, tp = confusion_matrix(self.y_test, y_pred).ravel()
-        #print(f'tn: {tn}, fp: {fp}, fn: {fn}, tp: {tp}')
+        print(f'tn: {tn}, fp: {fp}, fn: {fn}, tp: {tp}')
         fpr = fp/(fp+tp)
         print(f'False positive rate: {fpr:.4f}')
         

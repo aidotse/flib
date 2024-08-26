@@ -43,7 +43,7 @@ def main(config_path:str, n_trials:int=10, ratio=0.05, operating_recall:float=0.
 if __name__ == '__main__':
     
     # Default values
-    config_path = '/home/edvin/Desktop/flib/auto-aml-data-gen/param_files/tmp1/conf.json'
+    config_path = '/home/edvin/Desktop/flib/auto-aml-data-gen/param_files/10K_accts/conf.json'
     n_trials = 1
     ratio = 0.01
     operating_recall = 0.9
