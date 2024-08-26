@@ -24,7 +24,7 @@ jobs:
       - name: Provision with Micromamba
         uses: mamba-org/provision-with-micromamba@main
         with:
-          environment-file: AMLsim/amlsim.yml
+          environment-file: amlsim.yml
           environment-name: amlsim
           cache-downloads: true
 
