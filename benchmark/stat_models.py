@@ -58,8 +58,10 @@ def get_dataset(dataset):
     y_train = y_train[y_train['is_sar'] != -1]
 
     # In X_train, replace all NaN values with 0
-    assert X_train.isna().any().any(), 'There are NaN values in the training set'
-    assert X_test.isna().any().any(), 'There are NaN values in the test set'
+    if X_train.isna().any().any():
+        raise ValueError('There are NaN values in the training set')
+    if X_test.isna().any().any():
+        raise ValueError('There are NaN values in the test set')
     
     # Normalize the features
     scaler = StandardScaler()
