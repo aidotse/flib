@@ -1229,13 +1229,19 @@ class TransactionGenerator:
             n_origs = random.randint(1, len(members) - 1)
             origs = members[:n_origs]
             benes = members[n_origs:]
-            for orig, bene in zip(origs, benes):
-                scatter_amount = RandomAmount(min_amount, max_amount).getAmount()
-                scatter_date = random.randrange(start_date, end_date)
-                add_edge(orig, mid_acct, scatter_amount, scatter_date)
-                gather_amount = scatter_amount - scatter_amount * self.margin_ratio
-                gather_date = random.randrange(scatter_date, end_date)
-                add_edge(mid_acct, bene, gather_amount, gather_date)
+            sum_gather = 0.0
+            last_gather_date = 0
+            for orig in origs:
+                gather_amount = RandomAmount(min_amount, max_amount).getAmount()
+                sum_gather += gather_amount
+                gather_date = random.randrange(start_date, end_date)
+                add_edge(orig, mid_acct, gather_amount, gather_date)
+                last_gather_date = max(last_gather_date, gather_date)
+            sum_gather *= self.margin_ratio
+            scatter_amount = sum_gather / len(benes)
+            for bene in benes:
+                scatter_date = random.randrange(last_gather_date, end_date)
+                add_edge(mid_acct, bene, scatter_amount, scatter_date)
 
         # TODO: User-defined typology implementations goes here
 
@@ -1320,7 +1326,10 @@ class TransactionGenerator:
                 for n in sub_g.nodes(): # go over all nodes in the subgraph
                     is_main = "true" if n == main_id else "false"
                     is_sar = "true" if sub_g.graph[IS_SAR_KEY] else "false"
-                    min_amt = '{:.2f}'.format(min(get_out_edge_attrs(sub_g, n, "amount")))
+                    try:
+                        min_amt = '{:.2f}'.format(min(get_out_edge_attrs(sub_g, n, "amount")))
+                    except:
+                        pass
                     max_amt = '{:.2f}'.format(max(get_out_edge_attrs(sub_g, n, "amount")))
                     min_step = start
                     max_step = end
