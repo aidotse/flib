@@ -33,6 +33,14 @@ def cal_node_features(df:pd.DataFrame, bank, windows=1) -> pd.DataFrame:
         windows = [(start_step + i*steps_per_window, start_step + (i+1)*steps_per_window-1) for i in range(n_windows)]
         windows[-1] = (windows[-1][0], end_step)    
         assert len(windows) == n_windows, 'The number of windows is not equal to the specified number of windows'
+    elif type(windows) == tuple:
+        num_windows, window_len = windows
+        start_step, end_step = df['step'].min(), df['step'].max()
+        if num_windows * window_len < end_step - start_step:
+            raise ValueError(f'Number of windows {num_windows} and the windows length {window_len} do not allow coverage of the whole dataset. Inceasing number of windows or length of windows')
+        window_overlap = (num_windows * window_len - (end_step - start_step + 1)) // (num_windows - 1)
+        windows = [(start_step + i*(window_len-window_overlap), start_step + i*(window_len-window_overlap) + window_len-1) for i in range(num_windows)]
+        windows[-1] = (end_step - window_len + 1, end_step)
     # filter out transactions to the sink
     df_spending = df[df['bankDest'] == 'sink'].rename(columns={'nameOrig': 'account'})
     # filter out and reform transactions within the network 
@@ -58,7 +66,7 @@ def cal_node_features(df:pd.DataFrame, bank, windows=1) -> pd.DataFrame:
     # calculate network features
     for window in windows:
         gb = df_network[(df_network['step']>=window[0])&(df_network['step']<=window[1])].groupby(['account'])
-        df_nodes[f'in_sums_{window[0]}_{window[1]}'] = gb['amount'].sum()
+        df_nodes[f'in_sums_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: x[x > 0].sum())
         df_nodes[f'out_sums_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: x[x < 0].sum())
         df_nodes[f'sums_{window[0]}_{window[1]}'] = gb['amount'].sum()
         df_nodes[f'means_{window[0]}_{window[1]}'] = gb['amount'].mean()
@@ -90,7 +98,15 @@ def cal_edge_features(df:pd.DataFrame, directional:bool=False, windows=1) -> pd.
         start_step, end_step = df['step'].min(), df['step'].max()
         steps_per_window = (end_step - start_step) // n_windows
         windows = [(start_step + i*steps_per_window, start_step + (i+1)*steps_per_window-1) for i in range(n_windows)]
-        windows[-1] = (windows[-1][0], end_step)    
+        windows[-1] = (windows[-1][0], end_step)
+    elif type(windows) == tuple:
+        num_windows, window_len = windows
+        start_step, end_step = df['step'].min(), df['step'].max()
+        if num_windows * window_len < end_step - start_step:
+            raise ValueError(f'Number of windows {num_windows} and the windows length {window_len} do not allow coverage of the whole dataset. Inceasing number of windows or length of windows')
+        window_overlap = (num_windows * window_len - (end_step - start_step + 1)) // (num_windows - 1)
+        windows = [(start_step + i*(window_len-window_overlap), start_step + i*(window_len-window_overlap) + window_len-1) for i in range(num_windows)]
+        windows[-1] = (end_step - window_len + 1, end_step)
     # filter out transactions to the sink
     df = df[df['bankDest'] != 'sink']
     # rename
@@ -116,7 +132,7 @@ def cal_edge_features(df:pd.DataFrame, directional:bool=False, windows=1) -> pd.
     return df_edges
 
 
-def cal_features(path_to_tx_log:str, banks=None, windows:int=1, overlap:float=0.9) -> list:
+def cal_features(path_to_tx_log:str, banks=None, windows:int=1, overlap:float=0.9, include_edges=True) -> list:
     df = load_data(path_to_tx_log)
     
     if banks is None:
@@ -133,19 +149,26 @@ def cal_features(path_to_tx_log:str, banks=None, windows:int=1, overlap:float=0.
         df_bank_train = df_bank[(df_bank['step'] >= train_start) & (df_bank['step'] <= train_end)]
         df_bank_test = df_bank[(df_bank['step'] >= test_start) & (df_bank['step'] <= test_end)]
         df_nodes_train = get_nodes(df_bank_train, bank, windows)
-        df_edges_train = get_edges(df_bank_train[(df_bank_train['bankOrig'] == bank) & (df_bank_train['bankDest'] == bank)], windows, aggregated=True, directional=True) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
         df_nodes_test = get_nodes(df_bank_test, bank, windows)
-        df_edges_test = get_edges(df_bank_test[(df_bank_test['bankOrig'] == bank) & (df_bank_test['bankDest'] == bank)], windows, aggregated=True, directional=True)
         df_nodes_train.reset_index(inplace=True)
-        node_to_index = pd.Series(df_nodes_train.index, index=df_nodes_train['account']).to_dict()
-        df_edges_train['src'] = df_edges_train['src'].map(node_to_index) # OBS: in the csv files it looks like the edge src refers to the node two rows above the acculat node, this is due to the column head and that it starts counting at 0
-        df_edges_train['dst'] = df_edges_train['dst'].map(node_to_index)
         df_nodes_test.reset_index(inplace=True)
-        node_to_index = pd.Series(df_nodes_test.index, index=df_nodes_test['account']).to_dict()
-        df_edges_test['src'] = df_edges_test['src'].map(node_to_index)
-        df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
+        
+        if include_edges:
+            df_edges_train = get_edges(df_bank_train[(df_bank_train['bankOrig'] == bank) & (df_bank_train['bankDest'] == bank)], windows, aggregated=True, directional=True) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
+            df_edges_test = get_edges(df_bank_test[(df_bank_test['bankOrig'] == bank) & (df_bank_test['bankDest'] == bank)], windows, aggregated=True, directional=True)
+            node_to_index = pd.Series(df_nodes_train.index, index=df_nodes_train['account']).to_dict()
+            df_edges_train['src'] = df_edges_train['src'].map(node_to_index) # OBS: in the csv files it looks like the edge src refers to the node two rows above the acculat node, this is due to the column head and that it starts counting at 0
+            df_edges_train['dst'] = df_edges_train['dst'].map(node_to_index)
+            node_to_index = pd.Series(df_nodes_test.index, index=df_nodes_test['account']).to_dict()
+            df_edges_test['src'] = df_edges_test['src'].map(node_to_index)
+            df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
+        else:
+            df_edges_train = None
+            df_edges_test = None
+        
         trainset = (df_nodes_train, df_edges_train)
         testset = (df_nodes_test, df_edges_test)
+        
         datasets.append((trainset, testset))
     
     return datasets

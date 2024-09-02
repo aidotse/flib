@@ -72,6 +72,27 @@ class Classifier:
                 self.model = grid.best_estimator_
             else:
                 self.model = model().fit(self.X_train, self.y_train)
+        elif model == 'GradientBoostingClassifier':
+            model = getattr(sklearn.ensemble, model)
+            if tune_hyperparameters:
+                param_grid = {
+                    'loss': ['log_loss', 'exponential'], # 'log_loss', 'exponential'
+                    'learning_rate': [0.01, 0.1], # [0.0, inf)
+                    'n_estimators': [100, 200], # [1, inf)
+                    'criterion': ['friedman_mse', 'squared_error'], # 'friedman_mse', 'squared_error'
+                    'min_samples_split': [2, 5], # [2, inf)
+                    'min_samples_leaf': [1, 5], # [1, inf)
+                    'min_weight_fraction_leaf': [0.0, 0.1], # [0.0, 0.5]
+                    'max_depth': [None, 3, 5], # None or [1, inf), tune for best performance
+                    'min_impurity_decrease': [0.0, 0.1], # [0.0, inf)
+                    'max_leaf_nodes': [None, 10], # None or [2, inf)
+                    'random_state': [42],
+                }
+                grid = GridSearchCV(model(), param_grid, scoring='balanced_accuracy', verbose=1, n_jobs=-1)
+                grid.fit(self.X_train, self.y_train)
+                self.model = grid.best_estimator_
+            else:
+                self.model = model().fit(self.X_train, self.y_train)
         else:
             self.model = model.fit(self.X_train, self.y_train)
         return self.model
@@ -80,12 +101,20 @@ class Classifier:
     def evaluate(self, operating_recall:int=0.8):
         y_pred = self.model.predict_proba(self.X_test)[:,1]
         precision, recall, thresholds = precision_recall_curve(self.y_test, y_pred)
+        if len(thresholds) == 1: # if only one threshold, all predict_proba are the same -> fpr = 1.0
+            return 1.0, self.model.feature_importances_
         threshold = thresholds[np.argmax(recall <= operating_recall)]
         y_pred = (y_pred > threshold).astype(int)
         
+        # calc recall
+        recall = recall_score(self.y_test, y_pred)
+        print(f'Recall: {recall:.4f}')
+        
         tn, fp, fn, tp = confusion_matrix(self.y_test, y_pred).ravel()
-        #print(f'tn: {tn}, fp: {fp}, fn: {fn}, tp: {tp}')
-        fpr = fp/(fp+tp)
+        if tp+fp == 0:
+            fpr = 1.0
+        else:
+            fpr = fp/(fp+tp)
         print(f'False positive rate: {fpr:.4f}')
         
         # Print the important features
@@ -101,12 +130,4 @@ class Classifier:
         print(f'Average importance error: {sum_avg_importance_error:.4f}')
         
         return fpr, importances
-    
-    
-    def precision_after_recall(self, X, y_true):
-        y_pred = self.model.predict_proba(X)[:,1]
-        precision, recall, threshold = precision_recall_curve(y_true, y_pred)
-        recall = 0.75
-        idx = np.argmax(recall <= recall)
-        return precision[idx]
         
