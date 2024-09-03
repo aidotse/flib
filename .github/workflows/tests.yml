@@ -31,7 +31,7 @@ jobs:
       - name: Run tests with pytest
         shell: bash -l {0}
         run: |
-          cd AMLsim
+          cd flib/AMLsim
           set -e
           micromamba activate amlsim
           micromamba install pytest pytest-cov
