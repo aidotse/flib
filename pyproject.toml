@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flib"
+version = "0.1.0"
+description = "Package for evaluating federated learning for anti-money laundering"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+
+dependencies = [
+    "networkx==3.3",
+    "numpy==2.1.0",
+    "scipy==1.14.0",
+    "pandas==2.2.2",
+    "tqdm==4.66.5",
+    "scikit-learn==1.5.1",
+    "optuna==3.6.1",
+    "matplotlib==3.9.2"
+]
