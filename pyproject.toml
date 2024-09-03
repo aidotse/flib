@@ -7,7 +7,7 @@ name = "flib"
 version = "0.1.0"
 description = "Package for evaluating federated learning for anti-money laundering"
 readme = "README.md"
-requires-python = "==3.10"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 
 dependencies = [
