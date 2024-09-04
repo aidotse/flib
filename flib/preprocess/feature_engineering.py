@@ -50,44 +50,49 @@ def cal_node_features(df:pd.DataFrame, bank, windows=1) -> pd.DataFrame:
     
     df_nodes = pd.DataFrame()
     df_nodes = pd.concat([df_out[['account', 'bank']], df_in[['account', 'bank']]]).drop_duplicates().set_index('account')
+    node_features = {}
     
     # calculate spending features
     for window in windows:
         gb = df_spending[(df_spending['step']>=window[0])&(df_spending['step']<=window[1])].groupby(['account'])
-        df_nodes[f'sums_spending_{window[0]}_{window[1]}'] = gb['amount'].sum()
-        df_nodes[f'means_spending_{window[0]}_{window[1]}'] = gb['amount'].mean()
-        df_nodes[f'medians_spending_{window[0]}_{window[1]}'] = gb['amount'].median()
-        df_nodes[f'stds_spending_{window[0]}_{window[1]}'] = gb['amount'].std()
-        df_nodes[f'maxs_spending_{window[0]}_{window[1]}'] = gb['amount'].max()
-        df_nodes[f'mins_spending_{window[0]}_{window[1]}'] = gb['amount'].min()
-        df_nodes[f'counts_spending_{window[0]}_{window[1]}'] = gb['amount'].count()
+        node_features[f'sums_spending_{window[0]}_{window[1]}'] = gb['amount'].sum()
+        node_features[f'means_spending_{window[0]}_{window[1]}'] = gb['amount'].mean()
+        node_features[f'medians_spending_{window[0]}_{window[1]}'] = gb['amount'].median()
+        node_features[f'stds_spending_{window[0]}_{window[1]}'] = gb['amount'].std()
+        node_features[f'maxs_spending_{window[0]}_{window[1]}'] = gb['amount'].max()
+        node_features[f'mins_spending_{window[0]}_{window[1]}'] = gb['amount'].min()
+        node_features[f'counts_spending_{window[0]}_{window[1]}'] = gb['amount'].count()
     # calculate network features
     for window in windows:
         gb_in = df_in[(df_in['step']>=window[0])&(df_in['step']<=window[1])].groupby(['account'])
-        df_nodes[f'sum_in{window[0]}_{window[1]}'] = gb_in['amount'].apply(lambda x: x[x > 0].sum())
-        df_nodes[f'mean_in_{window[0]}_{window[1]}'] = gb_in['amount'].mean()
-        df_nodes[f'median_in{window[0]}_{window[1]}'] = gb_in['amount'].median()
-        df_nodes[f'std_in{window[0]}_{window[1]}'] = gb_in['amount'].std()
-        df_nodes[f'max_in_{window[0]}_{window[1]}'] = gb_in['amount'].max()
-        df_nodes[f'min_in_{window[0]}_{window[1]}'] = gb_in['amount'].min()
-        df_nodes[f'count_in_{window[0]}_{window[1]}'] = gb_in['amount'].count()
-        df_nodes[f'count_unique_in_{window[0]}_{window[1]}'] = gb_in['counterpart'].nunique()
+        node_features[f'sum_in{window[0]}_{window[1]}'] = gb_in['amount'].apply(lambda x: x[x > 0].sum())
+        node_features[f'mean_in_{window[0]}_{window[1]}'] = gb_in['amount'].mean()
+        node_features[f'median_in{window[0]}_{window[1]}'] = gb_in['amount'].median()
+        node_features[f'std_in{window[0]}_{window[1]}'] = gb_in['amount'].std()
+        node_features[f'max_in_{window[0]}_{window[1]}'] = gb_in['amount'].max()
+        node_features[f'min_in_{window[0]}_{window[1]}'] = gb_in['amount'].min()
+        node_features[f'count_in_{window[0]}_{window[1]}'] = gb_in['amount'].count()
+        node_features[f'count_unique_in_{window[0]}_{window[1]}'] = gb_in['counterpart'].nunique()
         gb_out = df_out[(df_out['step']>=window[0])&(df_out['step']<=window[1])].groupby(['account'])
-        df_nodes[f'sum_out{window[0]}_{window[1]}'] = gb_out['amount'].apply(lambda x: x[x > 0].sum())
-        df_nodes[f'mean_out_{window[0]}_{window[1]}'] = gb_out['amount'].mean()
-        df_nodes[f'median_out{window[0]}_{window[1]}'] = gb_out['amount'].median()
-        df_nodes[f'std_out{window[0]}_{window[1]}'] = gb_out['amount'].std()
-        df_nodes[f'max_out_{window[0]}_{window[1]}'] = gb_out['amount'].max()
-        df_nodes[f'min_out_{window[0]}_{window[1]}'] = gb_out['amount'].min()
-        df_nodes[f'count_out_{window[0]}_{window[1]}'] = gb_out['amount'].count()
-        df_nodes[f'count_unique_out_{window[0]}_{window[1]}'] = gb_out['counterpart'].nunique()
+        node_features[f'sum_out{window[0]}_{window[1]}'] = gb_out['amount'].apply(lambda x: x[x > 0].sum())
+        node_features[f'mean_out_{window[0]}_{window[1]}'] = gb_out['amount'].mean()
+        node_features[f'median_out{window[0]}_{window[1]}'] = gb_out['amount'].median()
+        node_features[f'std_out{window[0]}_{window[1]}'] = gb_out['amount'].std()
+        node_features[f'max_out_{window[0]}_{window[1]}'] = gb_out['amount'].max()
+        node_features[f'min_out_{window[0]}_{window[1]}'] = gb_out['amount'].min()
+        node_features[f'count_out_{window[0]}_{window[1]}'] = gb_out['amount'].count()
+        node_features[f'count_unique_out_{window[0]}_{window[1]}'] = gb_out['counterpart'].nunique()
     # calculate non window related features
-    df = pd.concat([df_in[['account', 'days_in_bank', 'n_phone_changes', 'is_sar']], df_out[['account', 'days_in_bank', 'n_phone_changes', 'is_sar']]])
-    gb = df.groupby('account')
-    df_nodes[f'counts_days_in_bank'] = gb['days_in_bank'].max()
-    df_nodes[f'counts_phone_changes'] = gb['n_phone_changes'].max()
+    df_combined = pd.concat([df_in[['account', 'days_in_bank', 'n_phone_changes', 'is_sar']], df_out[['account', 'days_in_bank', 'n_phone_changes', 'is_sar']]])
+    gb = df_combined.groupby('account')
+    node_features['counts_days_in_bank'] = gb['days_in_bank'].max()
+    node_features['counts_phone_changes'] = gb['n_phone_changes'].max()
     # find label
-    df_nodes['is_sar'] = gb['is_sar'].max()
+    node_features['is_sar'] = gb['is_sar'].max()
+    # concat features
+    node_features_df = pd.concat(node_features, axis=1)
+    # merge with nodes
+    df_nodes = df_nodes.join(node_features_df)
     # filter out nodes not belonging to the bank
     df_nodes = df_nodes[df_nodes['bank'] == bank] # TODO: keep these nodes? see TODO below about get edges
     # if any value is nan, there was no transaction in the window for that account and hence the feature should be 0
