@@ -45,49 +45,62 @@ def cal_node_features(df:pd.DataFrame, bank, windows=1) -> pd.DataFrame:
     df_spending = df[df['bankDest'] == 'sink'].rename(columns={'nameOrig': 'account'})
     # filter out and reform transactions within the network 
     df_network = df[df['bankDest'] != 'sink']
-    df1 = df_network[['step', 'nameOrig', 'bankOrig', 'amount', 'nameDest', 'daysInBankOrig', 'phoneChangesOrig', 'isSAR']].rename(columns={'nameOrig': 'account', 'bankOrig': 'bank', 'nameDest': 'counterpart', 'daysInBankOrig': 'days_in_bank', 'phoneChangesOrig': 'n_phone_changes', 'isSAR': 'is_sar'})
-    df2 = df_network[['step', 'nameDest', 'bankDest', 'amount', 'nameOrig', 'daysInBankDest', 'phoneChangesDest', 'isSAR']].rename(columns={'nameDest': 'account', 'bankDest': 'bank', 'nameOrig': 'counterpart', 'daysInBankDest': 'days_in_bank', 'phoneChangesDest': 'n_phone_changes', 'isSAR': 'is_sar'})
-    df2['amount'] = df2['amount'] * -1
-    df_network = pd.concat([df1, df2])
-    # init finale dataframe
+    df_in = df_network[['step', 'nameDest', 'bankDest', 'amount', 'nameOrig', 'daysInBankDest', 'phoneChangesDest', 'isSAR']].rename(columns={'nameDest': 'account', 'bankDest': 'bank', 'nameOrig': 'counterpart', 'daysInBankDest': 'days_in_bank', 'phoneChangesDest': 'n_phone_changes', 'isSAR': 'is_sar'})
+    df_out = df_network[['step', 'nameOrig', 'bankOrig', 'amount', 'nameDest', 'daysInBankOrig', 'phoneChangesOrig', 'isSAR']].rename(columns={'nameOrig': 'account', 'bankOrig': 'bank', 'nameDest': 'counterpart', 'daysInBankOrig': 'days_in_bank', 'phoneChangesOrig': 'n_phone_changes', 'isSAR': 'is_sar'})
+    
     df_nodes = pd.DataFrame()
-    # add bank of account
-    df_nodes['bank'] = df_network[['account', 'bank']].drop_duplicates().set_index('account')
+    df_nodes = pd.concat([df_out[['account', 'bank']], df_in[['account', 'bank']]]).drop_duplicates().set_index('account')
+    node_features = {}
+    
     # calculate spending features
     for window in windows:
         gb = df_spending[(df_spending['step']>=window[0])&(df_spending['step']<=window[1])].groupby(['account'])
-        df_nodes[f'sums_spending_{window[0]}_{window[1]}'] = gb['amount'].sum()
-        df_nodes[f'means_spending_{window[0]}_{window[1]}'] = gb['amount'].mean()
-        df_nodes[f'medians_spending_{window[0]}_{window[1]}'] = gb['amount'].median()
-        df_nodes[f'stds_spending_{window[0]}_{window[1]}'] = gb['amount'].std().fillna(0.0)
-        df_nodes[f'maxs_spending_{window[0]}_{window[1]}'] = gb['amount'].max()
-        df_nodes[f'mins_spending_{window[0]}_{window[1]}'] = gb['amount'].min()
-        df_nodes[f'counts_spending_{window[0]}_{window[1]}'] = gb['amount'].count()
+        node_features[f'sums_spending_{window[0]}_{window[1]}'] = gb['amount'].sum()
+        node_features[f'means_spending_{window[0]}_{window[1]}'] = gb['amount'].mean()
+        node_features[f'medians_spending_{window[0]}_{window[1]}'] = gb['amount'].median()
+        node_features[f'stds_spending_{window[0]}_{window[1]}'] = gb['amount'].std()
+        node_features[f'maxs_spending_{window[0]}_{window[1]}'] = gb['amount'].max()
+        node_features[f'mins_spending_{window[0]}_{window[1]}'] = gb['amount'].min()
+        node_features[f'counts_spending_{window[0]}_{window[1]}'] = gb['amount'].count()
     # calculate network features
     for window in windows:
-        gb = df_network[(df_network['step']>=window[0])&(df_network['step']<=window[1])].groupby(['account'])
-        df_nodes[f'in_sums_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: x[x > 0].sum())
-        df_nodes[f'out_sums_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: x[x < 0].sum())
-        df_nodes[f'sums_{window[0]}_{window[1]}'] = gb['amount'].sum()
-        df_nodes[f'means_{window[0]}_{window[1]}'] = gb['amount'].mean()
-        df_nodes[f'medians_{window[0]}_{window[1]}'] = gb['amount'].median()
-        df_nodes[f'stds_{window[0]}_{window[1]}'] = gb['amount'].std().fillna(0.0)
-        df_nodes[f'maxs_{window[0]}_{window[1]}'] = gb['amount'].max()
-        df_nodes[f'mins_{window[0]}_{window[1]}'] = gb['amount'].min()
-        df_nodes[f'counts_in_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: (x>0).sum()).rename('count_in')
-        df_nodes[f'counts_out_{window[0]}_{window[1]}'] = gb['amount'].apply(lambda x: (x<0).sum()).rename('count_out')
-        df_nodes[f'counts_unique_in_{window[0]}_{window[1]}'] = gb.apply(lambda x: x[x['amount']>0]['counterpart'].nunique()).rename('count_unique_in')
-        df_nodes[f'counts_unique_out_{window[0]}_{window[1]}'] = gb.apply(lambda x: x[x['amount']<0]['counterpart'].nunique()).rename('count_unique_out')
+        gb_in = df_in[(df_in['step']>=window[0])&(df_in['step']<=window[1])].groupby(['account'])
+        node_features[f'sum_in{window[0]}_{window[1]}'] = gb_in['amount'].apply(lambda x: x[x > 0].sum())
+        node_features[f'mean_in_{window[0]}_{window[1]}'] = gb_in['amount'].mean()
+        node_features[f'median_in{window[0]}_{window[1]}'] = gb_in['amount'].median()
+        node_features[f'std_in{window[0]}_{window[1]}'] = gb_in['amount'].std()
+        node_features[f'max_in_{window[0]}_{window[1]}'] = gb_in['amount'].max()
+        node_features[f'min_in_{window[0]}_{window[1]}'] = gb_in['amount'].min()
+        node_features[f'count_in_{window[0]}_{window[1]}'] = gb_in['amount'].count()
+        node_features[f'count_unique_in_{window[0]}_{window[1]}'] = gb_in['counterpart'].nunique()
+        gb_out = df_out[(df_out['step']>=window[0])&(df_out['step']<=window[1])].groupby(['account'])
+        node_features[f'sum_out{window[0]}_{window[1]}'] = gb_out['amount'].apply(lambda x: x[x > 0].sum())
+        node_features[f'mean_out_{window[0]}_{window[1]}'] = gb_out['amount'].mean()
+        node_features[f'median_out{window[0]}_{window[1]}'] = gb_out['amount'].median()
+        node_features[f'std_out{window[0]}_{window[1]}'] = gb_out['amount'].std()
+        node_features[f'max_out_{window[0]}_{window[1]}'] = gb_out['amount'].max()
+        node_features[f'min_out_{window[0]}_{window[1]}'] = gb_out['amount'].min()
+        node_features[f'count_out_{window[0]}_{window[1]}'] = gb_out['amount'].count()
+        node_features[f'count_unique_out_{window[0]}_{window[1]}'] = gb_out['counterpart'].nunique()
     # calculate non window related features
-    gb = df_network.groupby('account')
-    df_nodes[f'counts_days_in_bank'] = gb['days_in_bank'].max()
-    df_nodes[f'counts_phone_changes'] = gb['n_phone_changes'].max()
+    df_combined = pd.concat([df_in[['account', 'days_in_bank', 'n_phone_changes', 'is_sar']], df_out[['account', 'days_in_bank', 'n_phone_changes', 'is_sar']]])
+    gb = df_combined.groupby('account')
+    node_features['counts_days_in_bank'] = gb['days_in_bank'].max()
+    node_features['counts_phone_changes'] = gb['n_phone_changes'].max()
     # find label
-    df_nodes['is_sar'] = gb['is_sar'].max().rename('is_sar')
+    node_features['is_sar'] = gb['is_sar'].max()
+    # concat features
+    node_features_df = pd.concat(node_features, axis=1)
+    # merge with nodes
+    df_nodes = df_nodes.join(node_features_df)
     # filter out nodes not belonging to the bank
     df_nodes = df_nodes[df_nodes['bank'] == bank] # TODO: keep these nodes? see TODO below about get edges
-    # fill missing values
-    df_nodes.fillna(0.0, inplace=True)
+    # if any value is nan, there was no transaction in the window for that account and hence the feature should be 0
+    df_nodes = df_nodes.fillna(0.0)
+    # check if there is any missing values
+    assert df_nodes.isnull().sum().sum() == 0, 'There are missing values in the node features'
+    # check if there are any negative values in all comuns except the bank column
+    assert (df_nodes.drop(columns='bank') < 0).sum().sum() == 0, 'There are negative values in the node features'
     return df_nodes
 
 
@@ -129,6 +142,12 @@ def cal_edge_features(df:pd.DataFrame, directional:bool=False, windows=1) -> pd.
     gb = df.groupby(['src', 'dst'])
     df_edges[f'is_sar'] = gb['is_sar'].max()
     df_edges.reset_index(inplace=True)
+    # if any value is nan, there was no transaction in the window for that edge and hence the feature should be 0
+    df_edges = df_edges.fillna(0.0)
+    # check if there is any missing values
+    assert df_edges.isnull().sum().sum() == 0, 'There are missing values in the edge features'
+    # check if there are any negative values in all comuns except the bank column
+    assert (df_edges.drop(columns=['src', 'dst']) < 0).sum().sum() == 0, 'There are negative values in the edge features'
     return df_edges
 
 
