@@ -2,7 +2,7 @@ import torch
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import math
 from sklearn.preprocessing import StandardScaler
-from criterions import ClassBalancedLoss
+from flib.federated_learning.criterions import ClassBalancedLoss
 
 
 class Client:
@@ -31,8 +31,8 @@ class Client:
             self.x_val = []
             self.y_val = []
         
-        input_dim = 34 #self.x_train.shape[1]
-        output_dim = 2 #self.y_train.unique().shape[0]
+        input_dim = self.x_train.shape[1]
+        output_dim = self.y_train.unique().shape[0]
         self.module = Module(input_dim=input_dim, output_dim=output_dim).to(device)
         self.optimizer = Optimizer(self.module.parameters(), lr=lr)
         if Optimizer == torch.optim.SGD and optimizer_params:
