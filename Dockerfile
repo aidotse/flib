@@ -21,7 +21,7 @@ RUN wget https://downloads.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-
     ln -s /usr/share/maven/bin/mvn /usr/bin/mvn    
 
 # Install java dependencies
-COPY AMLsim/jars AMLsim/jars
+COPY flib/AMLsim/jars AMLsim/jars
 RUN mvn install:install-file \
     -Dfile=AMLsim/jars/mason.20.jar \
     -DgroupId=mason \
@@ -39,23 +39,23 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Setup AMLsim
 WORKDIR /flib/AMLsim
-COPY AMLsim/scripts scripts
-COPY AMLsim/src src
-COPY AMLsim/pom.xml pom.xml
+COPY flib/AMLsim/scripts scripts
+COPY flib/AMLsim/src src
+COPY flib/AMLsim/pom.xml pom.xml
 RUN mvn clean package -DskipTests
 RUN sh scripts/run.sh
 
 # Setup preprocess
 WORKDIR /flib
-COPY preprocess/ preprocess/
+COPY flib/preprocess/ preprocess/
 
 # Setup auto-aml-data-gen
 WORKDIR /flib/auto-aml-data-gen
-COPY auto-aml-data-gen/classifier.py classifier.py 
-COPY auto-aml-data-gen/main.py main.py
-COPY auto-aml-data-gen/optimizer.py optimizer.py
-COPY auto-aml-data-gen/simulate.py simulate.py
-COPY auto-aml-data-gen/utils.py utils.py
+COPY flib/auto-aml-data-gen/classifier.py classifier.py 
+COPY flib/auto-aml-data-gen/main.py main.py
+COPY flib/auto-aml-data-gen/optimizer.py optimizer.py
+COPY flib/auto-aml-data-gen/simulate.py simulate.py
+COPY flib/auto-aml-data-gen/utils.py utils.py
 RUN mkdir data
 
 # Start with a bash shell
