@@ -159,7 +159,29 @@ def powerlaw_degree_distrubution(n, gamma=2.0, loc=1.0, scale=1.0, seed=0):
     
     return values, counts
     
-
+def generate_degree_file(conf_file):
+    n = get_n(conf_file)
+    # get egde factor from conf.json
+    gamma, loc, scale = get_scale_free_params(conf_file)
+    # get directory from conf.json
+    with open(conf_file, "r") as rf:
+        conf = json.load(rf)
+        directory = conf["input"]["directory"]
+        deg_file = conf["input"]["degree"]
+        seed = conf["general"]["random_seed"]
+    # build degree file path
+    deg_file_path = os.path.join(directory, deg_file)
+    
+    # generate degree distribution
+    values, counts = powerlaw_degree_distrubution(n, gamma, loc, scale, seed)
+    
+    # write degree distribution to file
+    with open(deg_file_path, "w") as wf:
+        writer = csv.writer(wf)
+        writer.writerow(["Count", "In-degree", "Out-degree"])
+        for value, count in zip(values, counts):
+            writer.writerow([count, int(value[0]), int(value[1])])
+        
 if __name__ == "__main__":
     
     argv = sys.argv
