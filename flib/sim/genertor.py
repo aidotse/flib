@@ -10,27 +10,29 @@ class DataGenerator:
     def __init__(self, conf_file):
         self.conf_file = conf_file
 
-    def run(self):
+    def __call__(self, conf_file=None):
         
-        print(f'Simulating with {self.conf_file}')
+        if conf_file is None:
+            conf_file = self.conf_file
+            
+        print(f'Simulating with {conf_file}')
         
         # get path to working dir
         dir = os.path.dirname(os.path.realpath(__file__))
         
         # check if degree.csv exists
-        with open(self.conf_file, 'r') as f:
+        with open(conf_file, 'r') as f:
             config = json.load(f)
         degree_path = os.path.join(config['input']['directory'], config['input']['degree'])
         # create degree.csv if it does not exist
         if not os.path.exists(degree_path):
-           generate_degree_file(self.conf_file)
+           generate_degree_file(conf_file)
         
         # generate transaction graph and run simulation
-        #os.system(f'cd {dir}/AMLsim && python3 scripts/transaction_graph_generator.py "{self.conf_file }"')
-        generate_transaction_graph(self.conf_file)
-        os.system(f'cd {dir}/AMLsim && mvn exec:java -Dexec.mainClass=amlsim.AMLSim -Dexec.args="{self.conf_file }"')
+        generate_transaction_graph(conf_file)
+        os.system(f'cd {dir}/AMLsim && mvn exec:java -Dexec.mainClass=amlsim.AMLSim -Dexec.args="{conf_file }"')
 
-        with open(self.conf_file , 'r') as f:
+        with open(conf_file , 'r') as f:
             config = json.load(f)
         tx_log_path = os.path.join(config['output']['directory'], config['general']['simulation_name'], config['output']['transaction_log'])
         

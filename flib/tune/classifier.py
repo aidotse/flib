@@ -50,20 +50,20 @@ class Classifier:
                 grid.fit(self.X_train, self.y_train)
                 self.model = grid.best_estimator_
             else:
-                self.model = model().fit(self.X_train, self.y_train)
+                self.model = model(class_weight='balanced', random_state=42).fit(self.X_train, self.y_train)
         elif model == 'DecisionTreeClassifier':
             model = getattr(sklearn.tree, model)
             if tune_hyperparameters:
                 param_grid = {
-                    'criterion': ['gini', 'entropy'], # 'gini', 'entropy', 'log_loss'
+                    'criterion': ['gini', 'entropy', 'log_loss'], # 'gini', 'entropy', 'log_loss'
                     'splitter': ['best', 'random'], # 'best', 'random'
-                    'max_depth': [None, 10], # None, 10, 20, 30
-                    'min_samples_split': [2, 5], # 5, 10
-                    'min_samples_leaf': [1, 5], # 5, 10 
-                    'min_weight_fraction_leaf': [0.0, 0.1], # 0.1, 0.2
-                    'max_features': [None, 'sqrt', 'log2'], # 'log2', 'None'
-                    'max_leaf_nodes': [None, 10], # 10, 100
-                    'min_impurity_decrease': [0.0, 0.1], # 0.1, 0.2
+                    'max_depth': [None, 10, 20], # None, 10, 20, 30
+                    'min_samples_split': [2, 5, 10], # 5, 10
+                    'min_samples_leaf': [1, 5, 10], # 5, 10 
+                    'min_weight_fraction_leaf': [0.0, 0.1, 0.2], # 0.1, 0.2
+                    'max_features': [None], # 'log2', 'None', 'sqrt', int or float
+                    'max_leaf_nodes': [None, 10, 100], # 10, 100
+                    'min_impurity_decrease': [0.0, 0.1, 0.2], # 0.1, 0.2
                     'class_weight': ['balanced'], 
                     'random_state': [42],
                 }
@@ -71,7 +71,7 @@ class Classifier:
                 grid.fit(self.X_train, self.y_train)
                 self.model = grid.best_estimator_
             else:
-                self.model = model().fit(self.X_train, self.y_train)
+                self.model = model(class_weight='balanced', random_state=42).fit(self.X_train, self.y_train)
         elif model == 'GradientBoostingClassifier':
             model = getattr(sklearn.ensemble, model)
             if tune_hyperparameters:
@@ -92,7 +92,7 @@ class Classifier:
                 grid.fit(self.X_train, self.y_train)
                 self.model = grid.best_estimator_
             else:
-                self.model = model().fit(self.X_train, self.y_train)
+                self.model = model(random_state=42).fit(self.X_train, self.y_train)
         else:
             self.model = model.fit(self.X_train, self.y_train)
         return self.model
@@ -100,34 +100,12 @@ class Classifier:
 
     def evaluate(self, operating_recall:int=0.8):
         y_pred = self.model.predict_proba(self.X_test)[:,1]
-        precision, recall, thresholds = precision_recall_curve(self.y_test, y_pred)
-        if len(thresholds) == 1: # if only one threshold, all predict_proba are the same -> fpr = 1.0
-            return 1.0, self.model.feature_importances_
-        threshold = thresholds[np.argmax(recall <= operating_recall)]
-        y_pred = (y_pred > threshold).astype(int)
-        
-        # calc recall
-        recall = recall_score(self.y_test, y_pred)
-        print(f'Recall: {recall:.4f}')
-        
+        y_pred = (y_pred > 0.5).astype(int)
         tn, fp, fn, tp = confusion_matrix(self.y_test, y_pred).ravel()
         if tp+fp == 0:
             fpr = 1.0
         else:
             fpr = fp/(fp+tp)
-        print(f'False positive rate: {fpr:.4f}')
-        
-        # Print the important features
         importances = self.model.feature_importances_
-        indices = np.argsort(importances)[::-1]
-        print("Feature ranking:")
-        for f in range(self.X_train.shape[1]):
-            print(f'  {f}. {self.trainset.columns[indices[f]+2]} ({importances[indices[f]]})')
-        
-        avg_importance = importances.mean()
-        avg_importance_error = abs(importances - avg_importance)
-        sum_avg_importance_error = avg_importance_error.sum()
-        print(f'Average importance error: {sum_avg_importance_error:.4f}')
-        
         return fpr, importances
         

@@ -20,16 +20,6 @@ RUN wget https://downloads.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-
     ln -s /usr/share/apache-maven-3.9.6 /usr/share/maven && \
     ln -s /usr/share/maven/bin/mvn /usr/bin/mvn    
 
-# Install java dependencies
-COPY flib/AMLsim/jars AMLsim/jars
-RUN mvn install:install-file \
-    -Dfile=AMLsim/jars/mason.20.jar \
-    -DgroupId=mason \
-    -DartifactId=mason \
-    -Dversion=20 \
-    -Dpackaging=jar \
-    -DgeneratePom=true
-    
 # Set the default Python version to Python 3.10
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 
@@ -37,26 +27,35 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Setup AMLsim
-WORKDIR /flib/AMLsim
-COPY flib/AMLsim/scripts scripts
-COPY flib/AMLsim/src src
-COPY flib/AMLsim/pom.xml pom.xml
+# Install Java dependencies and setup AMLsim
+COPY flib/sim flib/sim
+WORKDIR /flib/flib/sim/AMLsim
+RUN mvn install:install-file \
+    -Dfile=jars/mason.20.jar \
+    -DgroupId=mason \
+    -DartifactId=mason \
+    -Dversion=20 \
+    -Dpackaging=jar \
+    -DgeneratePom=true
 RUN mvn clean package -DskipTests
 RUN sh scripts/run.sh
 
-# Setup preprocess
+# Copy the rest of the files
 WORKDIR /flib
-COPY flib/preprocess/ preprocess/
+COPY flib/preprocess flib/preprocess
+COPY flib/train flib/train
+COPY flib/tune flib/tune
+COPY LICENSE .
+COPY pyproject.toml .
+COPY README.md .
+COPY setup.cfg .
+COPY setup.py .
 
-# Setup auto-aml-data-gen
-WORKDIR /flib/auto-aml-data-gen
-COPY flib/auto-aml-data-gen/classifier.py classifier.py 
-COPY flib/auto-aml-data-gen/main.py main.py
-COPY flib/auto-aml-data-gen/optimizer.py optimizer.py
-COPY flib/auto-aml-data-gen/simulate.py simulate.py
-COPY flib/auto-aml-data-gen/utils.py utils.py
-RUN mkdir data
+# Install flib
+RUN pip3 install --no-cache-dir -e .
 
-# Start with a bash shell
-ENTRYPOINT ["python3", "main.py"]
+# Copy the examples and set as working directory
+COPY experiments experiments
+WORKDIR /flib/experiments
+
+ENTRYPOINT ["python3", "tune.py"]

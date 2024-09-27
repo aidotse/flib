@@ -3,7 +3,7 @@ import torch
 from torch.nn import functional as F
 
 class ClassBalancedLoss(torch.nn.Module):
-    def __init__(self, beta, n_samples_per_classes, loss_type):
+    def __init__(self, beta, n_samples_per_classes, loss_type='sigmoid', **kwargs):
         super(ClassBalancedLoss, self).__init__()
         self.beta = beta
         self.effective_nums = 1.0 - np.power(beta, n_samples_per_classes)

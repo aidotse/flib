@@ -1,6 +1,13 @@
-datasets
 __pycache__
 *.pyc
 .vscode
 .venv
 *.egg-info
+.pytest_cache
+experiments/data
+experiments/param_files
+experiments/results
+flib/sim/AMLsim/outputs
+flib/sim/AMLsim/tmp
+flib/sim/AMLsim/target
+flib/train/federated_learning/results
