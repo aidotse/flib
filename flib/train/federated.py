@@ -8,7 +8,7 @@ import pickle
 import optuna
 import time
 
-def federated(seed=42, train_dfs=None, val_dfs=None, test_dfs=None, client='LogRegClient', criterion='ClassBalancedLoss', n_workers=3, n_rounds=100, eval_every=10, **kwargs):
+def federated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, n_rounds=100, eval_every=10, client='LogRegClient', **kwargs):
     
     set_random_seed(seed)
     
@@ -22,13 +22,14 @@ def federated(seed=42, train_dfs=None, val_dfs=None, test_dfs=None, client='LogR
     
     # init clients
     clients = []
-    for i, train_df, val_df, test_df in zip(range(len(train_dfs)), train_dfs, val_dfs, test_dfs):
+    for i, train_df in enumerate(train_dfs):
+        val_df = val_dfs[i] if i < len(val_dfs) else None
+        test_df = test_dfs[i] if i < len(test_dfs) else None
         client = Client(
             name=f'c{i}',
             train_df=train_df,
             val_df=val_df,
             test_df=test_df,
-            criterion=criterion,
             **kwargs
         )
         clients.append(client)
@@ -40,9 +41,9 @@ def federated(seed=42, train_dfs=None, val_dfs=None, test_dfs=None, client='LogR
     )
     
     # run
-    results, state_dict, avg_loss = server.run(n_rounds=n_rounds, eval_every=eval_every)
+    results = server.run(n_rounds=n_rounds, eval_every=eval_every, **kwargs)
     
-    return results, state_dict, avg_loss
+    return results
 
 class HyperparamTuner():
     def __init__(self, seed=42, trainsets=None, n_rounds=50, model='LogisticRegressor', optimizer=['SGD'], criterion=['ClassBalancedLoss'], beta=(0.9999, 0.99999999), local_epochs=[1], batch_size=[64, 128, 256], lr=(0.001, 0.1), n_workers=3, device='cuda:0', storage=None, results_file=None):

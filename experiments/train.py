@@ -33,16 +33,17 @@ def main():
     parser.add_argument('--seed', type=int, help='Seed.', default=42)
     parser.add_argument('--n_rounds', type=int, help='Number of traning rounds.', default=3)
     parser.add_argument('--eval_every', type=int, help='Number of rounds between evaluations.', default=1)
-    parser.add_argument('--local_epochs', type=int, help='Number of local epochs at clients.', default=1)
+    #parser.add_argument('--local_epochs', type=int, help='Number of local epochs at clients.', default=1)
     parser.add_argument('--batch_size', type=int, help='Batch size.', default=512)
     parser.add_argument('--lr', type=float, help='Learning rate.', default=0.02)
     parser.add_argument('--n_workers', type=int, help='Number of processes.', default=3)
     parser.add_argument('--device', type=str, help='Device for computations. Can be "cpu" or cuda device, e.g. "cuda:0".', default="cuda:0")
+    parser.add_argument('--lr_patience', type=int, help='Number of epochs to wait before reducing learning rate.', default=5)
+    parser.add_argument('--es_patience', type=int, help='Number of epochs to wait before early stopping.', default=15)
     parser.add_argument('--results_dir', type=str, default='/home/edvin/Desktop/flib/experiments/results/3_banks_homo_easy/')
     args = parser.parse_args()
     
-    print()
-    print(f'clients: {args.clients}')
+    print(f'\nclients: {args.clients}')
     print(f'settings: {args.settings}')    
     print(f'traindata files:')
     for traindata_file in args.traindata_files:
@@ -60,13 +61,12 @@ def main():
     print(f'seed: {args.seed}')
     print(f'n_rounds: {args.n_rounds}')
     print(f'eval_every: {args.eval_every}')
-    print(f'local_epochs: {args.local_epochs}')
+    #print(f'local_epochs: {args.local_epochs}')
     print(f'batch_size: {args.batch_size}')
     print(f'lr: {args.lr}')
     print(f'n_workers: {args.n_workers}')
     print(f'device: {args.device}')
-    print(f'results_dir: {args.results_dir}')
-    print()
+    print(f'results_dir: {args.results_dir}\n')
     
     train_dfs = []
     val_dfs = []
@@ -101,8 +101,8 @@ def main():
                 criterion=args.criterion,
                 n_epochs=args.n_rounds, 
                 eval_every=args.eval_every,
-                lr_patience=5,
-                es_patience=15,
+                lr_patience=args.lr_patience,
+                es_patience=args.es_patience,
                 optimizer=args.optimizer,
                 beta=args.beta,
                 batch_size=args.batch_size,
@@ -117,8 +117,7 @@ def main():
             os.makedirs(results_dir, exist_ok=True)
             with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
                 pickle.dump(results, f)
-            print(f'Saved results to {results_dir}/results.pkl')
-            print()
+            print(f'Saved results to {results_dir}/results.pkl\n')
         if 'federated' in args.settings:
             print(f'Training {client} in federated setting.')
             t = time.time()
@@ -145,8 +144,7 @@ def main():
             os.makedirs(results_dir, exist_ok=True)
             with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
                 pickle.dump(results, f)
-            print(f'Saved results to {results_dir}/results.pkl')
-            print()
+            print(f'Saved results to {results_dir}/results.pkl\n')
         if 'isolated' in args.settings:
             print(f'Training {client} in isolated setting')
             t = time.time()
@@ -175,8 +173,7 @@ def main():
             os.makedirs(results_dir, exist_ok=True)
             with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
                 pickle.dump(results, f)
-            print(f'Saved results to {results_dir}/results.pkl')
-            print()
+            print(f'Saved results to {results_dir}/results.pkl\n')
 
 if __name__ == '__main__':
     main()

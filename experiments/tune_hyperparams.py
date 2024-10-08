@@ -1,77 +1,171 @@
 import argparse
-from flib.train.federated import HyperparamTuner
+import os
+import time
+
+import pandas as pd
+
+from flib.train import centralized, federated, isolated, HyperparamTuner
+import hyperparams
 
 def main():
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--models', nargs='+', help='Types of models to train.', default=['LogisticRegressor'])
-    parser.add_argument('--settings', nargs='+', help='Types of settings to use. Can be "iso", "cen" or "fed".', default=['fed'])
-    parser.add_argument('--trainsets', nargs='+', help='Paths to trainsets.', default=[
-        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_hard/preprocessed/a_nodes_train.csv',
-        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_hard/preprocessed/b_nodes_train.csv',
-        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_hard/preprocessed/c_nodes_train.csv'
+    parser.add_argument('--clients', nargs='+', help='Types of clients to train.', default=['LogRegClient', 'DecisionTreeClient', 'RandomForestClient', 'GradientBoostingClient', 'SVMClient', 'KNNClient']) # LogRegClient, DecisionTreeClient, RandomForestClient, GradientBoostingClient, SVMClient, KNNClient
+    parser.add_argument('--settings', nargs='+', help='Types of settings to use. Can be "isolated", "centralized" or "federated".', default=['centralized', 'federated', 'isolated'])
+    parser.add_argument('--traindata_files', nargs='+', help='Paths to trainsets.', default=[
+        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_mid/preprocessed/a_nodes_train.csv',
+        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_mid/preprocessed/b_nodes_train.csv',
+        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_mid/preprocessed/c_nodes_train.csv'
     ])
-    parser.add_argument('--optimizer', nargs='+', help='', default=['SGD'])
-    parser.add_argument('--criterion', nargs='+', help='', default=['ClassBalancedLoss'])
-    parser.add_argument('--beta', nargs='+', help='Value of beta for ClassBalancedLoss.', default=[0.9999, 0.9999999999])
-    parser.add_argument('--seed', type=int, help='Seed.', default=42)
-    parser.add_argument('--n_rounds', type=int, help='Number of traning rounds.', default=30)
-    parser.add_argument('--local_epochs', nargs='+', help='Number of local epochs at clients.', default=[1])
-    parser.add_argument('--batch_size', nargs='+', help='Batch size.', default=[128, 256, 512])
-    parser.add_argument('--lr', nargs='+', help='Learning rate.', default=[0.0001, 1.0])
+    parser.add_argument('--valdata_files', nargs='+', help='Paths to valsets', default=[
+        None,
+        None,
+        None
+    ])
+    parser.add_argument('--valset_size', type=float, default=0.2)
+    
     parser.add_argument('--n_workers', type=int, help='Number of processes.', default=3)
     parser.add_argument('--device', type=str, help='Device for computations. Can be "cpu" or cuda device, e.g. "cuda:0".', default="cuda:0")
-    parser.add_argument('--results_file', type=str, default='/home/edvin/Desktop/flib/experiments/results/3_banks_homo_hard/federated/best_params.txt')
-    parser.add_argument('--storage', type=str, default='sqlite:////home/edvin/Desktop/flib/experiments/results/3_banks_homo_hard/federated/study.db')
+    parser.add_argument('--seed', type=int, help='Seed.', default=42)
+    parser.add_argument('--n_trials', type=int, help='Number of trials.', default=10)
+    parser.add_argument('--results_dir', type=str, default='/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/')
+    
     args = parser.parse_args()
     
-    args.beta = tuple(args.beta)
-    args.lr = tuple(args.lr)
-    
     print()
-    print(f'models: {args.models}')
+    print(f'clients: {args.clients}')
     print(f'settings: {args.settings}')    
-    print(f'trainsets:')
-    for trainset in args.trainsets:
-        print(f'    {trainset}')
-    print(f'optimizer: {args.optimizer}')
-    print(f'criterion: {args.criterion}')
-    print(f'beta: {args.beta}')
-    print(f'seed: {args.seed}')
-    print(f'n_rounds: {args.n_rounds}')
-    print(f'local_epochs: {args.local_epochs}')
-    print(f'batch_size: {args.batch_size}')
-    print(f'lr: {args.lr}')
+    print(f'traindata files:')
+    for traindata_file in args.traindata_files:
+        print(f'    {traindata_file}')
+    print(f'valdata files:')
+    for valdata_file in args.valdata_files:
+        print(f'    {valdata_file}')
+    print(f'valset_size: {args.valset_size}')
     print(f'n_workers: {args.n_workers}')
     print(f'device: {args.device}')
-    print(f'results_file: {args.results_file}')
-    print(f'storage: {args.storage}')
+    print(f'results_dir: {args.results_dir}')
+    print(f'n_trials: {args.n_trials}')
     print()
     
-    for model in args.models:
-        if 'cen' in args.settings:
-            pass
-        if 'fed' in args.settings:
-            print(f'Turning hyperparameters for {model} in a federated setting.')
+    train_dfs = []
+    val_dfs = []
+    for traindata_file, valdata_file in zip(args.traindata_files, args.valdata_files):
+        train_df = pd.read_csv(traindata_file).drop(columns=['account', 'bank'])
+        if valdata_file is not None:
+            val_df = pd.read_csv(valdata_file).drop(columns=['account', 'bank'])
+        elif args.valset_size is not None:
+            val_df = train_df.sample(frac=args.valset_size, random_state=args.seed)
+            train_df = train_df.drop(val_df.index)
+        else:
+            val_dfs = None
+        train_dfs.append(train_df)
+        val_dfs.append(val_df)
+    
+    for client in args.clients:
+        if 'centralized' in args.settings:
+            print(f'\nTurning hyperparameters for {client} in a centralized setting.')
+            t = time.time()
+            study_name = f'{client}_centralized'
+            os.makedirs(os.path.join(args.results_dir, f'centralized/{client}'), exist_ok=True)
+            storage = 'sqlite:///' + os.path.join(args.results_dir, f'centralized/{client}/hp_study.db')
             hyperparamtuner = HyperparamTuner(
+                study_name=study_name,
+                obj_fn=centralized,
+                train_dfs=train_dfs,
+                val_dfs=val_dfs,
                 seed=args.seed,
-                trainsets=args.trainsets, 
-                n_rounds=args.n_rounds, 
-                model=model,
-                optimizer=args.optimizer,
-                criterion=args.criterion,
-                batch_size=args.batch_size,
-                n_workers=args.n_workers,
-                device=args.device,
-                storage=args.storage,
-                results_file=args.results_file
+                storage=storage,
+                client=client,
+                n_workers = args.n_workers,
+                device = args.device,
+                params = getattr(hyperparams, f'{client}_params')
             )
-            best_params, best_value = hyperparamtuner.optimize(n_trials=20)
-            print(f'Best hyperparameters: {best_params}')
-            print(f'Best value: {best_value}')
+            best_trials = hyperparamtuner.optimize(n_trials=args.n_trials)
+            t = time.time() - t
+            print('Done')
+            print(f'Exec time: {t:.2f}s')
+            best_trials_file = os.path.join(args.results_dir, f'centralized/{client}/best_trials.txt')
+            with open(best_trials_file, 'w') as f:
+                for trial in best_trials:
+                    print(f'\ntrial: {trial.number}')
+                    f.write(f'\ntrial: {trial.number}\n')
+                    print(f'values: {trial.values}')
+                    f.write(f'values: {trial.values}\n')
+                    for param in trial.params:
+                        f.write(f'{param}: {trial.params[param]}\n')
+                        print(f'{param}: {trial.params[param]}')
+            print()
+        
+        if 'federated' in args.settings and client == 'LogRegClient':
+            print(f'\nTurning hyperparameters for {client} in a federated setting.')
+            t = time.time()
+            study_name = f'{client}_federated'
+            os.makedirs(os.path.join(args.results_dir, f'federated/{client}'), exist_ok=True)
+            storage = 'sqlite:///' + os.path.join(args.results_dir, f'federated/{client}/hp_study.db')
+            hyperparamtuner = HyperparamTuner(
+                study_name=study_name,
+                obj_fn=federated,
+                train_dfs=train_dfs,
+                val_dfs=val_dfs,
+                seed=args.seed,
+                n_workers=args.n_workers,
+                device = args.device,
+                storage=storage,
+                client=client,
+                params = getattr(hyperparams, f'{client}_params')
+            )
+            best_trials = hyperparamtuner.optimize(n_trials=args.n_trials)
+            t = time.time() - t
+            print('Done')
+            print(f'Exec time: {t:.2f}s')
+            best_trials_file = os.path.join(args.results_dir, f'federated/{client}/best_trials.txt')
+            with open(best_trials_file, 'w') as f:
+                for trial in best_trials:
+                    print(f'\ntrial: {trial.number}')
+                    f.write(f'\ntrial: {trial.number}\n')
+                    print(f'values: {trial.values}')
+                    f.write(f'values: {trial.values}\n')
+                    for param in trial.params:
+                        f.write(f'{param}: {trial.params[param]}\n')
+                        print(f'{param}: {trial.params[param]}')
+            print()
             
-        if 'iso' in args.settings:
-            pass
+        if 'isolated' in args.settings:
+            print(f'\nTurning hyperparameters for {client} in a isolated setting.')
+            t = time.time()
+            for i, (train_df, val_df) in enumerate(zip(train_dfs, val_dfs)):
+                study_name = f'{client}_isolated'
+                os.makedirs(os.path.join(args.results_dir, f'isolated/{client}/c{i}'), exist_ok=True)
+                storage = 'sqlite:///' + os.path.join(args.results_dir, f'isolated/{client}/c{i}/hp_study.db')
+                hyperparamtuner = HyperparamTuner(
+                    study_name=study_name,
+                    obj_fn=isolated,
+                    train_dfs=[train_df],
+                    val_dfs=[val_df],
+                    seed=args.seed,
+                    storage=storage,
+                    client=client,
+                    n_workers = args.n_workers,
+                    device = args.device,
+                    params = getattr(hyperparams, f'{client}_params')
+                )
+                best_trials = hyperparamtuner.optimize(n_trials=args.n_trials)
+                
+                best_trials_file = os.path.join(args.results_dir, f'isolated/{client}/c{i}/best_trials.txt')
+                with open(best_trials_file, 'w') as f:
+                    for trial in best_trials:
+                        print(f'\ntrial: {trial.number}')
+                        f.write(f'\ntrial: {trial.number}\n')
+                        print(f'values: {trial.values}')
+                        f.write(f'values: {trial.values}\n')
+                        for param in trial.params:
+                            f.write(f'{param}: {trial.params[param]}\n')
+                            print(f'{param}: {trial.params[param]}')
+            
+            t = time.time() - t
+            print('Done')
+            print(f'Exec time: {t:.2f}s\n')
 
 if __name__ == '__main__':
     main()

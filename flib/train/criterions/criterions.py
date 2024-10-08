@@ -3,17 +3,17 @@ import torch
 from torch.nn import functional as F
 
 class ClassBalancedLoss(torch.nn.Module):
-    def __init__(self, beta, n_samples_per_classes, loss_type='sigmoid', **kwargs):
+    def __init__(self, gamma, n_samples_per_classes, loss_type='sigmoid'):
         super(ClassBalancedLoss, self).__init__()
-        self.beta = beta
-        self.effective_nums = 1.0 - np.power(beta, n_samples_per_classes)
+        self.gamma = gamma
+        self.effective_nums = 1.0 - np.power(gamma, n_samples_per_classes)
         self.n_classes = len(n_samples_per_classes)
         self.loss_type = loss_type
     
     def forward(self, logits, labels):
         labels = labels.to(torch.int64)
         labels_one_hot = F.one_hot(labels, self.n_classes).float()
-        weights = (1.0 - self.beta) / np.array(self.effective_nums)
+        weights = (1.0 - self.gamma) / np.array(self.effective_nums)
         weights = weights / np.sum(weights) * self.n_classes
         weights = torch.tensor(weights, device=logits.device).float()
         weights = weights.unsqueeze(0)

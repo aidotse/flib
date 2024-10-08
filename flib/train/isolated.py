@@ -1,12 +1,6 @@
 from flib.train import Clients
 from flib.utils import set_random_seed
 import multiprocessing as mp
-import torch
-import os
-import pickle
-import optuna
-import time
-from tqdm import tqdm
 import numpy as np
 import copy
 
@@ -18,7 +12,7 @@ def train_clients(clients, kwargs):
         results.append(client.run(**kwargs))
     return client_names, results
 
-def isolated(seed=42, train_dfs=None, val_dfs=None, test_dfs=None, client='LogRegClient', criterion='ClassBalancedLoss', n_workers=3, **kwargs):
+def isolated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, client='LogRegClient', **kwargs):
     
     set_random_seed(seed)
     
@@ -31,13 +25,14 @@ def isolated(seed=42, train_dfs=None, val_dfs=None, test_dfs=None, client='LogRe
     
     # init clients
     clients = []
-    for i, train_df, val_df, test_df in zip(range(len(train_dfs)), train_dfs, val_dfs, test_dfs):
+    for i, train_df in enumerate(train_dfs):
+        val_df = val_dfs[i] if i < len(val_dfs) else None
+        test_df = test_dfs[i] if i < len(test_dfs) else None
         client = Client(
             name=f'c{i}',
             train_df=train_df,
             val_df=val_df,
             test_df=test_df,
-            criterion=criterion,
             **kwargs
         )
         clients.append(client)

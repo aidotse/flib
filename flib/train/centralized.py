@@ -2,7 +2,7 @@ import pandas as pd
 from flib.utils import set_random_seed
 from flib.train import Clients
 
-def centralized(seed=42, train_dfs=None, val_dfs=None, test_dfs=None, client='LogRegClient', **kwargs):
+def centralized(train_dfs, val_dfs=[], test_dfs=[], seed=42, client='LogRegClient', **kwargs):
     
     set_random_seed(seed)
     
