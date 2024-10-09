@@ -82,7 +82,12 @@ class HyperparamTuner():
         return avg_loss
     
     def optimize(self, n_trials=10):
-        study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(), study_name='study', directions=['minimize'], load_if_exists=True)
+        study = optuna.create_study(storage=self.storage,
+                                    sampler=optuna.samplers.TPESampler(),
+                                    study_name='study',
+                                    directions=['minimize'],
+                                    load_if_exists=True,
+                                    pruner=optuna.pruners.HyperbandPruner())
         study.optimize(self.objective, n_trials=n_trials)
         with open(self.results_file, 'a') as f:
             f.write(f'\n\n{time.ctime()}\n')

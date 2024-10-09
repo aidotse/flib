@@ -4,6 +4,10 @@ import time
 
 import pandas as pd
 
+import sys
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(root_dir)
+
 from flib.train import centralized, federated, isolated, HyperparamTuner
 import hyperparams
 
@@ -13,9 +17,9 @@ def main():
     parser.add_argument('--clients', nargs='+', help='Types of clients to train.', default=['LogRegClient', 'DecisionTreeClient', 'RandomForestClient', 'GradientBoostingClient', 'SVMClient', 'KNNClient']) # LogRegClient, DecisionTreeClient, RandomForestClient, GradientBoostingClient, SVMClient, KNNClient
     parser.add_argument('--settings', nargs='+', help='Types of settings to use. Can be "isolated", "centralized" or "federated".', default=['centralized', 'federated', 'isolated'])
     parser.add_argument('--traindata_files', nargs='+', help='Paths to trainsets.', default=[
-        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_mid/preprocessed/a_nodes_train.csv',
-        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_mid/preprocessed/b_nodes_train.csv',
-        '/home/edvin/Desktop/flib/experiments/data/3_banks_homo_mid/preprocessed/c_nodes_train.csv'
+        '/home/johan/project/flib/data/3_banks_homo_mid/preprocessed/a_nodes_test.csv',
+        '/home/johan/project/flib/data/3_banks_homo_mid/preprocessed/b_nodes_test.csv',
+        '/home/johan/project/flib/data/3_banks_homo_mid/preprocessed/c_nodes_test.csv'
     ])
     parser.add_argument('--valdata_files', nargs='+', help='Paths to valsets', default=[
         None,
@@ -28,7 +32,7 @@ def main():
     parser.add_argument('--device', type=str, help='Device for computations. Can be "cpu" or cuda device, e.g. "cuda:0".', default="cuda:0")
     parser.add_argument('--seed', type=int, help='Seed.', default=42)
     parser.add_argument('--n_trials', type=int, help='Number of trials.', default=10)
-    parser.add_argument('--results_dir', type=str, default='/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/')
+    parser.add_argument('--results_dir', type=str, default='/home/johan/project/flib/data/3_banks_homo_mid')
     
     args = parser.parse_args()
     

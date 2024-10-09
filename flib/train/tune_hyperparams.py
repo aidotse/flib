@@ -1,6 +1,7 @@
 import optuna
 import inspect
 from flib.train import Clients
+import multiprocessing
 
 class HyperparamTuner():
     def __init__(self, study_name, obj_fn, train_dfs, val_dfs, seed=42, device='cpu', n_workers=1, storage=None, client=None, params=None):
@@ -58,9 +59,31 @@ class HyperparamTuner():
             avg_loss += results[client][round]['val']['loss'] / len(results)
         return avg_loss
     
-    def optimize(self, n_trials=10):
-        study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(), study_name=self.study_name, direction='minimize', load_if_exists=True)
-        study.optimize(self.objective, n_trials=n_trials)
-        return study.best_trials
+    # def optimize(self, n_trials=10):
+    #     study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(), study_name=self.study_name, direction='minimize', load_if_exists=True)
+    #     study.optimize(self.objective, n_trials=n_trials, show_progress_bar=True)
+    #     return study.best_trials
         
-    
+    def optimize(self, n_trials=100, n_jobs=10):
+        # Create the study with RDB storage for parallel processing
+        study = optuna.create_study(storage=self.storage, 
+                                    sampler=optuna.samplers.TPESampler(), 
+                                    study_name=self.study_name, 
+                                    direction='minimize', 
+                                    load_if_exists=True,
+                                    pruner = optuna.pruners.HyperbandPruner())
+        
+        
+        def run_study():
+            study.optimize(self.objective, n_trials=n_trials // n_jobs)
+
+        processes = []
+        for _ in range(n_jobs):
+            p = multiprocessing.Process(target=run_study)
+            p.start()
+            processes.append(p)
+
+        for p in processes:
+            p.join()
+
+        return study.best_trials

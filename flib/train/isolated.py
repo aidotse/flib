@@ -17,7 +17,7 @@ def isolated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, client='L
     set_random_seed(seed)
     
     try:
-        mp.set_start_method('spawn')
+        mp.set_start_method('spawn', force=True)
     except RuntimeError:
         pass
     
