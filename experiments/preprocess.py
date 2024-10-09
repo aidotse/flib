@@ -6,8 +6,8 @@ import os
 def main():
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--conf_file', type=str, help='Path to the config file', default='/home/edvin/Desktop/flib/experiments/param_files/3_banks_homo_easy/conf.json')
-    parser.add_argument('--tx_log_file', type=str, help='Path to raw data file', default='/home/edvin/Desktop/flib/experiments/data/3_banks_homo_easy/tx_log.csv')
+    parser.add_argument('--conf_file', type=str, help='Path to the config file', default='/home/edvin/Desktop/flib/experiments/param_files/3_banks_homo_mid/conf.json')
+    parser.add_argument('--tx_log_file', type=str, help='Path to raw data file', default='/home/edvin/Desktop/flib/experiments/data/3_banks_homo_mid/tx_log.csv')
     args = parser.parse_args()
     
     # check sar tx ratio 
