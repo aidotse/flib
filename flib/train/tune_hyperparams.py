@@ -3,6 +3,10 @@ import inspect
 from flib.train import Clients
 import multiprocessing
 
+def balanced_accuracy(data):
+    tp, fp, tn, fn = data['tp'], data['fp'], data['tn'], data['fn']
+    return 0.5*(tp/(tp+fn) + tn/(tn+fp))
+
 class HyperparamTuner():
     def __init__(self, study_name, obj_fn, train_dfs, val_dfs, seed=42, device='cpu', n_workers=1, storage=None, client=None, params=None):
         self.study_name = study_name
@@ -53,37 +57,42 @@ class HyperparamTuner():
                     params[param] = self.params['default'][param]
         
         results = self.obj_fn(seed=self.seed, train_dfs=self.train_dfs, val_dfs=self.val_dfs, n_workers=self.n_workers, device=self.device, client=self.client, **params)
-        avg_loss = 0.0
+        tpfptnfn = {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0}
         for client in results:
             round = max(results[client].keys())
-            avg_loss += results[client][round]['val']['loss'] / len(results)
-        return avg_loss
+            tpfptnfn['tp'] += results[client][round]['val']['tpfptnfn'][50]['tp']
+            tpfptnfn['fp'] += results[client][round]['val']['tpfptnfn'][50]['fp']
+            tpfptnfn['tn'] += results[client][round]['val']['tpfptnfn'][50]['tn']
+            tpfptnfn['fn'] += results[client][round]['val']['tpfptnfn'][50]['fn']
+        bal_acc = balanced_accuracy(tpfptnfn)
+        
+        return bal_acc
     
-    # def optimize(self, n_trials=10):
-    #     study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(), study_name=self.study_name, direction='minimize', load_if_exists=True)
-    #     study.optimize(self.objective, n_trials=n_trials, show_progress_bar=True)
-    #     return study.best_trials
-        
-    def optimize(self, n_trials=100, n_jobs=10):
-        # Create the study with RDB storage for parallel processing
-        study = optuna.create_study(storage=self.storage, 
-                                    sampler=optuna.samplers.TPESampler(), 
-                                    study_name=self.study_name, 
-                                    direction='minimize', 
-                                    load_if_exists=True,
-                                    pruner = optuna.pruners.HyperbandPruner())
-        
-        
-        def run_study():
-            study.optimize(self.objective, n_trials=n_trials // n_jobs)
-
-        processes = []
-        for _ in range(n_jobs):
-            p = multiprocessing.Process(target=run_study)
-            p.start()
-            processes.append(p)
-
-        for p in processes:
-            p.join()
-
+    def optimize(self, n_trials=10):
+        study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(), study_name=self.study_name, direction='maximize', load_if_exists=True, pruner=optuna.pruners.HyperbandPruner())
+        study.optimize(self.objective, n_trials=n_trials, show_progress_bar=True)
         return study.best_trials
+        
+    #def optimize(self, n_trials=100, n_jobs=10):
+    #    # Create the study with RDB storage for parallel processing
+    #    study = optuna.create_study(storage=self.storage, 
+    #                                sampler=optuna.samplers.TPESampler(), 
+    #                                study_name=self.study_name, 
+    #                                direction='maximize', 
+    #                                load_if_exists=True,
+    #                                pruner = optuna.pruners.HyperbandPruner())
+    #    
+    #    
+    #    def run_study():
+    #        study.optimize(self.objective, n_trials=n_trials // n_jobs)
+    #
+    #    processes = []
+    #    for _ in range(n_jobs):
+    #        p = multiprocessing.Process(target=run_study)
+    #        p.start()
+    #        processes.append(p)
+    #
+    #    for p in processes:
+    #        p.join()
+    #
+    #    return study.best_trials

@@ -3,7 +3,7 @@ LogRegClient_params = {
     'default': {
         'lr_patience': 5,
         'es_patience': 15,
-        'n_rounds': 10,
+        'n_rounds': 50,
         'eval_every': 10,
         'batch_size': 512,
         'optimizer': {
@@ -139,5 +139,54 @@ KNNClient_params = {
         'leaf_size': (10, 50),
         'p': [1, 2],
         'metric': 'minkowski'
+    }
+}
+
+MLPClient_params = {
+    'default': {
+        'lr_patience': 5,
+        'es_patience': 15,
+        'n_rounds': 50,
+        'eval_every': 10,
+        'batch_size': 512,
+        'optimizer': {
+            'SGD': {
+                'lr': 0.01,
+                'momentum': 0.0,
+                'weight_decay': 0.0,
+                'dampening': 0.0,
+            }
+        },
+        'criterion': {
+            'ClassBalancedLoss': {
+                'gamma': 0.9
+            }
+        },
+        'n_hidden_layers': 2,
+        'hidden_dim': 64
+    },
+    'search_space': {
+        'batch_size': [128, 256, 512],
+        'optimizer': {
+            'SGD': {
+                'lr': (0.001, 0.1),
+                'momentum': (0.0, 1.0),
+                'weight_decay': (0.0, 1.0),
+                'dampening': (0.0, 1.0),
+            },
+            'Adam': {
+                'lr': (0.001, 0.1),
+                'weight_decay': (0.0, 1.0),
+                'amsgrad': [True, False]
+            }
+        },
+        'criterion': {
+            'ClassBalancedLoss': {
+                'gamma': (0.5, 0.9999)
+            },
+            'CrossEntropyLoss': {}
+        },
+        'n_hidden_layers': (1, 5),
+        'hidden_dim': (32, 256)
     }
 }

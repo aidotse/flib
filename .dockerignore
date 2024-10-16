@@ -9,6 +9,7 @@ amlsim.yml
 experiments/data
 experiments/param_files
 experiments/results
+experiments/plots
 flib.egg-info
 flib/sim/AMLsim/outputs
 flib/sim/AMLsim/paramFiles

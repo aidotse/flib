@@ -9,7 +9,7 @@ def train_clients(clients, kwargs):
     results = []
     for client in clients:
         client_names.append(client.name)
-        results.append(client.run(**kwargs))
+        results.append(client.run(**kwargs)) #['clients'][client.name]))
     return client_names, results
 
 def isolated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, client='LogRegClient', **kwargs):
@@ -33,7 +33,7 @@ def isolated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, client='L
             train_df=train_df,
             val_df=val_df,
             test_df=test_df,
-            **kwargs
+            **kwargs #['clients'][f'c{i}']
         )
         clients.append(client)
     

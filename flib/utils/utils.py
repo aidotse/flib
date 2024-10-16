@@ -73,3 +73,13 @@ def dataloaders(trainset, valset, testset, batch_size=64):
 def decrease_lr(optimizer, factor=0.1):
     for param_group in optimizer.param_groups:
         param_group['lr'] *= factor
+
+def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_nodes_df:pd.DataFrame, test_edges_df:pd.DataFrame, device='cpu'):
+    train_nodes_np = train_nodes_df.to_numpy()
+    x_train_nodes = train_nodes_np[:, :-1]
+    y_train_nodes = train_nodes_np[:, -1]
+    scaler = StandardScaler().fit(x_train_nodes)
+    x_train_nodes = scaler.transform(x_train_nodes)
+    x_train_nodes = torch.tensor(x_train_nodes, dtype=torch.float32).to(device)
+    y_train_nodes = torch.tensor(y_train_nodes, dtype=torch.int64).to(device)
+    

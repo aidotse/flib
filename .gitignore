@@ -7,6 +7,7 @@ __pycache__
 experiments/data
 experiments/param_files
 experiments/results
+experiments/plots
 flib/sim/AMLsim/outputs
 flib/sim/AMLsim/tmp
 flib/sim/AMLsim/target

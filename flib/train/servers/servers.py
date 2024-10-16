@@ -22,6 +22,7 @@ class Server():
         tpfptnfns = []
         for client in clients:
             loss, tpfptnfn = client.train()
+            client.train()
             state_dicts.append(client.get_state_dict())
             client_names.append(client.name)
             losses.append(loss)
