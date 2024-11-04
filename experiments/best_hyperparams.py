@@ -1,39 +1,113 @@
 LogRegClient_params = {
     'centralized': {
         'device': 'cuda:0',
-        'lr_patience': 5,
-        'es_patience': 15,
+        'lr_patience': 100,
+        'es_patience': 100,
         'n_rounds': 100,
         'eval_every': 10,
-        'batch_size': 128,
-        'optimizer': 'SGD',
+        'batch_size': 256,
+        'optimizer': 'Adam',
         'optimizer_params': {
-            'lr': 0.08507714201331565,
-            'momentum': 0.8343372940844335,
-            'weight_decay': 0.0015318920671180095,
-            'dampening': 0.6260300336301439,
+            'lr': 0.01,
+            'weight_decay': 0.0,
+            'amsgrad': False,
         },
-        'criterion': 'CrossEntropyLoss',
-        'criterion_params': {},
+        'criterion': 'ClassBalancedLoss',
+        'criterion_params': {
+            'gamma': 0.6
+        },
     },
     'federated': {
         'device': 'cuda:0',
-        'lr_patience': 5,
-        'es_patience': 15,
+        'lr_patience': 100,
+        'es_patience': 100,
         'n_rounds': 100,
         'eval_every': 10,
-        'batch_size': 128,
-        'optimizer': 'SGD',
+        'batch_size': 256,
+        'optimizer': 'Adam',
         'optimizer_params': {
-            'lr': 0.029577125072356544,
-            'momentum': 0.6954937697844237,
-            'weight_decay': 0.0016911232487892836,
-            'dampening': 0.007628568457341833,
+            'lr': 0.01,
+            'weight_decay': 0.0,
+            'amsgrad': False,
         },
-        'criterion': 'CrossEntropyLoss',
-        'criterion_params': {}
+        'criterion': 'ClassBalancedLoss',
+        'criterion_params': {
+            'gamma': 0.6
+        },
+        'clients': {
+            'c0': {
+                'device': 'cuda:0',
+                'lr_patience': 100,
+                'es_patience': 100,
+                'n_rounds': 100,
+                'eval_every': 10,
+                'batch_size': 256,
+                'optimizer': 'Adam',
+                'optimizer_params': {
+                    'lr': 0.01,
+                    'weight_decay': 0.0,
+                    'amsgrad': False,
+                },
+                'criterion': 'ClassBalancedLoss',
+                'criterion_params': {
+                    'gamma': 0.6
+                },
+            }, 
+            'c1': {
+                'device': 'cuda:0',
+                'lr_patience': 100,
+                'es_patience': 100,
+                'n_rounds': 100,
+                'eval_every': 10,
+                'batch_size': 256,
+                'optimizer': 'Adam',
+                'optimizer_params': {
+                    'lr': 0.01,
+                    'weight_decay': 0.0,
+                    'amsgrad': False,
+                },
+                'criterion': 'ClassBalancedLoss',
+                'criterion_params': {
+                    'gamma': 0.6
+                },
+            },
+            'c2': {
+                'device': 'cuda:0',
+                'lr_patience': 100,
+                'es_patience': 100,
+                'n_rounds': 100,
+                'eval_every': 10,
+                'batch_size': 256,
+                'optimizer': 'Adam',
+                'optimizer_params': {
+                    'lr': 0.01,
+                    'weight_decay': 0.0,
+                    'amsgrad': False,
+                },
+                'criterion': 'ClassBalancedLoss',
+                'criterion_params': {
+                    'gamma': 0.6
+                },
+            }
+        }
     },
     'isolated': {
+        'device': 'cuda:0',
+        'lr_patience': 100,
+        'es_patience': 100,
+        'n_rounds': 100,
+        'eval_every': 10,
+        'batch_size': 256,
+        'optimizer': 'Adam',
+        'optimizer_params': {
+            'lr': 0.01,
+            'weight_decay': 0.0,
+            'amsgrad': False
+        },
+        'criterion': 'ClassBalancedLoss', 
+        'criterion_params': {
+            'gamma': 0.6
+        },
         'clients': {
             'c0': {
                 'device': 'cuda:0',
@@ -41,15 +115,17 @@ LogRegClient_params = {
                 'es_patience': 15,
                 'n_rounds': 100,
                 'eval_every': 10,
-                'batch_size': 128,
+                'batch_size': 256,
                 'optimizer': 'Adam',
                 'optimizer_params': {
-                    'lr': 0.03937729543826933,
-                    'weight_decay': 0.0005450625188668391,
-                    'amsgrad': True
+                    'lr': 0.04,
+                    'weight_decay': 0.0,
+                    'amsgrad': False
                 },
-                'criterion': 'CrossEntropyLoss', 
-                'criterion_params': {}
+                'criterion': 'ClassBalancedLoss', 
+                'criterion_params': {
+                    'gamma': 0.6
+                }
             },
             'c1': {
                 'device': 'cuda:0',
@@ -57,16 +133,17 @@ LogRegClient_params = {
                 'es_patience': 15,
                 'n_rounds': 100,
                 'eval_every': 10,
-                'batch_size': 128,
-                'optimizer': 'SGD',
+                'batch_size': 256,
+                'optimizer': 'Adam',
                 'optimizer_params': {
-                    'lr': 0.0924277036106537,
-                    'momentum': 0.8913437725949631,
-                    'weight_decay': 0.0006195976833673726,
-                    'dampening': 0.12132015743487427,
+                    'lr': 0.04,
+                    'weight_decay': 0.0,
+                    'amsgrad': False
                 },
-                'criterion': 'CrossEntropyLoss',
-                'criterion_params': {},
+                'criterion': 'ClassBalancedLoss', 
+                'criterion_params': {
+                    'gamma': 0.6
+                }
             },
             'c2': {
                 'device': 'cuda:0',
@@ -74,15 +151,17 @@ LogRegClient_params = {
                 'es_patience': 15,
                 'n_rounds': 100,
                 'eval_every': 10,
-                'batch_size': 128,
+                'batch_size': 256,
                 'optimizer': 'Adam',
                 'optimizer_params': {
-                    'lr': 0.06800830792699754,
-                    'weight_decay': 0.00012351437711755064,
+                    'lr': 0.04,
+                    'weight_decay': 0.0,
                     'amsgrad': False
                 },
-                'criterion': 'CrossEntropyLoss',
-                'criterion_params': {},
+                'criterion': 'ClassBalancedLoss', 
+                'criterion_params': {
+                    'gamma': 0.6
+                }
             }
         }
     }
@@ -240,23 +319,23 @@ DecisionTreeClient_params = {
     'isolated': {
         'clients': {
             'c0': {
-                'criterion': 'log_loss',
-                'splitter': 'best',
-                'max_depth': 7,
-                'class_weight': None,
+                'criterion': 'entropy',
+                'splitter': 'random',
+                'max_depth': 12,
+                'class_weight': 'balanced',
                 'random_state': 42,
             },
             'c1': {
-                'criterion': 'gini',
+                'criterion': 'log_loss',
                 'splitter': 'random',
-                'max_depth': 8,
+                'max_depth': 10,
                 'class_weight': 'balanced',
                 'random_state': 42,
             },
             'c2': {
                 'criterion': 'entropy',
-                'splitter': 'random',
-                'max_depth': 8,
+                'splitter': 'best',
+                'max_depth': 9,
                 'class_weight': 'balanced',
                 'random_state': 42,
             }
@@ -391,6 +470,120 @@ MLPClient_params = {
                 'criterion_params': {},
                 'n_hidden_layers': 2,
                 'hidden_dim': 64,
+            }
+        }
+    }
+}
+
+GraphSAGEClient_params = {
+    'centralized': {
+        'device': 'cuda:0',
+        'n_rounds': 100,
+        'eval_every': 10,
+        'lr_patience': 100,
+        'es_patience': 100,
+        'hidden_dim': 128,
+        'optimizer': 'Adam',
+        'optimizer_params': {
+            'lr': 0.001994010234629029,
+            'weight_decay': 0.018678778429870604,
+            'amsgrad': True,
+        },
+        'criterion': 'ClassBalancedLoss',
+        'criterion_params': {
+            'gamma': 0.9936137007812603
+        }
+    },
+    'federated': {
+        'device': 'cuda:0',
+        'n_rounds': 100,
+        'eval_every': 10,
+        'lr_patience': 100,
+        'es_patience': 100,
+        'device': 'cuda:0',
+        'hidden_dim': 256,
+        'optimizer': 'SGD',
+        'optimizer_params': {
+            'lr': 0.048630848021750224,
+            'momentum': 0.3482146849308458,
+            'weight_decay': 0.25496952117003857,
+            'dampening': 0.2581674844412982
+        },
+        'criterion': 'NLLLoss',
+        'criterion_params': {
+            'weight': 0.8529780681438437
+        }
+    },
+    'isolated': {
+        'device': 'cuda:0',
+        'n_rounds': 100,
+        'eval_every': 10,
+        'lr_patience': 100,
+        'es_patience': 100,
+        'batch_size': 128,
+        'hidden_dim': 64,
+        'optimizer': 'Adam',
+        'optimizer_params': {
+            'lr': 0.01,
+            'weight_decay': 0.0,
+            'amsgrad': False,
+        },
+        'criterion': 'CrossEntropyLoss',
+        'criterion_params': {},
+        'clients': {
+            'c0': {
+                'device': 'cuda:0',
+                'n_rounds': 100,
+                'eval_every': 10,
+                'lr_patience': 100,
+                'es_patience': 100,
+                'hidden_dim': 512,
+                'optimizer': 'Adam',
+                'optimizer_params': {
+                    'lr': 0.0010042395371481477,
+                    'weight_decay': 0.14417159251403777,
+                    'amsgrad': False,
+                },
+                'criterion': 'CrossEntropyLoss',
+                'criterion_params': {}
+            },
+            'c1': {
+                'device': 'cuda:0',
+                'n_rounds': 100,
+                'eval_every': 10,
+                'lr_patience': 100,
+                'es_patience': 100,
+                'hidden_dim': 512,
+                'optimizer': 'SGD',
+                'optimizer_params': {
+                    'lr': 0.07331504183228132,
+                    'momentum': 0.23873608202007257,
+                    'weight_decay': 0.14324551236448438,
+                    'dampening': 0.662142529500039,
+                },
+                'criterion': 'NLLLoss',
+                'criterion_params': {
+                    'weight': 0.7676710189846737
+                }
+            },
+            'c2': {
+                'device': 'cuda:0',
+                'n_rounds': 100,
+                'eval_every': 10,
+                'lr_patience': 100,
+                'es_patience': 100,
+                'hidden_dim': 32, #32,
+                'optimizer': 'SGD',
+                'optimizer_params': {
+                    'lr': 0.009297617869520835,
+                    'momentum': 0.10013231108969067,
+                    'weight_decay': 0.12498499034883515,
+                    'dampening': 0.4599952706941705,
+                },
+                'criterion': 'NLLLoss',
+                'criterion_params': {
+                    'weight': 0.6950743876647961,
+                }
             }
         }
     }

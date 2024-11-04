@@ -3,6 +3,8 @@ import random
 import torch
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+import torch_geometric
+import torch_geometric.transforms
 
 def set_random_seed(seed:int=1):
     random.seed(seed)
@@ -74,7 +76,7 @@ def decrease_lr(optimizer, factor=0.1):
     for param_group in optimizer.param_groups:
         param_group['lr'] *= factor
 
-def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_nodes_df:pd.DataFrame, test_edges_df:pd.DataFrame, device='cpu'):
+def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_nodes_df:pd.DataFrame, test_edges_df:pd.DataFrame, device='cpu', directed=False):
     train_nodes_np = train_nodes_df.to_numpy()
     x_train_nodes = train_nodes_np[:, :-1]
     y_train_nodes = train_nodes_np[:, -1]
@@ -82,4 +84,24 @@ def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_
     x_train_nodes = scaler.transform(x_train_nodes)
     x_train_nodes = torch.tensor(x_train_nodes, dtype=torch.float32).to(device)
     y_train_nodes = torch.tensor(y_train_nodes, dtype=torch.int64).to(device)
+    train_edges_index = torch.tensor(train_edges_df[['src', 'dst']].values, dtype=torch.long).t().contiguous().to(device)
+    trainset = torch_geometric.data.Data(x=x_train_nodes, edge_index=train_edges_index, y=y_train_nodes)
+    if not directed:
+        trainset = torch_geometric.transforms.ToUndirected()(trainset)
+    
+    if test_nodes_df is None:
+        testset = None
+    else:
+        test_nodes_np = test_nodes_df.to_numpy()
+        x_test_nodes = test_nodes_np[:, :-1]
+        y_test_nodes = test_nodes_np[:, -1]
+        x_test_nodes = scaler.transform(x_test_nodes)
+        x_test_nodes = torch.tensor(x_test_nodes, dtype=torch.float32).to(device)
+        y_test_nodes = torch.tensor(y_test_nodes, dtype=torch.int64).to(device)
+        test_edge_index = torch.tensor(test_edges_df[['src', 'dst']].values, dtype=torch.long).t().contiguous().to(device)
+        testset = torch_geometric.data.Data(x=x_test_nodes, edge_index=test_edge_index, y=y_test_nodes)
+        if not directed:
+            testset = torch_geometric.transforms.ToUndirected()(testset)
+    
+    return trainset, testset
     

@@ -18,8 +18,14 @@ def main():
         #'/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/centralized/GradientBoostingClient/results.pkl',
         #'/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/centralized/SVMClient/results.pkl',
         #'/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/centralized/KNNClient/results.pkl',
-        '/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/isolated/MLPClient/results.pkl',
-    ]) # centralized, federated, isolated
+        #'/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/isolated/MLPClient/results.pkl',
+        '/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/centralized/GraphSAGEClient/results.pkl',
+        '/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/federated/GraphSAGEClient/results.pkl',
+        '/home/edvin/Desktop/flib/experiments/results/3_banks_homo_mid/isolated/GraphSAGEClient/results.pkl',
+        #'/home/edvin/Desktop/flib/experiments/results/30K_accts/centralized/GraphSAGEClient/results.pkl',
+        #'/home/edvin/Desktop/flib/experiments/results/30K_accts/federated/GraphSAGEClient/results.pkl',
+        #'/home/edvin/Desktop/flib/experiments/results/30K_accts/isolated/GraphSAGEClient/results.pkl'
+    ])
     parser.add_argument('--metrics', nargs='+', help='Metrics to plot. Can be "loss", "accuracy", "balanced_accuracy", "recall", "precision", "f1", "roc_curve", "precision_recall_curve".', default=['loss', 'accuracy', 'balanced_accuracy', 'recall', 'precision', 'f1', 'roc_curve', 'precision_recall_curve'])
     parser.add_argument('--clients', nargs='+', help='Clients to include. If omited all clients will be included.', default=None)
     parser.add_argument('--reduction', help='Type of reduction if several clients. If "none", all clinets will be plotted individully.', default='mean')

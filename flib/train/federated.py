@@ -7,6 +7,7 @@ import os
 import pickle
 import optuna
 import time
+import pandas as pd
 
 def federated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, n_rounds=100, eval_every=10, client='LogRegClient', **kwargs):
     
@@ -45,67 +46,58 @@ def federated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, n_rounds
     
     return results
 
-class HyperparamTuner():
-    def __init__(self, seed=42, trainsets=None, n_rounds=50, model='LogisticRegressor', optimizer=['SGD'], criterion=['ClassBalancedLoss'], beta=(0.9999, 0.99999999), local_epochs=[1], batch_size=[64, 128, 256], lr=(0.001, 0.1), n_workers=3, device='cuda:0', storage=None, results_file=None):
-        self.seed = seed
-        self.trainsets = trainsets
-        self.n_rounds = n_rounds
-        self.model = model
-        self.optimizer = optimizer
-        self.criterion = criterion
-        self.beta = beta
-        self.local_epochs = local_epochs
-        self.batch_size = batch_size
-        self.lr = lr
-        self.n_workers = n_workers
-        self.device = device
-        self.storage = storage
-        self.results_file = results_file
+if __name__ == '__main__':
     
-    def objective(self, trial):
-        _, _, avg_loss = federated(
-            seed=self.seed,
-            trainsets=self.trainsets,
-            n_rounds=self.n_rounds,
-            eval_every=None,
-            model=self.model,
-            optimizer=trial.suggest_categorical('optimizer', self.optimizer),
-            criterion=trial.suggest_categorical('criterion', self.criterion),
-            beta=trial.suggest_float('beta', self.beta[0], self.beta[1]),
-            local_epochs=trial.suggest_categorical('local_epochs', self.local_epochs),
-            batch_size=trial.suggest_categorical('batch_size', self.batch_size),
-            lr=trial.suggest_float('lr', self.lr[0], self.lr[1]),
-            n_workers=self.n_workers,
-            device=self.device
-        )
-        
-        return avg_loss
+    DATASET = '3_banks_homo_mid' # '30K_accts', '3_banks_homo_mid'
     
-    def optimize(self, n_trials=10):
-        study = optuna.create_study(storage=self.storage,
-                                    sampler=optuna.samplers.TPESampler(),
-                                    study_name='study',
-                                    directions=['minimize'],
-                                    load_if_exists=True,
-                                    pruner=optuna.pruners.HyperbandPruner())
-        study.optimize(self.objective, n_trials=n_trials)
-        with open(self.results_file, 'a') as f:
-            f.write(f'\n\n{time.ctime()}\n')
-            f.write(f'seed: {self.seed}\n')
-            f.write(f'trainsets: {self.trainsets}\n')
-            f.write(f'n_rounds: {self.n_rounds}\n')
-            f.write(f'model: {self.model}\n')
-            f.write(f'optimizer: {self.optimizer}\n')
-            f.write(f'criterion: {self.criterion}\n')
-            f.write(f'beta: {self.beta}\n')
-            f.write(f'local_epochs: {self.local_epochs}\n')
-            f.write(f'batch_size: {self.batch_size}\n')
-            f.write(f'lr: {self.lr}\n')
-            f.write(f'n_workers: {self.n_workers}\n')
-            f.write(f'device: {self.device}\n')
-            f.write(f'storage: {self.storage}\n')
-            f.write(f'results_file: {self.results_file}\n\n')
-            f.write(f'Best hyperparameters: {study.best_params}\n')
-            f.write(f'Best loss: {study.best_value}\n')
-        return study.best_params, study.best_value
+    # for debugging
+    c0_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_nodes_train.csv'
+    c0_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_edges_train.csv'
+    c1_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_nodes_train.csv'
+    c1_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_edges_train.csv'
+    c2_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_nodes_train.csv'
+    c2_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_edges_train.csv'
+    c0_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_nodes_test.csv'
+    c0_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_edges_test.csv'
+    c1_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_nodes_test.csv'
+    c1_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_edges_test.csv'
+    c2_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_nodes_test.csv'
+    c2_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_edges_test.csv'
     
+    train_dfs = [
+        (pd.read_csv(c0_train_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c0_train_edges_csv)),
+        (pd.read_csv(c1_train_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c1_train_edges_csv)),
+        (pd.read_csv(c2_train_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c2_train_edges_csv)),
+    ]
+    test_dfs = [
+        (pd.read_csv(c0_test_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c0_test_edges_csv)),
+        (pd.read_csv(c1_test_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c1_test_edges_csv)),
+        (pd.read_csv(c2_test_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c2_test_edges_csv)),
+    ]
+    
+    params = {
+        'lr_patience': 100,
+        'es_patience': 100,
+        'device': 'cuda:0',
+        'batch_size': 128,
+        'hidden_dim': 64,
+        'optimizer': 'Adam',
+        'optimizer_params': {
+            'lr': 0.01,
+            'weight_decay': 0.0,
+            'amsgrad': False,
+        },
+        'criterion': 'CrossEntropyLoss',
+        'criterion_params': {}
+    }
+    
+    t = time.time()
+    results = federated(train_dfs=train_dfs, test_dfs=test_dfs, seed=42, n_workers=1, n_rounds=100, eval_every=10, client='GraphSAGEClient', **params)
+    t = time.time() - t
+    print('Done')
+    print(f'Exec time: {t:.2f}s')
+    results_dir = f'/home/edvin/Desktop/flib/experiments/results/{DATASET}/federated/GraphSAGEClient'
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
+        pickle.dump(results, f)
+    print(f'Saved results to {results_dir}/results.pkl\n')

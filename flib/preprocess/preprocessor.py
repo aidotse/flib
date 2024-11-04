@@ -6,7 +6,7 @@ import os
 
 class DataPreprocessor:
     def __init__(self, conf_file, bank=None):
-        with open(conf_file) as f:
+        with open(conf_file, 'r') as f:
             conf = json.load(f)
         self.num_windows = conf["preprocessing"]["num_windows"]
         self.window_len = conf["preprocessing"]["window_len"]
@@ -92,51 +92,62 @@ class DataPreprocessor:
         return df_nodes
     
     
-    def cal_edge_features(df:pd.DataFrame, directional:bool=False) -> pd.DataFrame:
-        # calculate start and end step for each window
-        if type(windows) == int:
-            n_windows = windows
-            start_step, end_step = df['step'].min(), df['step'].max()
-            steps_per_window = (end_step - start_step) // n_windows
-            windows = [(start_step + i*steps_per_window, start_step + (i+1)*steps_per_window-1) for i in range(n_windows)]
-            windows[-1] = (windows[-1][0], end_step)
-        elif type(windows) == tuple:
-            num_windows, window_len = windows
-            start_step, end_step = df['step'].min(), df['step'].max()
-            if num_windows * window_len < end_step - start_step:
-                raise ValueError(f'Number of windows {num_windows} and the windows length {window_len} do not allow coverage of the whole dataset. Inceasing number of windows or length of windows')
-            window_overlap = (num_windows * window_len - (end_step - start_step + 1)) // (num_windows - 1)
-            windows = [(start_step + i*(window_len-window_overlap), start_step + i*(window_len-window_overlap) + window_len-1) for i in range(num_windows)]
-            windows[-1] = (end_step - window_len + 1, end_step)
-        # filter out transactions to the sink
-        df = df[df['bankDest'] != 'sink']
-        # rename
+    def cal_edge_features(self, df: pd.DataFrame, start_step, end_step, directional: bool = False) -> pd.DataFrame:
+        # Calculate start and end step for each window
+        if self.num_windows * self.window_len < end_step - start_step:
+            raise ValueError(f'Number of windows {self.num_windows} and the windows length {self.window_len} do not allow coverage of the whole dataset. '
+                             f'Increase number of windows or length of windows')
+
+        window_overlap = (self.num_windows * self.window_len - (end_step - start_step + 1)) // (self.num_windows - 1)
+        windows = [(start_step + i * (self.window_len - window_overlap), 
+                    start_step + i * (self.window_len - window_overlap) + self.window_len - 1) for i in range(self.num_windows)]
+        windows[-1] = (end_step - self.window_len + 1, end_step)
+
+        # Rename columns
         df = df[['step', 'nameOrig', 'nameDest', 'amount', 'isSAR']].rename(columns={'nameOrig': 'src', 'nameDest': 'dst', 'isSAR': 'is_sar'})
-        # if directional=False then sort src and dst
+
+        # If directional=False then sort src and dst
         if not directional:
             df[['src', 'dst']] = np.sort(df[['src', 'dst']], axis=1)
-        # init final dataframe
+
+        # Initialize final dataframe
         df_edges = pd.DataFrame()
+
+        # Iterate over windows
         for window in windows:
-            gb = df[(df['step']>=window[0])&(df['step']<=window[1])].groupby(['src', 'dst'])
-            df_edges[f'sums_{window[0]}_{window[1]}'] = gb['amount'].sum()
-            df_edges[f'means_{window[0]}_{window[1]}'] = gb['amount'].mean()
-            df_edges[f'medians_{window[0]}_{window[1]}'] = gb['amount'].median()
-            df_edges[f'stds_{window[0]}_{window[1]}'] = gb['amount'].std().fillna(0.0)
-            df_edges[f'maxs_{window[0]}_{window[1]}'] = gb['amount'].max()
-            df_edges[f'mins_{window[0]}_{window[1]}'] = gb['amount'].min()
-            df_edges[f'counts_{window[0]}_{window[1]}'] = gb['amount'].count()
-        # find label
-        gb = df.groupby(['src', 'dst'])
-        df_edges[f'is_sar'] = gb['is_sar'].max()
-        df_edges.reset_index(inplace=True)
-        # if any value is nan, there was no transaction in the window for that edge and hence the feature should be 0
-        df_edges = df_edges.fillna(0.0)
-        # check if there is any missing values
+            window_df = df[(df['step'] >= window[0]) & (df['step'] <= window[1])].groupby(['src', 'dst']).agg(
+                sums=('amount', 'sum'),
+                means=('amount', 'mean'),
+                medians=('amount', 'median'),
+                stds=('amount', 'std'),
+                maxs=('amount', 'max'),
+                mins=('amount', 'min'),
+                counts=('amount', 'count')
+            ).fillna(0.0).reset_index()
+
+            # Rename the columns with window information
+            window_df = window_df.rename(columns={col: f'{col}_{window[0]}_{window[1]}' for col in window_df.columns if col not in ['src', 'dst']})
+
+            # Merge window data with the main df_edges DataFrame
+            if df_edges.empty:
+                df_edges = window_df
+            else:
+                df_edges = pd.merge(df_edges, window_df, on=['src', 'dst'], how='outer').fillna(0.0)
+
+        # Aggregate 'is_sar' for the entire dataset (use max to capture any SAR)
+        sar_df = df.groupby(['src', 'dst'])['is_sar'].max().reset_index()
+
+        # Merge SAR information into df_edges
+        df_edges = pd.merge(df_edges, sar_df, on=['src', 'dst'], how='outer').fillna(0.0)
+
+        # Ensure no missing values
         assert df_edges.isnull().sum().sum() == 0, 'There are missing values in the edge features'
-        # check if there are any negative values in all comuns except the bank column
+
+        # Ensure no negative values (except for src and dst columns)
         assert (df_edges.drop(columns=['src', 'dst']) < 0).sum().sum() == 0, 'There are negative values in the edge features'
+
         return df_edges
+
 
     
     def preprocess(self, df:pd.DataFrame, bank):
@@ -148,8 +159,8 @@ class DataPreprocessor:
         df_nodes_test.reset_index(inplace=True)
         
         if self.include_edges:
-            df_edges_train = self.cal_edge_features(df_train[(df_train['bankOrig']==bank) & (df_train['bankDest']==bank)], directional=True) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
-            df_edges_test = self.cal_edge_features(df_test[(df_test['bankOrig']==bank) & (df_test['bankDest']==bank)], directional=True)
+            df_edges_train = self.cal_edge_features(df=df_train[(df_train['bankOrig']==bank) & (df_train['bankDest']==bank)], start_step=self.train_start_step, end_step=self.train_end_step, directional=False) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
+            df_edges_test = self.cal_edge_features(df_test[(df_test['bankOrig']==bank) & (df_test['bankDest']==bank)], start_step=self.test_start_step, end_step=self.test_end_step, directional=False)
             node_to_index = pd.Series(df_nodes_train.index, index=df_nodes_train['account']).to_dict()
             df_edges_train['src'] = df_edges_train['src'].map(node_to_index) # OBS: in the csv files it looks like the edge src refers to the node two rows above the acculat node, this is due to the column head and that it starts counting at 0
             df_edges_train['dst'] = df_edges_train['dst'].map(node_to_index)

@@ -84,7 +84,7 @@ class Server():
                 for result in results:
                     for client, loss, tpfptnfn in zip(result[0], result[1], result[2]):
                         results_dict[client][0]['val'] = {'loss': loss, 'tpfptnfn': tpfptnfn}
-                        previous_val_loss += loss / len(self.clients)
+                        previous_val_loss += loss / len(self.clients) if loss else 0.0
             
             for round in tqdm(range(1, n_rounds+1), desc='progress', leave=False):
                 
@@ -117,7 +117,7 @@ class Server():
                     for result in results:
                         for client, loss, tpfptnfn in zip(result[0], result[1], result[2]):
                             results_dict[client][round]['val'] = {'loss': loss, 'tpfptnfn': tpfptnfn}
-                            avg_loss = loss / len(self.clients)
+                            avg_loss = loss / len(self.clients) if loss else 0.0
                     if avg_loss >= previous_val_loss - 0.0005:
                         es_patience -= eval_every
                     else:

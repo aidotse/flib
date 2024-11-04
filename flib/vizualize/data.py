@@ -4,15 +4,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import argparse
 import numpy as np
-
+import networkx as nx
 
 def edge_label_hist(df:pd.DataFrame, banks:list, file:str):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
     fig, ax = plt.subplots()
     width = 0.30
     x = np.array([-1*width/2, width/2])
     csv = {'bank': [], 'neg_count': [], 'pos_count': [], 'neg_ratio': [], 'pos_ratio': []}
     for i, bank in enumerate(banks):
-        df_bank = df[(df['bankOrig'] == bank) & (df['bankDest'] == bank)]
+        df_bank = df if bank == 'all' else df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
         n_pos = df_bank[df_bank['isSAR'] == 1].shape[0]
         n_neg = df_bank[df_bank['isSAR'] == 0].shape[0]
         rects = ax.bar(x+i, np.array([n_neg, n_pos]), width, color=['C0', 'C1'], label=['neg', 'pos'], zorder=3)
@@ -36,13 +38,17 @@ def edge_label_hist(df:pd.DataFrame, banks:list, file:str):
 
 
 def node_label_hist(df:pd.DataFrame, banks:list, file:str):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
     fig, ax = plt.subplots()
     width = 0.30
     x = np.array([-1*width/2, width/2])
     csv = {'bank': [], 'neg_count': [], 'pos_count': [], 'neg_ratio': [], 'pos_ratio': []}
     for i, bank in enumerate(banks):
-        df_bank = df[(df['bankOrig'] == bank) & (df['bankDest'] == bank)]
-        df_bank = pd.concat([df_bank[['nameOrig', 'isSAR']].rename(columns={'nameOrig': 'name'}), df_bank[['nameDest', 'isSAR']].rename(columns={'nameDest': 'name'})])
+        df_bank = df if bank == 'all' else df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
+        df_bank = pd.concat([df_bank[['nameOrig', 'bankOrig', 'isSAR']].rename(columns={'nameOrig': 'name', 'bankOrig': 'bank'}), df_bank[['nameDest', 'bankDest', 'isSAR']].rename(columns={'nameDest': 'name', 'bankDest': 'bank'})])
+        if bank != 'all':
+            df_bank = df_bank[df_bank['bank'] == bank]
         gb = df_bank.groupby('name')
         accts = gb['isSAR'].max()
         n_pos = accts[accts == 1].shape[0]
@@ -112,7 +118,7 @@ def pattern_hist(df:pd.DataFrame, file:str):
     neg_pattern_count = df[df['isSAR'] == 0]['modelType'].value_counts()
     pos_pattern_count = df[df['isSAR'] == 1]['modelType'].value_counts()
     neg_map = {0: 'single', 1: 'fan out', 2: 'fan in', 9: 'forward', 10: 'mutual', 11: 'periodical'}
-    pos_map = {1: 'fan out', 2: 'fan out', 3: 'cycle', 4: 'bipartite', 5: 'stack', 6: 'random', 7: 'scatter gather', 8: 'gather scatter'}
+    pos_map = {1: 'fan out', 2: 'fan in', 3: 'cycle', 4: 'bipartite', 5: 'stack', 6: 'random', 7: 'scatter gather', 8: 'gather scatter'}
     fig, ax = plt.subplots()
     width = 0.30
     x = 0    
@@ -151,10 +157,13 @@ def pattern_hist(df:pd.DataFrame, file:str):
 def amount_hist(df:pd.DataFrame, file:str):
     df = df[df['bankOrig'] != 'source']
     df = df[df['bankDest'] != 'sink']
-    df = df[df['amount'] < 30000] # TODO: remove this, here now because 3_banks_homo_mid contains some very high sar txs, which it shouldn't
+    #df = df[df['amount'] < 30000] # TODO: remove this, here now because 3_banks_homo_mid contains some very high sar txs, which it shouldn't
+    df_neg = df[df['isSAR'] == 0]
+    df_pos = df[df['isSAR'] == 1]
     fig, ax = plt.subplots()
-    hist_neg = sns.histplot(df[df['isSAR']==0], x='amount', binwidth=100, stat='proportion', kde=True, ax=ax, color='C0')
-    hist_pos = sns.histplot(df[df['isSAR']==1], x='amount', binwidth=100, stat='proportion', kde=True, ax=ax, color='C1')
+    width = 100
+    sns.histplot(df_neg, x='amount', binwidth=width, stat='proportion', kde=True, ax=ax, color='C0')
+    sns.histplot(df_pos, x='amount', binwidth=width, stat='proportion', kde=True, ax=ax, color='C1')
     ax.grid(axis='y')
     #ax.set_yscale('log')
     ax.legend(['neg', 'pos'])
@@ -162,13 +171,26 @@ def amount_hist(df:pd.DataFrame, file:str):
     plt.title('Amount distribution')
     plt.savefig(file)
     plt.close()
+    bins = np.arange(0, df['amount'].max() + width, width)
+    counts_neg, _ = np.histogram(df_neg['amount'], bins=bins)
+    counts_pos, _ = np.histogram(df_pos['amount'], bins=bins)
+    total_neg = counts_neg.sum()
+    total_pos = counts_pos.sum()
+    proportions_neg = counts_neg / total_neg if total_neg > 0 else np.zeros_like(counts_neg)
+    proportions_pos = counts_pos / total_pos if total_pos > 0 else np.zeros_like(counts_pos)
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+    hist_df = pd.DataFrame({f'amount(binwidth={width})': bin_centers, 'count_neg': counts_neg, 'count_pos': counts_pos, 'proportion_neg': proportions_neg, 'proportion_pos': proportions_pos})
+    hist_df.to_csv(file.replace('.png', '.csv'), index=False)
 
 
 def spending_hist(df:pd.DataFrame, file:str):
     df = df[df['bankDest'] == 'sink']
+    df_neg = df[df['isSAR'] == 0]
+    df_pos = df[df['isSAR'] == 1]
     fig, ax = plt.subplots()
-    sns.histplot(df[df['isSAR']==0], x='amount', binwidth=3000, stat='proportion', kde=False, ax=ax, color='C0')
-    sns.histplot(df[df['isSAR']==1], x='amount', binwidth=3000, stat='proportion', kde=False, ax=ax, color='C1')
+    width = 3000
+    sns.histplot(df_neg, x='amount', binwidth=width, stat='proportion', kde=False, ax=ax, color='C0')
+    sns.histplot(df_pos, x='amount', binwidth=width, stat='proportion', kde=False, ax=ax, color='C1')
     ax.grid(axis='y')
     ax.set_yscale('log')
     ax.legend(['neg', 'pos'])
@@ -176,6 +198,16 @@ def spending_hist(df:pd.DataFrame, file:str):
     plt.title('Spending distribution')
     plt.savefig(file)
     plt.close()
+    bins = np.arange(0, df['amount'].max() + width, width)
+    counts_neg, _ = np.histogram(df_neg['amount'], bins=bins)
+    counts_pos, _ = np.histogram(df_pos['amount'], bins=bins)
+    total_neg = counts_neg.sum()
+    total_pos = counts_pos.sum()
+    proportions_neg = counts_neg / total_neg if total_neg > 0 else np.zeros_like(counts_neg)
+    proportions_pos = counts_pos / total_pos if total_pos > 0 else np.zeros_like(counts_pos)
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+    hist_df = pd.DataFrame({f'amount(binwidth={width})': bin_centers, 'count_neg': counts_neg, 'count_pos': counts_pos, 'proportion_neg': proportions_neg, 'proportion_pos': proportions_pos})
+    hist_df.to_csv(file.replace('.png', '.csv'), index=False)
 
 
 def n_txs_hist(df:pd.DataFrame, file:str):
@@ -191,7 +223,6 @@ def n_txs_hist(df:pd.DataFrame, file:str):
     df = pd.concat(d, axis=1)
     df_neg = df[df['isSAR'] == 0]
     df_pos = df[df['isSAR'] == 1]
-    
     fig, ax = plt.subplots()
     sns.histplot(df_neg, x='n_txs', binwidth=1, stat='proportion', kde=True, ax=ax, color='C0', zorder=3)
     sns.histplot(df_pos, x='n_txs', binwidth=1, stat='proportion', kde=True, ax=ax, color='C1', zorder=3)
@@ -202,6 +233,16 @@ def n_txs_hist(df:pd.DataFrame, file:str):
     plt.title('Number of transactions distribution')
     plt.savefig(file)
     plt.close()
+    bins = np.arange(0, df['n_txs'].max() + 1, 1)
+    counts_neg, _ = np.histogram(df_neg['n_txs'], bins=bins)
+    counts_pos, _ = np.histogram(df_pos['n_txs'], bins=bins)
+    total_neg = counts_neg.sum()
+    total_pos = counts_pos.sum()
+    proportions_neg = counts_neg / total_neg if total_neg > 0 else np.zeros_like(counts_neg)
+    proportions_pos = counts_pos / total_pos if total_pos > 0 else np.zeros_like(counts_pos)
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+    hist_df = pd.DataFrame({'n_txs(binwidth=1)': bin_centers, 'count_neg': counts_neg, 'count_pos': counts_pos, 'proportion_neg': proportions_neg, 'proportion_pos': proportions_pos})
+    hist_df.to_csv(file.replace('.png', '.csv'), index=False)
 
 
 def n_spending_hist(df:pd.DataFrame, file:str):
@@ -213,7 +254,6 @@ def n_spending_hist(df:pd.DataFrame, file:str):
     df = pd.concat(d, axis=1)
     df_neg = df[df['isSAR'] == 0]
     df_pos = df[df['isSAR'] == 1]
-    
     fig, ax = plt.subplots()
     sns.histplot(df_neg, x='n_spending_txs', binwidth=1, stat='proportion', kde=False, ax=ax, color='C0', zorder=3)
     sns.histplot(df_pos, x='n_spending_txs', binwidth=1, stat='proportion', kde=False, ax=ax, color='C1', zorder=3)
@@ -223,6 +263,16 @@ def n_spending_hist(df:pd.DataFrame, file:str):
     plt.tight_layout(pad=2.0)
     plt.title('Number of spending transactions distribution')
     plt.savefig(file)
+    bins = np.arange(0, df['n_spending_txs'].max() + 1, 1)
+    counts_neg, _ = np.histogram(df_neg['n_spending_txs'], bins=bins)
+    counts_pos, _ = np.histogram(df_pos['n_spending_txs'], bins=bins)
+    total_neg = counts_neg.sum()
+    total_pos = counts_pos.sum()
+    proportions_neg = counts_neg / total_neg if total_neg > 0 else np.zeros_like(counts_neg)
+    proportions_pos = counts_pos / total_pos if total_pos > 0 else np.zeros_like(counts_pos)
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+    hist_df = pd.DataFrame({'n_spending_txs(binwidth=1)': bin_centers, 'count_neg': counts_neg, 'count_pos': counts_pos, 'proportion_neg': proportions_neg, 'proportion_pos': proportions_pos})
+    hist_df.to_csv(file.replace('.png', '.csv'), index=False)
 
 
 def powerlaw_degree_dist(df:pd.DataFrame, file:str):
@@ -246,6 +296,7 @@ def powerlaw_degree_dist(df:pd.DataFrame, file:str):
     
     plt.figure(figsize=(10, 10))
     x = np.linspace(1, 1000, 1000)
+    csv = {}
     
     counts = df_neg['count'].values
     degrees = df_neg['degree'].values
@@ -254,8 +305,13 @@ def powerlaw_degree_dist(df:pd.DataFrame, file:str):
     log_probs = np.log(probs)
     coeffs = np.polyfit(log_degrees, log_probs, 1)
     gamma, scale = coeffs
-    plt.plot(x, func(x, np.exp(scale), -gamma), label=f'pareto sampling fit\n  gamma={-gamma:.2f}\n  scale={np.exp(scale):.2f}', color='C0')
+    y = func(x, np.exp(scale), -gamma)
+    plt.plot(x, y, label=f'pareto sampling fit\n  gamma={-gamma:.2f}\n  scale={np.exp(scale):.2f}', color='C0')
     plt.scatter(degrees, probs, label='original neg', color='C0')
+    csv['degrees_pos'] = degrees
+    csv['probs_pos'] = probs
+    csv['fit_pos_x'] = x
+    csv['fit_pos_y'] = y
     
     counts = df_pos['count'].values
     degrees = df_pos['degree'].values
@@ -264,8 +320,13 @@ def powerlaw_degree_dist(df:pd.DataFrame, file:str):
     log_probs = np.log(probs)
     coeffs = np.polyfit(log_degrees, log_probs, 1)
     gamma, scale = coeffs
-    plt.plot(x, func(x, np.exp(scale), -gamma), label=f'pareto sampling fit\n  gamma={-gamma:.2f}\n  scale={np.exp(scale):.2f}', color='C1')
+    y = func(x, np.exp(scale), -gamma)
+    plt.plot(x, y, label=f'pareto sampling fit\n  gamma={-gamma:.2f}\n  scale={np.exp(scale):.2f}', color='C1')
     plt.scatter(degrees, probs, label='original pos', color='C1')
+    csv['degrees_neg'] = degrees
+    csv['probs_neg'] = probs
+    csv['fit_neg_x'] = x
+    csv['fit_neg_y'] = y
     
     plt.yscale('log')
     plt.xscale('log')
@@ -275,20 +336,75 @@ def powerlaw_degree_dist(df:pd.DataFrame, file:str):
     plt.grid()
     plt.title('Powerlaw degree distribution')
     plt.savefig(file)
+    plt.close()
+    
+    max_len = max(len(v) for v in csv.values())
+    for k, v in csv.items():
+        diff = max_len - len(v)
+        if diff > 0:
+            padding = [None] * diff
+            csv[k] = np.concatenate([v, padding])
+    df = pd.DataFrame(csv)
+    df.to_csv(file.replace('.png', '.csv'), index=False)
 
 
-def graph(df:pd.DataFrame, file:str):
+def graph(df:pd.DataFrame, file:str, alert_ids=None, n_alerts=None):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
+    if alert_ids is None:
+        alert_ids = df['alertID'].unique()
+    if n_alerts is not None:
+        alert_ids = np.random.choice(alert_ids, n_alerts, replace=False)
+    for alert_id in alert_ids:
+        if alert_id == -1:
+            continue
+        accts = pd.concat([df[df['alertID'] == alert_id]['nameOrig'], df[df['alertID'] == alert_id]['nameDest']]).unique()
+        l = []
+        for acct in accts:
+            l.append(df[df['nameOrig']==acct])
+            l.append(df[df['nameDest']==acct])
+        df_alert = pd.concat(l)
+        graph = nx.from_pandas_edgelist(df=df_alert, source='nameOrig', target='nameDest', edge_attr='alertID', create_using=nx.DiGraph)
+        plt.figure(figsize=(10, 10))
+        pos = nx.forceatlas2_layout(graph, max_iter=300, scaling_ratio=0.1)
+        colors = ['C0' if graph[u][v]['alertID'] == -1 else 'C1' for u, v in graph.edges()]
+        nx.draw(graph, pos, with_labels=True, node_size=1000, node_color='C0', edge_color=colors, arrows=True, arrowsize=30, font_size=10, font_weight='bold', width=1, connectionstyle='arc3,rad=0.1')
+        plt.title(f'Alert {alert_id}')
+        plt.savefig(file.replace('.png', f'_{alert_id}.png'))
+        plt.close()
+
+
+def get_blueprint(df:pd.DataFrame):
+    df_edges = df[['nameOrig', 'nameDest', 'isSAR']].rename(columns={'nameOrig': 'src', 'nameDest': 'dst', 'isSAR': 'class'})
+    df_edges = df_edges.drop_duplicates()
+    df_out = df[['nameOrig', 'bankOrig', 'isSAR']].rename(columns={'nameOrig': 'id', 'bankOrig': 'bank', 'isSAR': 'class'})
+    df_in = df[['nameDest', 'bankDest', 'isSAR']].rename(columns={'nameDest': 'id', 'bankDest': 'bank', 'isSAR': 'class'})
+    df_nodes = pd.concat([df_out, df_in])
+    df_nodes = df_nodes.groupby('id')['class'].max().reset_index()
+    return df_nodes, df_edges
+
+
+def homophily(df:pd.DataFrame, banks, file:str):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
+    df_nodes, df_edges = get_blueprint(df)
+    n_pos_edges = df_edges[df_edges['class'] == 1].shape[0]
+    n_neg_edges = df_edges[(df_edges['src'].isin(df_nodes[df_nodes['class'] == 0]['id'])) & (df_edges['dst'].isin(df_nodes[df_nodes['class'] == 0]['id']))]
+    n_edges = df_edges.shape[0]
+    homophily_edge = (n_pos_edges + n_neg_edges) / n_edges
     pass
 
 
 def plot(df:pd.DataFrame, plot_dir:str):
     banks = pd.concat([df['bankOrig'], df['bankDest']]).unique().tolist()
+    banks = sorted(banks)
     if 'source' in banks:
         banks.remove('source')
     if 'sink' in banks:
         banks.remove('sink')
-    edge_label_hist(df, banks, os.path.join(plot_dir, 'edge_label_hist.png'))
-    node_label_hist(df, banks, os.path.join(plot_dir, 'node_label_hist.png'))
+    edge_label_hist(df, banks+['all'], os.path.join(plot_dir, 'edge_label_hist.png'))
+    node_label_hist(df, banks+['all'], os.path.join(plot_dir, 'node_label_hist.png'))
+    homophily(df, banks+['all'], os.path.join(plot_dir, 'homophily.png'))
     for bank in banks:
         os.makedirs(os.path.join(plot_dir, bank), exist_ok=True)
         df_bank = df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
@@ -307,6 +423,7 @@ def main(tx_log:str, plot_dir:str):
     df = pd.read_csv(tx_log)
     os.makedirs(plot_dir, exist_ok=True)
     plot(df, plot_dir)
+
 
 if __name__ == '__main__':
     DATASET = '3_banks_homo_mid' # '30K_accts', '3_banks_homo_mid'

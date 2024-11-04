@@ -171,14 +171,7 @@ public abstract class AMLTypology extends AbstractTransactionModel {
                 //this.endStep = this.endStep + 25;
                 this.stepReciveFunds = 0;
             } else {
-                long s = this.startStep % 28;
-                long d;
-                if (s < 25) {
-                    d = s + 3;
-                } else {
-                    d = s - 25;
-                }
-                this.stepReciveFunds = this.startStep - d;
+                this.stepReciveFunds = (long) Math.floor(this.startStep / 28) * 28; 
             }
         } else {
             this.stepReciveFunds = this.startStep; // TODO: implement some randomization, and multiple steps if several origs

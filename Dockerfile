@@ -58,4 +58,4 @@ RUN pip3 install --no-cache-dir -e .
 COPY experiments experiments
 WORKDIR /flib/experiments
 
-ENTRYPOINT ["python3", "tune.py"]
+ENTRYPOINT ["bash"]

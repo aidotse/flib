@@ -68,6 +68,7 @@ def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datase
                     if dataset not in datasets:
                         continue
                     loss = data[client][round][dataset]['loss']
+                    loss = 0 if loss is None else loss
                     tpfptnfn = data[client][round][dataset]['tpfptnfn']
                     if not dataset in reduced_data[round]:
                         reduced_data[round][dataset] = {'loss': loss / len(clients), 'tpfptnfn': tpfptnfn}
@@ -199,7 +200,7 @@ def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datase
             else:
                 for dataset in datasets:
                     for client in clients:
-                        plt.plot(metrics_dict[metric][dataset][client]['x'], metrics_dict[metric][dataset][client]['y'], label=f'{client}: {dataset}')
+                        plt.plot(metrics_dict[metric][dataset][client]['x'], metrics_dict[metric][dataset][client]['y'], '-o', label=f'{client}: {dataset}')
             if metric == 'roc_curve':
                 plt.plot([0, 1], [0, 1], linestyle='--', color='k')
                 plt.xlabel('fpr')

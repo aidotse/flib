@@ -30,7 +30,7 @@ def main():
                 plt.title(f'ROC curve ({setting})')
                 plt.xlabel('fpr')
                 plt.ylabel('tpr')
-            plt.savefig(f'plots/{metric}_{setting}.png')
+            plt.savefig(f'experiments/plots/{metric}_{setting}.png')
             plt.close()
     
     data = '3_banks_homo_mid'
@@ -52,16 +52,29 @@ def main():
                 df = pd.read_csv(csv)
                 plt.plot(df.iloc[:, 0], df.iloc[:, 1], label=f'{client} ({setting})')
         
-        csv = f'/home/edvin/Desktop/flib/experiments/results/{data}/{setting_ref}/{client_ref}/csv/{metric}_{dataset}.csv'
-        df = pd.read_csv(csv)
-        # if df has one value
-        if len(df) == 1:
-            df = pd.DataFrame({'x': [0, 100], 'y': [df.iloc[0, 1], df.iloc[0, 1]]})
-        plt.plot(df.iloc[:, 0], df.iloc[:, 1], 'k--', label=f'ref ({client_ref}, {setting_ref})')
+        #csv = f'/home/edvin/Desktop/flib/experiments/results/{data}/{setting_ref}/{client_ref}/csv/{metric}_{dataset}.csv'
+        #df = pd.read_csv(csv)
+        ## if df has one value
+        #if len(df) == 1:
+        #    df = pd.DataFrame({'x': [0, 100], 'y': [df.iloc[0, 1], df.iloc[0, 1]]})
+        #plt.plot(df.iloc[:, 0], df.iloc[:, 1], 'k--', label=f'ref ({client_ref}, {setting_ref})')
         
+        if metric == 'precision_recall_curve':
+            plt.title('Precision-recall curve')
+            plt.xlabel('recall')
+            plt.ylabel('precision')
+        elif metric == 'roc_curve':
+            plt.plot([0, 1], [0, 1], linestyle='--', color='k')
+            plt.title('ROC curve')
+            plt.xlabel('fpr')
+            plt.ylabel('tpr')
+        else:
+            plt.title(metric)
+            plt.xlabel('round')
+            plt.ylabel(metric)
         plt.legend()
         plt.grid()
-        plt.savefig(f'plots/{metric}.png')
+        plt.savefig(f'experiments/plots/{metric}.png')
     
 
 if __name__ == '__main__':

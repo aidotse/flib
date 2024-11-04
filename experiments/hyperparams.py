@@ -1,8 +1,8 @@
 
 LogRegClient_params = {
     'default': {
-        'lr_patience': 5,
-        'es_patience': 15,
+        'lr_patience': 100,
+        'es_patience': 100,
         'n_rounds': 50,
         'eval_every': 10,
         'batch_size': 512,
@@ -144,8 +144,8 @@ KNNClient_params = {
 
 MLPClient_params = {
     'default': {
-        'lr_patience': 5,
-        'es_patience': 15,
+        'lr_patience': 100,
+        'es_patience': 100,
         'n_rounds': 50,
         'eval_every': 10,
         'batch_size': 512,
@@ -188,5 +188,48 @@ MLPClient_params = {
         },
         'n_hidden_layers': (1, 5),
         'hidden_dim': (32, 256)
+    }
+}
+
+GraphSAGEClient_params = {
+    'default': {
+        'n_rounds': 100,
+        'eval_every': 10,
+        'lr_patience': 100,
+        'es_patience': 100,
+        'hidden_dim': 64,
+        'optimizer': 'Adam',
+        'optimizer_params': {
+            'lr': 0.01,
+            'weight_decay': 0.0,
+            'amsgrad': False,
+        },
+        'criterion': 'CrossEntropyLoss',
+        'criterion_params': {}
+    },
+    'search_space': {
+        'hidden_dim': [32, 64, 128, 256, 512],
+        'optimizer': {
+            'Adam': {
+                'lr': (0.001, 0.1),
+                'weight_decay': (0.0, 1.0),
+                'amsgrad': [False, True],
+            }, 
+            'SGD': {
+                'lr': (0.001, 0.1),
+                'momentum': (0.0, 1.0),
+                'weight_decay': (0.0, 1.0),
+                'dampening': (0.0, 1.0),
+            }
+        },
+        'criterion': {
+            'CrossEntropyLoss': {},
+            'ClassBalancedLoss': {
+                'gamma': (0.5, 0.9999)
+            },
+            'NLLLoss': {
+                'weight': (0.0, 1.0),
+            }
+        }
     }
 }

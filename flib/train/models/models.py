@@ -33,17 +33,17 @@ class GraphSAGE(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, dropout=0.2):
         super().__init__()
         self.dropout = dropout
-        self.node_emb = torch_geometric.nn.Linear(input_dim, hidden_dim)
+        self.fc1 = torch_geometric.nn.Linear(input_dim, hidden_dim)
         self.conv1 = torch_geometric.nn.SAGEConv(hidden_dim, hidden_dim)
         self.conv2 = torch_geometric.nn.SAGEConv(hidden_dim, hidden_dim)
         self.conv3 = torch_geometric.nn.SAGEConv(hidden_dim, hidden_dim)
         self.bn1 = torch_geometric.nn.BatchNorm(hidden_dim)
         self.bn2 = torch_geometric.nn.BatchNorm(hidden_dim)
         self.bn3 = torch_geometric.nn.BatchNorm(hidden_dim)
-        self.classifier = torch_geometric.nn.Linear(hidden_dim, output_dim)
+        self.fc2 = torch_geometric.nn.Linear(hidden_dim, output_dim)
     
     def forward(self, data):
-        x = self.node_emb(data.x)
+        x = self.fc1(data.x)
         
         x = self.conv1(x, data.edge_index)
         x = self.bn1(x)
@@ -60,5 +60,11 @@ class GraphSAGE(torch.nn.Module):
         x = F.relu(x)
         x = F.dropout(x, p=self.dropout)
         
-        x = self.classifier(x)
+        x = self.fc2(x)
         return torch.softmax(x, dim=-1)
+    
+    def get_state_dict(self):
+        return {key: value for key, value in self.state_dict().items() if 'bn' not in key}
+
+    def set_state_dict(self, weights: dict) -> None:
+        self.load_state_dict(weights, strict=False)
