@@ -34,6 +34,6 @@ class DataGenerator:
 
         with open(conf_file , 'r') as f:
             config = json.load(f)
-        tx_log_path = os.path.join(config['output']['directory'], config['general']['simulation_name'], config['output']['transaction_log'])
+        tx_log_path = os.path.join(config['output']['directory'], config['output']['transaction_log'])
         
         return tx_log_path

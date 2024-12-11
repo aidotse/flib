@@ -13,15 +13,21 @@ from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import torch_geometric
+import yaml
 
 class LogRegClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, device:str='cpu', batch_size=64, optimizer='SGD', optimizer_params={}, criterion='ClassBalancedLoss', criterion_params={}, **kwargs):
+    def __init__(self, name:str, seed:int, device:str, nodes_train:str, nodes_test:str, valset_size:float, batch_size:int, optimizer:str, optimizer_params:dict, criterion:str, criterion_params:dict, **kwargs):
         self.name = name
         self.device = device
+
+        train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        val_df = train_df.sample(frac=valset_size, random_state=seed)
+        train_df = train_df.drop(val_df.index)
+        test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.trainset, self.valset, self.testset = tensordatasets(train_df, val_df, test_df, normalize=True, device=self.device)
         self.trainloader, self.valloader, self.testloader = dataloaders(self.trainset, self.valset, self.testset, batch_size)
-        
+
         input_dim = self.trainset.tensors[0].shape[1]
         output_dim = self.trainset.tensors[1].unique().shape[0]
         self.model = LogisticRegressor(input_dim=input_dim, output_dim=output_dim).to(self.device)
@@ -47,7 +53,7 @@ class LogRegClient():
             self.optimizer.step()
             loss += l.item() / len(self.trainloader)
             for threshold in range(0, 101):
-                cm = confusion_matrix(y_batch.cpu(), (y_pred[:,1] > (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
+                cm = confusion_matrix(y_batch.cpu(), (y_pred[:,1] >= (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
                 tpfptnfn[threshold]['tp'] += cm[1,1]
                 tpfptnfn[threshold]['fp'] += cm[0,1]
                 tpfptnfn[threshold]['tn'] += cm[0,0]
@@ -71,7 +77,7 @@ class LogRegClient():
             y_pred = self.model(dataset.tensors[0])
             loss = self.criterion(y_pred, dataset.tensors[1]).item()
             for threshold in range(0, 101):
-                cm = confusion_matrix(dataset.tensors[1].cpu(), (y_pred[:,1] > (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
+                cm = confusion_matrix(dataset.tensors[1].cpu(), (y_pred[:,1] >= (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
                 tpfptnfn[threshold]['tp'] = cm[1,1]
                 tpfptnfn[threshold]['fp'] = cm[0,1]
                 tpfptnfn[threshold]['tn'] = cm[0,0]
@@ -138,8 +144,13 @@ class LogRegClient():
 
 
 class DecisionTreeClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, criterion='gini', splitter='best', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0, max_features=None, max_leaf_nodes=None, min_impurity_decrease=0, class_weight='balanced', random_state =42, **kwargs):
+    def __init__(self, name:str, seed:int, nodes_train:str, nodes_test:str, valset_size:float, criterion='gini', splitter='best', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0, max_features=None, max_leaf_nodes=None, min_impurity_decrease=0, class_weight='balanced', random_state =42, **kwargs):
         self.name = name
+        
+        train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        val_df = train_df.sample(frac=valset_size, random_state=seed)
+        train_df = train_df.drop(val_df.index)
+        test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.X_train = train_df.drop(columns=['is_sar']).to_numpy()
         self.y_train = train_df['is_sar'].to_numpy()
@@ -203,7 +214,7 @@ class DecisionTreeClient():
         #roc_auc = roc_auc_score(y, y_pred[:,1])
         tpfptnfn = {threshold: {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0} for threshold in range(0, 101)}
         for threshold in range(0, 101):
-            cm = confusion_matrix(y, (y_pred[:,1] > (threshold / 100)), labels=[0, 1])
+            cm = confusion_matrix(y, (y_pred[:,1] >= (threshold / 100)), labels=[0, 1])
             tpfptnfn[threshold]['tp'] = cm[1,1]
             tpfptnfn[threshold]['fp'] = cm[0,1]
             tpfptnfn[threshold]['tn'] = cm[0,0]
@@ -218,7 +229,7 @@ class DecisionTreeClient():
 
 
 class RandomForestClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, n_estimators=100, criterion='gini', max_depth=None, class_weight='balanced', random_state =42, **kwargs):
+    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, n_estimators=100, criterion='gini', max_depth=None, class_weight='balanced', random_state=42, **kwargs):
         self.name = name
         
         self.X_train = train_df.drop(columns=['is_sar']).to_numpy()
@@ -276,7 +287,7 @@ class RandomForestClient():
         y_pred = self.model.predict_proba(X)
         tpfptnfn = {threshold: {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0} for threshold in range(0, 101)}
         for threshold in range(0, 101):
-            cm = confusion_matrix(y, (y_pred[:,1] > (threshold / 100)), labels=[0, 1])
+            cm = confusion_matrix(y, (y_pred[:,1] >= (threshold / 100)), labels=[0, 1])
             tpfptnfn[threshold]['tp'] = cm[1,1]
             tpfptnfn[threshold]['fp'] = cm[0,1]
             tpfptnfn[threshold]['tn'] = cm[0,0]
@@ -350,7 +361,7 @@ class GradientBoostingClient():
         y_pred = self.model.predict_proba(X)
         tpfptnfn = {threshold: {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0} for threshold in range(0, 101)}
         for threshold in range(0, 101):
-            cm = confusion_matrix(y, (y_pred[:,1] > (threshold / 100)), labels=[0, 1])
+            cm = confusion_matrix(y, (y_pred[:,1] >= (threshold / 100)), labels=[0, 1])
             tpfptnfn[threshold]['tp'] = cm[1,1]
             tpfptnfn[threshold]['fp'] = cm[0,1]
             tpfptnfn[threshold]['tn'] = cm[0,0]
@@ -429,7 +440,7 @@ class SVMClient():
         y_pred = self.model.predict_proba(X)
         tpfptnfn = {threshold: {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0} for threshold in range(0, 101)}
         for threshold in range(0, 101):
-            cm = confusion_matrix(y, (y_pred[:,1] > (threshold / 100)), labels=[0, 1])
+            cm = confusion_matrix(y, (y_pred[:,1] >= (threshold / 100)), labels=[0, 1])
             tpfptnfn[threshold]['tp'] = cm[1,1]
             tpfptnfn[threshold]['fp'] = cm[0,1]
             tpfptnfn[threshold]['tn'] = cm[0,0]
@@ -505,7 +516,7 @@ class KNNClient():
         roc_auc = roc_auc_score(y, y_pred[:,1])
         tpfptnfn = {threshold: {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0} for threshold in range(0, 101)}
         for threshold in range(0, 101):
-            cm = confusion_matrix(y, (y_pred[:,1] > (threshold / 100)), labels=[0, 1])
+            cm = confusion_matrix(y, (y_pred[:,1] >= (threshold / 100)), labels=[0, 1])
             tpfptnfn[threshold]['tp'] = cm[1,1]
             tpfptnfn[threshold]['fp'] = cm[0,1]
             tpfptnfn[threshold]['tn'] = cm[0,0]
@@ -552,7 +563,7 @@ class MLPClient():
             self.optimizer.step()
             loss += l.item() / len(self.trainloader)
             for threshold in range(0, 101):
-                cm = confusion_matrix(y_batch.cpu(), (y_pred[:,1] > (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1], normalize='all')
+                cm = confusion_matrix(y_batch.cpu(), (y_pred[:,1] >= (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1], normalize='all')
                 tpfptnfn[threshold]['tp'] += cm[1,1]
                 tpfptnfn[threshold]['fp'] += cm[0,1]
                 tpfptnfn[threshold]['tn'] += cm[0,0]
@@ -576,7 +587,7 @@ class MLPClient():
             y_pred = self.model(dataset.tensors[0])
             loss = self.criterion(y_pred, dataset.tensors[1]).item()
             for threshold in range(0, 101):
-                cm = confusion_matrix(dataset.tensors[1].cpu(), (y_pred[:,1] > (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
+                cm = confusion_matrix(dataset.tensors[1].cpu(), (y_pred[:,1] >= (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
                 tpfptnfn[threshold]['tp'] = cm[1,1]
                 tpfptnfn[threshold]['fp'] = cm[0,1]
                 tpfptnfn[threshold]['tn'] = cm[0,0]
@@ -678,7 +689,7 @@ class GraphSAGEClient():
         loss = loss.item()
         tpfptnfn = {}
         for threshold in range(0, 101):
-            cm = confusion_matrix(self.trainset.y[self.trainset.train_mask].cpu(), (y_pred[self.trainset.train_mask][:,1] > (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
+            cm = confusion_matrix(self.trainset.y[self.trainset.train_mask].cpu(), (y_pred[self.trainset.train_mask][:,1] >= (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
             tpfptnfn[threshold] = {'tp': cm[1,1], 'fp': cm[0,1], 'tn': cm[0,0], 'fn': cm[1,0]}
         return loss, tpfptnfn
     
@@ -704,7 +715,7 @@ class GraphSAGEClient():
             y_pred = self.model(dataset)
             loss = self.criterion(y_pred[mask], dataset.y[mask]).item()
             for threshold in range(0, 101):
-                cm = confusion_matrix(dataset.y[mask].cpu(), (y_pred[mask][:,1] > (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
+                cm = confusion_matrix(dataset.y[mask].cpu(), (y_pred[mask][:,1] >= (threshold / 100)).to(torch.int64).cpu(), labels=[0, 1])
                 tpfptnfn[threshold]['tp'] = cm[1,1]
                 tpfptnfn[threshold]['fp'] = cm[0,1]
                 tpfptnfn[threshold]['tn'] = cm[0,0]

@@ -5,6 +5,9 @@ __pycache__
 *.egg-info
 .pytest_cache
 experiments/data
+*.csv
+*.db
+*.pkl
 experiments/param_files
 experiments/results
 experiments/plots

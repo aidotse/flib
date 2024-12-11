@@ -1,0 +1,102 @@
+data:
+    raw: 'raw/tx_log.csv'
+    nodes_train: 'preprocessed/nodes_train.csv'
+    edges_train: 'preprocessed/edges_train.csv'
+    nodes_test: 'preprocessed/nodes_test.csv'
+    edges_test: 'preprocessed/edges_test.csv'
+
+preprocess:
+    num_windows: 5
+    window_len: 28
+    train_start_step: 0
+    train_end_step: 84
+    test_start_step: 28
+    test_end_step: 112
+    include_edges: true
+
+hyperparameters:
+    DecisionTreeClient:
+        default:
+            valset_size: 0.2
+            criterion: 'gini'
+            splitter: 'best'
+            max_depth: null
+            class_weight: 'balanced'
+            random_state: 42
+        search_space:
+            criterion:
+                type: 'categorical'
+                values: ['gini', 'entropy', 'log_loss']
+            splitter: 
+                type: 'categorical'
+                values: ['best', 'random']
+            max_depth: 
+                type: 'integer'
+                low: 1
+                high: 100
+            class_weight:
+                type: 'categorical'
+                values: ['balanced', null]
+    LogRegClient:
+        default:
+            device: 'cuda:0'
+            valset_size: 0.2
+            lr_patience: 100
+            es_patience: 100
+            n_rounds: 30
+            eval_every: 10
+            batch_size: 512
+            optimizer: 'SGD'
+            optimizer_params:
+                lr: 0.01
+                momentum: 0.0
+                weight_decay: 0.0
+                dampening: 0.0
+            criterion: 'ClassBalancedLoss'
+            criterion_params:
+                gamma: 0.9
+        search_space:
+            batch_size: 
+                type: 'categorical'
+                values: [128, 256, 512]
+            optimizer:
+                type: 'conditional'
+                values:
+                    SGD:
+                        lr: 
+                            type: 'float'
+                            low: 0.001
+                            high: 0.1
+                        momentum:
+                            type: 'float'
+                            low: 0.0
+                            high: 1.0
+                        weight_decay:
+                            type: 'float'
+                            low: 0.0
+                            high: 1.0
+                        dampening:
+                            type: 'float'
+                            low: 0.0
+                            high: 1.0
+                    Adam:
+                        lr:
+                            type: 'float'
+                            low: 0.001
+                            high: 0.1
+                        weight_decay:
+                            type: 'float'
+                            low: 0.0
+                            high: 1.0
+                        amsgrad:
+                            type: 'categorical'
+                            values: [true, false]
+            criterion:
+                type: 'conditional'
+                values:
+                    ClassBalancedLoss:
+                        gamma:
+                            type: 'float'
+                            low: 0.0
+                            high: 1.0
+                    CrossEntropyLoss: {}

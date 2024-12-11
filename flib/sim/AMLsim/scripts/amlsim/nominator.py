@@ -13,7 +13,7 @@ class Nominator:
         self.current_candidate_index = dict()
         self.current_type_index = dict()
 
-    def initialize_count(self, type, count, schedule_id, min_accounts, max_accounts, min_period, max_period):
+    def initialize_count(self, type, count, schedule_id, min_accounts, max_accounts, min_period, max_period, bank_id):
         """Counts the number of nodes of a given type.
 
         Args:
@@ -22,11 +22,11 @@ class Nominator:
         """        
         if type in self.remaining_count_dict:
             self.remaining_count_dict[type] += count
-            param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
+            param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period, bank_id) for i in range(count)]
             self.model_params_dict[type] += param_list
         else:
             self.remaining_count_dict[type] = count
-            param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period) for i in range(count)]
+            param_list = [(schedule_id, min_accounts, max_accounts, min_period, max_period, bank_id) for i in range(count)]
             self.model_params_dict[type] = param_list
         self.used_count_dict[type] = 0
         

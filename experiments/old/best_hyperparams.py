@@ -5,16 +5,17 @@ LogRegClient_params = {
         'es_patience': 100,
         'n_rounds': 100,
         'eval_every': 10,
-        'batch_size': 256,
-        'optimizer': 'Adam',
+        'batch_size': 512, #128,
+        'optimizer': 'Adam', #'SGD',
         'optimizer_params': {
-            'lr': 0.01,
-            'weight_decay': 0.0,
-            'amsgrad': False,
+            'lr': 0.01, #0.09973026277406209,
+            #'momentum': 0.9699303775123841,
+            #'weight_decay': 0.7980000343573007,
+            #'dampening': 0.15500715715253313,
         },
-        'criterion': 'ClassBalancedLoss',
+        'criterion': 'ClassBalancedLoss', #'CrossEntropyLoss',
         'criterion_params': {
-            'gamma': 0.6
+            'gamma': 0.9999
         },
     },
     'federated': {
@@ -23,16 +24,17 @@ LogRegClient_params = {
         'es_patience': 100,
         'n_rounds': 100,
         'eval_every': 10,
-        'batch_size': 256,
-        'optimizer': 'Adam',
+        'batch_size': 512, #128,
+        'optimizer': 'Adam', #'SGD',
         'optimizer_params': {
-            'lr': 0.01,
-            'weight_decay': 0.0,
-            'amsgrad': False,
+            'lr': 0.01, #0.03456591494454122,
+            #'momentum': 0.0, #0.5752335830497186,
+            #'weight_decay': 0.0, #0.9751077466806092,
+            #'dampening': 0.0, #0.19067255025350016,
         },
         'criterion': 'ClassBalancedLoss',
         'criterion_params': {
-            'gamma': 0.6
+            'gamma': 0.9999, #0.9994980560757293
         },
         'clients': {
             'c0': {
@@ -41,16 +43,16 @@ LogRegClient_params = {
                 'es_patience': 100,
                 'n_rounds': 100,
                 'eval_every': 10,
-                'batch_size': 256,
+                'batch_size': 512, #128,
                 'optimizer': 'Adam',
                 'optimizer_params': {
-                    'lr': 0.01,
-                    'weight_decay': 0.0,
-                    'amsgrad': False,
+                    'lr': 0.01, #0.059010854331331665,
+                    #'weight_decay': 0.4938202384268264,
+                    #'amsgrad': True,
                 },
-                'criterion': 'ClassBalancedLoss',
+                'criterion': 'ClassBalanceLoss', #'CrossEntropyLoss',
                 'criterion_params': {
-                    'gamma': 0.6
+                    'gamma': 0.9999,
                 },
             }, 
             'c1': {
@@ -59,16 +61,16 @@ LogRegClient_params = {
                 'es_patience': 100,
                 'n_rounds': 100,
                 'eval_every': 10,
-                'batch_size': 256,
+                'batch_size': 512, #256,
                 'optimizer': 'Adam',
                 'optimizer_params': {
-                    'lr': 0.01,
-                    'weight_decay': 0.0,
-                    'amsgrad': False,
+                    'lr': 0.01, #0.06285523620101933,
+                    #'weight_decay': 0.9177014947271461,
+                    #'amsgrad': False,
                 },
                 'criterion': 'ClassBalancedLoss',
                 'criterion_params': {
-                    'gamma': 0.6
+                    'gamma': 0.9999 #0.6432920180664913
                 },
             },
             'c2': {
@@ -77,16 +79,16 @@ LogRegClient_params = {
                 'es_patience': 100,
                 'n_rounds': 100,
                 'eval_every': 10,
-                'batch_size': 256,
+                'batch_size': 512,
                 'optimizer': 'Adam',
                 'optimizer_params': {
-                    'lr': 0.01,
-                    'weight_decay': 0.0,
-                    'amsgrad': False,
+                    'lr': 0.01, #0.015842359744286286,
+                    #'weight_decay': 0.6321060179101374,
+                    #'amsgrad': False,
                 },
                 'criterion': 'ClassBalancedLoss',
                 'criterion_params': {
-                    'gamma': 0.6
+                    'gamma': 0.9999 #0.7996909689446341
                 },
             }
         }
@@ -310,32 +312,32 @@ KNNClient_params = {
 
 DecisionTreeClient_params = {
     'centralized': {
-        'criterion': 'entropy',
-        'splitter': 'random',
-        'max_depth': 9,
-        'class_weight': None,
+        'criterion': 'log_loss',
+        'splitter': 'best',
+        'max_depth': 7,
+        'class_weight': 'balanced',
         'random_state': 42,
     },
     'isolated': {
         'clients': {
             'c0': {
-                'criterion': 'entropy',
-                'splitter': 'random',
-                'max_depth': 12,
+                'criterion': 'gini',
+                'splitter': 'best',
+                'max_depth': 4,
                 'class_weight': 'balanced',
                 'random_state': 42,
             },
             'c1': {
-                'criterion': 'log_loss',
+                'criterion': 'entropy',
                 'splitter': 'random',
-                'max_depth': 10,
+                'max_depth': 5,
                 'class_weight': 'balanced',
                 'random_state': 42,
             },
             'c2': {
                 'criterion': 'entropy',
-                'splitter': 'best',
-                'max_depth': 9,
+                'splitter': 'random',
+                'max_depth': 4,
                 'class_weight': 'balanced',
                 'random_state': 42,
             }

@@ -115,8 +115,8 @@ public class SimProperties {
         }
         System.out.println("Simulation name: " + simName);
 
-        String simName = getSimName();
-        workDir = inputProp.getString("directory") + separator + simName + separator;
+        //String simName = getSimName();
+        workDir = inputProp.getString("directory") + separator; // + simName + separator;
         System.out.println("Working directory: " + workDir);
     }
 
@@ -283,7 +283,7 @@ public class SimProperties {
     }
 
     String getOutputDir() {
-        return outputProp.getString("directory") + separator + simName + separator;
+        return outputProp.getString("directory") + separator; // + simName + separator;
     }
 
     String getCounterLogFile() {

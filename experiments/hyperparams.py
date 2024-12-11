@@ -21,7 +21,7 @@ LogRegClient_params = {
         }
     },
     'search_space': {
-        'batch_size': [128, 256, 512],
+        'batch_size': [512], #[128, 256, 512],
         'optimizer': {
             'SGD': {
                 'lr': (0.001, 0.1),
@@ -30,16 +30,16 @@ LogRegClient_params = {
                 'dampening': (0.0, 1.0),
             },
             'Adam': {
-                'lr': (0.001, 0.1),
+                'lr': (0.0001, 0.1),
                 'weight_decay': (0.0, 1.0),
                 'amsgrad': [True, False]
             }
         },
         'criterion': {
             'ClassBalancedLoss': {
-                'gamma': (0.5, 0.9999)
+                'gamma': (0.5, 0.99999)
             },
-            'CrossEntropyLoss': {}
+            #'CrossEntropyLoss': {}
         }
     }
 }
@@ -193,10 +193,10 @@ MLPClient_params = {
 
 GraphSAGEClient_params = {
     'default': {
-        'n_rounds': 100,
+        'n_rounds': 200,
         'eval_every': 10,
-        'lr_patience': 100,
-        'es_patience': 100,
+        'lr_patience': 200,
+        'es_patience': 200,
         'hidden_dim': 64,
         'optimizer': 'Adam',
         'optimizer_params': {

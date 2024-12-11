@@ -1,0 +1,22 @@
+
+trial: 0
+values: [0.5851356149369394]
+batch_size: 256
+optimizer: SGD
+SGD_lr: 0.016443457513284063
+SGD_momentum: 0.05808361216819946
+SGD_weight_decay: 0.8661761457749352
+SGD_dampening: 0.6011150117432088
+criterion: ClassBalancedLoss
+ClassBalancedLoss_gamma: 0.9699098521619943
+
+trial: 2
+values: [0.5851356149369394]
+batch_size: 256
+optimizer: SGD
+SGD_lr: 0.016443457513284063
+SGD_momentum: 0.05808361216819946
+SGD_weight_decay: 0.8661761457749352
+SGD_dampening: 0.6011150117432088
+criterion: ClassBalancedLoss
+ClassBalancedLoss_gamma: 0.9699098521619943

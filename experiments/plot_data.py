@@ -5,6 +5,7 @@ from flib.vizualize.features import plot_features
 
 def main():
     
+    
     data_dir = 'experiments/data/3_banks_homo_mid/preprocessed'
     results_dir = 'experiments/results/3_banks_homo_mid/data'
     
@@ -40,4 +41,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    EXPERIMENT = '3_banks_homo_easy'
+    tx_log = '/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/data/raw/tx_log.csv'
+    
+    main(data_dir, )

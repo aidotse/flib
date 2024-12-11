@@ -5,17 +5,15 @@ import json
 import os
 
 class DataPreprocessor:
-    def __init__(self, conf_file, bank=None):
-        with open(conf_file, 'r') as f:
-            conf = json.load(f)
-        self.num_windows = conf["preprocessing"]["num_windows"]
-        self.window_len = conf["preprocessing"]["window_len"]
-        self.train_start_step = conf["preprocessing"]["train_start_step"]
-        self.train_end_step = conf["preprocessing"]["train_end_step"]
-        self.test_start_step = conf["preprocessing"]["test_start_step"]
-        self.test_end_step = conf["preprocessing"]["test_end_step"]
-        self.include_edges = conf["preprocessing"]["include_edges"]
-        self.bank = bank
+    def __init__(self, config):
+        self.num_windows = config['num_windows']
+        self.window_len = config['window_len']
+        self.train_start_step = config['train_start_step']
+        self.train_end_step = config['train_end_step']
+        self.test_start_step = config['test_start_step']
+        self.test_end_step = config['test_end_step']
+        self.include_edges = config['include_edges']
+        self.bank = config['bank'] if 'bank' in config else None
     
     
     def load_data(self, path:str) -> pd.DataFrame:
@@ -25,7 +23,7 @@ class DataPreprocessor:
         return df
 
     
-    def cal_node_features(self, df:pd.DataFrame, start_step, end_step, bank) -> pd.DataFrame:
+    def cal_node_features(self, df:pd.DataFrame, start_step, end_step) -> pd.DataFrame:
         if self.num_windows * self.window_len < end_step - start_step:
             raise ValueError(f'Number of windows {self.num_windows} and the windows length {self.window_len} do not allow coverage of the whole dataset. Inceasing number of windows or length of windows')
         window_overlap = (self.num_windows * self.window_len - (end_step - start_step + 1)) // (self.num_windows - 1)
@@ -82,7 +80,8 @@ class DataPreprocessor:
         # merge with nodes
         df_nodes = df_nodes.join(node_features_df)
         # filter out nodes not belonging to the bank
-        df_nodes = df_nodes[df_nodes['bank'] == bank] # TODO: keep these nodes? see TODO below about get edges
+        
+        df_nodes = df_nodes[df_nodes['bank'] == self.bank] if self.bank is not None else df_nodes # TODO: keep these nodes? see TODO below about get edges
         # if any value is nan, there was no transaction in the window for that account and hence the feature should be 0
         df_nodes = df_nodes.fillna(0.0)
         # check if there is any missing values
@@ -149,44 +148,39 @@ class DataPreprocessor:
         return df_edges
 
 
-    
-    def preprocess(self, df:pd.DataFrame, bank):
+    def preprocess(self, df:pd.DataFrame):
         df_train = df[(df['step'] >= self.train_start_step) & (df['step'] <= self.train_end_step)]
         df_test = df[(df['step'] >= self.test_start_step) & (df['step'] <= self.test_end_step)]
-        df_nodes_train = self.cal_node_features(df_train, self.train_start_step, self.train_end_step, bank)
-        df_nodes_test = self.cal_node_features(df_test, self.test_start_step, self.test_end_step, bank)
+        df_nodes_train = self.cal_node_features(df_train, self.train_start_step, self.train_end_step)
+        df_nodes_test = self.cal_node_features(df_test, self.test_start_step, self.test_end_step)
         df_nodes_train.reset_index(inplace=True)
         df_nodes_test.reset_index(inplace=True)
         
         if self.include_edges:
-            df_edges_train = self.cal_edge_features(df=df_train[(df_train['bankOrig']==bank) & (df_train['bankDest']==bank)], start_step=self.train_start_step, end_step=self.train_end_step, directional=False) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
-            df_edges_test = self.cal_edge_features(df_test[(df_test['bankOrig']==bank) & (df_test['bankDest']==bank)], start_step=self.test_start_step, end_step=self.test_end_step, directional=False)
+            df_train = df_train[(df_train['bankOrig']==self.bank) | (df_train['bankDest']==self.bank)] if self.bank is not None else df_train
+            df_test = df_test[(df_test['bankOrig']==self.bank) | (df_test['bankDest']==self.bank)] if self.bank is not None else df_test
+            df_edges_train = self.cal_edge_features(df=df_train, start_step=self.train_start_step, end_step=self.train_end_step, directional=False) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
+            df_edges_test = self.cal_edge_features(df=df_test, start_step=self.test_start_step, end_step=self.test_end_step, directional=False)
             node_to_index = pd.Series(df_nodes_train.index, index=df_nodes_train['account']).to_dict()
             df_edges_train['src'] = df_edges_train['src'].map(node_to_index) # OBS: in the csv files it looks like the edge src refers to the node two rows above the acculat node, this is due to the column head and that it starts counting at 0
             df_edges_train['dst'] = df_edges_train['dst'].map(node_to_index)
             node_to_index = pd.Series(df_nodes_test.index, index=df_nodes_test['account']).to_dict()
             df_edges_test['src'] = df_edges_test['src'].map(node_to_index)
             df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
-            return (df_nodes_train, df_nodes_test, df_edges_train, df_edges_test)
+            return {'nodes_train': df_nodes_train, 'nodes_test': df_nodes_test, 'edges_train': df_edges_train, 'edges_test': df_edges_test}
         else:
-            return (df_nodes_train, df_nodes_test)
+            return {'nodes_train': df_nodes_train, 'nodes_test': df_nodes_test}
     
     
     def __call__(self, raw_data_file):
         print('\nPreprocessing data...', end='')
         raw_df = self.load_data(raw_data_file)
         if self.bank is not None:
-            bank_df = raw_df[raw_df['bankOrig'] == self.bank]
-            preprocessed_df = self.preprocess(bank_df, self.bank)
+            preprocessed_df = self.preprocess(raw_df)
             print(' done\n')
             return preprocessed_df
         else:
-            preprocessed_dfs = []
-            banks = raw_df['bankOrig'].unique()
-            for bank in banks:
-                bank_df = raw_df[raw_df['bankOrig'] == bank]
-                preprocessed_df = self.preprocess(bank_df, bank)
-                preprocessed_dfs.append(preprocessed_df)
+            preprocessed_df = self.preprocess(raw_df)
             print(' done\n')
-            return preprocessed_dfs
+            return preprocessed_df
         

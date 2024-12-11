@@ -5,107 +5,29 @@ import pandas as pd
 import time
 import pickle
 import os
+import yaml
+from typing import Union, List
 
-def centralized(train_dfs=[], val_dfs=[], test_dfs=[], seed=42, client='LogRegClient', **kwargs):
-    
+def centralized(seed:int, n_workers:int, client_type:str, client_names:Union[str, List[str]], client_params:Union[str, List[dict]]):
     set_random_seed(seed)
-    
-    # concatinat dataframes
-    if len(train_dfs) == 1:
-        train_df = train_dfs[0]
-    else:
-        train_df = pd.concat(train_dfs)
-    if len(val_dfs) == 1:
-        val_df = val_dfs[0]
-    else:
-        val_dfs = [val_df for val_df in val_dfs if val_df is not None]
-        if val_dfs:
-            val_df = pd.concat(val_dfs)
-        else:
-            val_df = None
-    if len(test_dfs) == 1:
-        test_df = test_dfs[0]
-    else:
-        test_dfs = [test_df for test_df in test_dfs if test_df is not None]
-        if test_dfs:
-            test_df = pd.concat(test_dfs)
-        else:
-            test_df = None
-    
-    Client = getattr(Clients, client)
-    
-    client = Client(
-        name=f'c0',
-        train_df=train_df,
-        val_df=val_df,
-        test_df=test_df,
-        **kwargs
-    )
-    
-    results = {client.name:  client.run(**kwargs)}
+    Client = getattr(Clients, client_type)
+    name = client_names[0] if isinstance(client_names, list) else client_names
+    params = client_params[0] if isinstance(client_params, list) else client_params
+    client = Client(name=name, seed=seed, **params)
+    results = {client.name:  client.run(**params)}
     return results
 
 if __name__ == '__main__':
     
-    DATASET = '3_banks_homo_mid' # '30K_accts', '3_banks_homo_mid'
-    
-    # for debugging
-    c0_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_nodes_train.csv'
-    c0_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_edges_train.csv'
-    c1_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_nodes_train.csv'
-    c1_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_edges_train.csv'
-    c2_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_nodes_train.csv'
-    c2_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_edges_train.csv'
-    c0_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_nodes_test.csv'
-    c0_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_edges_test.csv'
-    c1_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_nodes_test.csv'
-    c1_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_edges_test.csv'
-    c2_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_nodes_test.csv'
-    c2_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_edges_test.csv'
-    
-    c0_train_nodes_df = pd.read_csv(c0_train_nodes_csv).drop(columns=['account', 'bank'])
-    c0_train_edges_df = pd.read_csv(c0_train_edges_csv)
-    
-    c1_train_nodes_df = pd.read_csv(c1_train_nodes_csv).drop(columns=['account', 'bank'])
-    c1_train_edges_df = pd.read_csv(c1_train_edges_csv)
-    c1_train_edges_df['src'] += c0_train_nodes_df.shape[0]
-    c1_train_edges_df['dst'] += c0_train_nodes_df.shape[0]
-    
-    c2_train_nodes_df = pd.read_csv(c2_train_nodes_csv).drop(columns=['account', 'bank'])
-    c2_train_edges_df = pd.read_csv(c2_train_edges_csv)
-    c2_train_edges_df['src'] += c0_train_nodes_df.shape[0] + c1_train_nodes_df.shape[0]
-    c2_train_edges_df['dst'] += c0_train_nodes_df.shape[0] + c1_train_nodes_df.shape[0]
-    
-    train_nodes_df = pd.concat([c0_train_nodes_df, c1_train_nodes_df, c2_train_nodes_df])
-    train_edges_df = pd.concat([c0_train_edges_df, c1_train_edges_df, c2_train_edges_df])
-    
-    c0_test_nodes_df = pd.read_csv(c0_test_nodes_csv).drop(columns=['account', 'bank'])
-    c0_test_edges_df = pd.read_csv(c0_test_edges_csv)
-    
-    c1_test_nodes_df = pd.read_csv(c1_test_nodes_csv).drop(columns=['account', 'bank'])
-    c1_test_edges_df = pd.read_csv(c1_test_edges_csv)
-    c1_test_edges_df['src'] += c0_test_nodes_df.shape[0]
-    c1_test_edges_df['dst'] += c0_test_nodes_df.shape[0]
-    
-    c2_test_nodes_df = pd.read_csv(c2_test_nodes_csv).drop(columns=['account', 'bank'])
-    c2_test_edges_df = pd.read_csv(c2_test_edges_csv)
-    c2_test_edges_df['src'] += c0_test_nodes_df.shape[0] + c1_test_nodes_df.shape[0]
-    c2_test_edges_df['dst'] += c0_test_nodes_df.shape[0] + c1_test_nodes_df.shape[0]
-    
-    test_nodes_df = pd.concat([c0_test_nodes_df, c1_test_nodes_df, c2_test_nodes_df])
-    test_edges_df = pd.concat([c0_test_edges_df, c1_test_edges_df, c2_test_edges_df])
-    
-    train_df = (train_nodes_df, train_edges_df)
-    test_df = (test_nodes_df, test_edges_df)
+    EXPERIMENT = '3_banks_homo_easy' # '30K_accts', '3_banks_homo_mid'
+    CLIENT = 'LogRegClient'
     
     params = {
-        'rounds': 100,
-        'eval_every': 10,
-        'lr_patience': 100,
-        'es_patience': 100,
         'device': 'cuda:0',
-        'batch_size': 128,
-        'hidden_dim': 64,
+        'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/data/preprocessed/nodes_train.csv', 
+        'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/data/preprocessed/nodes_test.csv',
+        'valset_size': 0.2,
+        'batch_size': 2048,
         'optimizer': 'Adam',
         'optimizer_params': {
             'lr': 0.01,
@@ -113,15 +35,20 @@ if __name__ == '__main__':
             'amsgrad': False,
         },
         'criterion': 'CrossEntropyLoss',
-        'criterion_params': {}
+        'criterion_params': {},
+        'rounds': 100,
+        'eval_every': 10,
+        'lr_patience': 100,
+        'es_patience': 100,
+        'hidden_dim': 64,
     }
     
     t = time.time()
-    results = centralized(train_dfs=[train_df], test_dfs=[test_df], seed=42, n_workers=3, client='GraphSAGEClient', **params)
+    results = centralized(seed=42, client=CLIENT, params=params)
     t = time.time() - t
     print('Done')
     print(f'Exec time: {t:.2f}s')
-    results_dir = f'/home/edvin/Desktop/flib/experiments/results/{DATASET}/centralized/GraphSAGEClient'
+    results_dir = f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/results/centralized/{CLIENT}'
     os.makedirs(results_dir, exist_ok=True)
     with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
         pickle.dump(results, f)

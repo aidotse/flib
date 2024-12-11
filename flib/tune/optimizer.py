@@ -4,13 +4,12 @@ import matplotlib.pyplot as plt
 import json
 
 class Optimizer():
-    def __init__(self, conf_file, generator, preprocessor, target:float, max:float=1.0, operating_recall:float=0.8, model:str='GradientBoostingClassifier', bank=None):
+    def __init__(self, conf_file, generator, preprocessor, target:float, utility:str, model:str='DecisionTreeClassifier', bank=None):
         self.conf_file = conf_file
         self.generator = generator
         self.preprocessor = preprocessor
         self.target = target
-        self.max = max
-        self.operating_recall = operating_recall
+        self.utility = utility
         self.model = model
         self.bank = bank
     
@@ -30,7 +29,7 @@ class Optimizer():
         config['default']['prob_participate_in_multiple_sars'] = trial.suggest_float('prob_participate_in_multiple_sars', config['optimisation_bounds']['prob_participate_in_multiple_sars'][0], config['optimisation_bounds']['prob_participate_in_multiple_sars'][1])
         
         with open(self.conf_file, 'w') as f:
-            json.dump(config, f, indent=2)
+            json.dump(config, f, indent=4)
         
         tx_log_file = self.generator(self.conf_file)
         dataset = self.preprocessor(tx_log_file)
@@ -42,22 +41,22 @@ class Optimizer():
             print(f'\nWarning: {dataset[1].loc[0, "bank"]} testset has only one class {dataset[1]["is_sar"].unique()}\n')
             return 1.0, 5.0
         
-        classifier = Classifier(dataset)
-        model = classifier.train(model=self.model, tune_hyperparameters=False)    
-        fpr, importances = classifier.evaluate(operating_recall=self.operating_recall)
+        classifier = Classifier(dataset, results_dir=self.conf_file.replace('conf.json', ''))
+        model = classifier.train(model=self.model, tune_hyperparameters=True, n_trials=100)
+        score, importances = classifier.evaluate(utility=self.utility)
 
         avg_importance = importances.mean()
         avg_importance_error = abs(avg_importance - importances)
         sum_avg_importance_error = avg_importance_error.sum()
         
-        return abs(fpr/self.max-self.target), sum_avg_importance_error
+        return abs(score-self.target), sum_avg_importance_error
     
     def optimize(self, n_trials:int=10):
         parent_dir = '/'.join(self.conf_file.split('/')[:-1])
         storage = 'sqlite:///' + parent_dir + '/amlsim_study.db'
         study = optuna.create_study(storage=storage, sampler=optuna.samplers.TPESampler(), study_name='amlsim_study', directions=['minimize', 'minimize'], load_if_exists=True)
         study.optimize(self.objective, n_trials=n_trials)
-        optuna.visualization.matplotlib.plot_pareto_front(study, target_names=['fpr_loss', 'importance_loss'])
+        optuna.visualization.matplotlib.plot_pareto_front(study, target_names=[self.utility+'_loss', 'importance_loss'])
         fig_path = parent_dir + '/pareto_front.png'
         plt.savefig(fig_path)
         log_path = parent_dir + '/log.txt'

@@ -415,7 +415,7 @@ def plot(df:pd.DataFrame, plot_dir:str):
         n_txs_hist(df_bank, os.path.join(plot_dir, bank, 'n_txs_hist.png'))
         n_spending_hist(df_bank, os.path.join(plot_dir, bank, 'n_spending_hist.png'))
         powerlaw_degree_dist(df_bank, os.path.join(plot_dir, bank, 'powerlaw_degree_dist.png'))
-        graph(df_bank, os.path.join(plot_dir, bank, 'graph.png'))
+        graph(df_bank, os.path.join(plot_dir, bank, 'graph.png'), n_alerts=10)
 
 
 def main(tx_log:str, plot_dir:str):

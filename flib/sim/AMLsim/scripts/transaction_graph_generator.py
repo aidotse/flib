@@ -171,7 +171,13 @@ def get_in_and_out_degrees(iterable, num_v):
     repeats = num_v // in_len
     _in_deg = _in_deg * repeats
     _out_deg = _out_deg * repeats
-
+    
+    # shuffel in and out degrees
+    _in_out_deg = list(zip(_in_deg, _out_deg))
+    random.shuffle(_in_out_deg)
+    _in_deg, _out_deg = zip(*_in_out_deg)
+    _in_deg, _out_deg = list(_in_deg), list(_out_deg)
+    
     return _in_deg, _out_deg
 
 
@@ -246,7 +252,7 @@ class TransactionGenerator:
 
         # Get output file names
         output_conf = self.conf["temporal"]  # The output directory of the graph generator is temporal one
-        self.output_dir = os.path.join(output_conf["directory"], sim_name)  # The directory name of temporal files
+        self.output_dir = os.path.join(output_conf["directory"])  # The directory name of temporal files
         self.out_tx_file = output_conf["transactions"]  # All transaction list CSV file
         self.out_account_file = output_conf["accounts"]  # All account list CSV file
         self.out_alert_member_file = output_conf["alert_members"]  # Account list of AML typology members CSV file
@@ -695,10 +701,10 @@ class TransactionGenerator:
             min_period = int(row[header.index('min_period')])
             max_period = int(row[header.index('max_period')])
             bank_id = row[header.index('bank_id')]
-            if bank_id is None:
-                bank_id = self.default_bank_id
+            if bank_id == "":
+                bank_id = None
 
-            self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period)
+            self.nominator.initialize_count(type, count, schedule_id, min_accounts, max_accounts, min_period, max_period, bank_id)
         self.nominator.initialize_candidates() # create candidate lists for the types considered
 
 
@@ -750,7 +756,7 @@ class TransactionGenerator:
             raise ValueError('should always be candidates')
 
         # Create the normal pattern
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step, _ = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
@@ -776,7 +782,7 @@ class TransactionGenerator:
         if not candidates:
             raise ValueError('should always be candidates')
 
-        schedule_id, _, _, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
+        schedule_id, _, _, start_step, end_step, _ = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         result_ids = candidates | { node_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
         normal_model.set_params(schedule_id, start_step, end_step)
@@ -791,12 +797,17 @@ class TransactionGenerator:
 
     def forward_model(self, type):
         node_id = self.nominator.next(type) # get the next node_id for this type
+        # min and max accounts are not used in forward
+        schedule_id, _, _, start_step, end_step, bank_id = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         
         if node_id is None:
             return False
 
         succ_ids = list(self.g.successors(node_id))
         pred_ids = list(self.g.predecessors(node_id))
+        # if bank_id is not None:
+        #     succ_ids = [succ_id for succ_id in succ_ids if self.acct_to_bank[succ_id] == bank_id]
+        #     pred_ids = [pred_id for pred_id in pred_ids if self.acct_to_bank[pred_id] == bank_id]
 
         # find all input-node_id-output sets avialable where input and output are different
         sets = [[node_id, pred_id, succ_id] for pred_id in pred_ids for succ_id in succ_ids if pred_id != succ_id]
@@ -809,8 +820,6 @@ class TransactionGenerator:
         
         # Create normal models
         normal_model = NormalModel(self.normal_model_id, type, chosen_nodes, main_node)
-        # min and max accounts are not used in forward
-        schedule_id, _, _, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         
         for id in chosen_nodes:
@@ -832,7 +841,7 @@ class TransactionGenerator:
         
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id) # create a normal model with the node_id and the connected account
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step, bank_id = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.nodes[id]['normal_models'].append(normal_model) # add the normal model to the nodes
@@ -853,7 +862,7 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step, _ = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.nodes[id]['normal_models'].append(normal_model)
@@ -874,7 +883,7 @@ class TransactionGenerator:
 
         result_ids = { node_id, succ_id }
         normal_model = NormalModel(self.normal_model_id, type, result_ids, node_id)
-        schedule_id, min_accounts, max_accounts, start_step, end_step = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
+        schedule_id, min_accounts, max_accounts, start_step, end_step, _ = self.nominator.model_params_dict[type][self.nominator.current_candidate_index[type]]
         normal_model.set_params(schedule_id, start_step, end_step)
         for id in result_ids:
             self.g.nodes[id]['normal_models'].append(normal_model)
@@ -1411,8 +1420,8 @@ if __name__ == "__main__":
     
     argv = sys.argv
     if len(argv) < 2:
-        PARAM_FILES = '10K_accts'
-        argv.append(f'paramFiles/{PARAM_FILES}/conf.json')
+        DATASET = '3_banks_homo_mid_2'
+        argv.append(f'/home/edvin/Desktop/flib/experiments/param_files/{DATASET}/conf.json')
 
     _conf_file = argv[1]
     _sim_name = argv[2] if len(argv) >= 3 else None

@@ -633,8 +633,7 @@ public class AMLSim extends SimState {
 
 		String confFile;
 		if (args.length < 1) {
-			String paramFiles = "10K_accts";
-			confFile = "paramFiles/" + paramFiles + "/conf.json"; // debug
+			confFile = "/home/edvin/Desktop/flib/experiments/experiments/3_banks_homo_easy/data/param_files/conf.json";
 		} else {
 			confFile = args[0];
 		}

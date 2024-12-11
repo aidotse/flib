@@ -2,74 +2,85 @@ import optuna
 import inspect
 from flib.train import Clients
 import multiprocessing
+from flib.utils import set_random_seed 
 
 def balanced_accuracy(data):
     tp, fp, tn, fn = data['tp'], data['fp'], data['tn'], data['fn']
     return 0.5*(tp/(tp+fn) + tn/(tn+fp))
 
+def average_precision(data):
+    pass
+
+
 class HyperparamTuner():
-    def __init__(self, study_name, obj_fn, train_dfs, val_dfs, seed=42, device='cpu', n_workers=1, storage=None, client=None, params=None):
+    def __init__(self, study_name, obj_fn, seed=42, n_workers=1, storage=None, client_type=None, client_names=None, client_data=None, client_params=None): #(self, study_name, obj_fn, train_dfs, val_dfs, seed=42, device='cpu', n_workers=1, storage=None, client=None, params=None):
         self.study_name = study_name
         self.obj_fn = obj_fn
-        self.train_dfs = train_dfs
-        self.val_dfs = val_dfs
         self.seed = seed
-        self.device = device
         self.n_workers = n_workers
         self.storage = storage
-        self.client = client
-        self.params = params
+        self.client_type = client_type
+        self.client_names = client_names
+        self.client_data = client_data
+        self.client_params = client_params
     
     def objective(self, trial: optuna.Trial):
         params = {}
-        for param in self.params['search_space']:
-            if isinstance(self.params['search_space'][param], list):
-                params[param] = trial.suggest_categorical(param, self.params['search_space'][param])
-            elif isinstance(self.params['search_space'][param], tuple):
-                if type(self.params['search_space'][param][0]) == int:
-                    params[param] = trial.suggest_int(param, self.params['search_space'][param][0], self.params['search_space'][param][1])
-                elif type(self.params['search_space'][param][0]) == float:
-                    params[param] = trial.suggest_float(param, self.params['search_space'][param][0], self.params['search_space'][param][1])
-            elif isinstance(self.params['search_space'][param], dict):
-                params[param] = trial.suggest_categorical(param, list(self.params['search_space'][param].keys()))
+        for param in self.client_params['search_space']:
+            if self.client_params['search_space'][param]['type'] == 'categorical':
+                params[param] = trial.suggest_categorical(param, self.client_params['search_space'][param]['values'])
+            elif self.client_params['search_space'][param]['type'] == 'integer':
+                params[param] = trial.suggest_int(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'])
+            elif self.client_params['search_space'][param]['type'] == 'float':
+                params[param] = trial.suggest_float(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'])
+            elif self.client_params['search_space'][param]['type'] == 'conditional':
+                params[param] = trial.suggest_categorical(param, list(self.client_params['search_space'][param]['values'].keys()))
                 params[param+'_params'] = {}
-                for subparam in self.params['search_space'][param][params[param]]:
-                    if isinstance(self.params['search_space'][param][params[param]][subparam], list):
-                        params[param+'_params'][subparam] = trial.suggest_categorical(params[param]+'_'+subparam, self.params['search_space'][param][params[param]][subparam])
-                    elif isinstance(self.params['search_space'][param][params[param]][subparam], tuple):
-                        if type(self.params['search_space'][param][params[param]][subparam][0]) == int:
-                            params[param+'_params'][subparam] = trial.suggest_int(params[param]+'_'+subparam, self.params['search_space'][param][params[param]][subparam][0], self.params['search_space'][param][params[param]][subparam][1])
-                        elif type(self.params['search_space'][param][params[param]][subparam][0]) == float:
-                            params[param+'_params'][subparam] = trial.suggest_float(params[param]+'_'+subparam, self.params['search_space'][param][params[param]][subparam][0], self.params['search_space'][param][params[param]][subparam][1])
-                    else:
-                        params[param+'_params'][subparam] = self.params['search_space'][param][params[param]][subparam]
+                for subparam in self.client_params['search_space'][param]['values'][params[param]]:
+                    if self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'categorical':
+                        params[param+'_params'][subparam] = trial.suggest_categorical(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['values'])
+                    elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'int':
+                        params[param+'_params'][subparam] = trial.suggest_int(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
+                    elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'float':
+                        params[param+'_params'][subparam] = trial.suggest_float(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
             else:
-                params[param] = self.params['search_space'][param]
-        
-        for param in self.params['default']:
+                params[param] = self.client_params['search_space'][param]    
+        for param in self.client_params['default']:
             if param not in params:
-                if isinstance(self.params['default'][param], dict):
-                    params[param] = next(iter(self.params['default'][param]))
+                if isinstance(self.client_params['default'][param], dict):
+                    params[param] = next(iter(self.client_params['default'][param]))
                     params[param+'_params'] = {}
-                    for subparam in self.params['default'][param][params[param]]:
-                        params[param+'_params'][subparam] = self.params['default'][param][params[param]][subparam]
+                    for subparam in self.client_params['default'][param][params[param]]:
+                        params[param+'_params'][subparam] = self.client_params['default'][param][params[param]][subparam]
                 else:
-                    params[param] = self.params['default'][param]
+                    params[param] = self.client_params['default'][param]
         
-        results = self.obj_fn(seed=self.seed, train_dfs=self.train_dfs, val_dfs=self.val_dfs, n_workers=self.n_workers, device=self.device, client=self.client, **params)
-        tpfptnfn = {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0}
+        client_names = []
+        client_params = []
+        for name, data in zip(self.client_names, self.client_data):
+            client_names.append(name)
+            client_params.append(data | params) 
+        
+        results = self.obj_fn(seed=self.seed, n_workers=self.n_workers, client_type=self.client_type, client_names=client_names, client_params=client_params)
+        
+        tpfptnfn = {threshold: {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0} for threshold in range(0, 101)}
         for client in results:
             round = max(results[client].keys())
-            tpfptnfn['tp'] += results[client][round]['val']['tpfptnfn'][50]['tp']
-            tpfptnfn['fp'] += results[client][round]['val']['tpfptnfn'][50]['fp']
-            tpfptnfn['tn'] += results[client][round]['val']['tpfptnfn'][50]['tn']
-            tpfptnfn['fn'] += results[client][round]['val']['tpfptnfn'][50]['fn']
-        bal_acc = balanced_accuracy(tpfptnfn)
+            for threshold in range(0, 101):
+                tpfptnfn[threshold]['tp'] += results[client][round]['val']['tpfptnfn'][50]['tp']
+                tpfptnfn[threshold]['fp'] += results[client][round]['val']['tpfptnfn'][50]['fp']
+                tpfptnfn[threshold]['tn'] += results[client][round]['val']['tpfptnfn'][50]['tn']
+                tpfptnfn[threshold]['fn'] += results[client][round]['val']['tpfptnfn'][50]['fn']
+        
+        bal_acc = balanced_accuracy(tpfptnfn[50])
         
         return bal_acc
     
     def optimize(self, n_trials=10):
-        study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(), study_name=self.study_name, direction='maximize', load_if_exists=True, pruner=optuna.pruners.HyperbandPruner())
+        # seet seed
+        set_random_seed(self.seed)
+        
+        study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(seed=self.seed), study_name=self.study_name, direction='maximize', load_if_exists=True, pruner=optuna.pruners.HyperbandPruner())
         study.optimize(self.objective, n_trials=n_trials, show_progress_bar=True)
         return study.best_trials
         

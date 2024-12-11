@@ -1,0 +1,7 @@
+
+trial: 1
+values: [0.607925922495459]
+criterion: entropy
+splitter: best
+max_depth: 22
+class_weight: None

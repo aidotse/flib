@@ -8,96 +8,101 @@ import pickle
 import optuna
 import time
 import pandas as pd
+from typing import List
 
-def federated(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, n_rounds=100, eval_every=10, client='LogRegClient', **kwargs):
-    
+def federated(seed:int, n_workers:int, client_type:str, client_names:List[str], client_params:List[dict]):
     set_random_seed(seed)
-    
     try:
         mp.set_start_method('spawn', force=True)
     except RuntimeError:
         print(f'Start method already set to {mp.get_start_method()}')
         pass
-    
-    Client = getattr(Clients, client)
-    
-    # init clients
+    Client = getattr(Clients, client_type)
     clients = []
-    for i, train_df in enumerate(train_dfs):
-        val_df = val_dfs[i] if i < len(val_dfs) else None
-        test_df = test_dfs[i] if i < len(test_dfs) else None
-        client = Client(
-            name=f'c{i}',
-            train_df=train_df,
-            val_df=val_df,
-            test_df=test_df,
-            **kwargs
-        )
+    for name, params in zip(client_names, client_params):
+        client = Client(name=name, seed=seed, **params)
         clients.append(client)
-    
-    # init server
-    server = Server(
-        clients=clients,
-        n_workers=n_workers
-    )
-    
-    # run
-    results = server.run(n_rounds=n_rounds, eval_every=eval_every, **kwargs)
-    
+    server = Server(clients=clients, n_workers=n_workers)
+    results = server.run(**client_params[0])
     return results
 
 if __name__ == '__main__':
     
-    DATASET = '3_banks_homo_mid' # '30K_accts', '3_banks_homo_mid'
+    EXPERIMENT = '3_banks_homo_easy' # '30K_accts', '3_banks_homo_mid'
+    CLIENT = 'LogRegClient'
     
-    # for debugging
-    c0_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_nodes_train.csv'
-    c0_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_edges_train.csv'
-    c1_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_nodes_train.csv'
-    c1_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_edges_train.csv'
-    c2_train_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_nodes_train.csv'
-    c2_train_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_edges_train.csv'
-    c0_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_nodes_test.csv'
-    c0_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c0_edges_test.csv'
-    c1_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_nodes_test.csv'
-    c1_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c1_edges_test.csv'
-    c2_test_nodes_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_nodes_test.csv'
-    c2_test_edges_csv = f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/preprocessed/c2_edges_test.csv'
-    
-    train_dfs = [
-        (pd.read_csv(c0_train_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c0_train_edges_csv)),
-        (pd.read_csv(c1_train_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c1_train_edges_csv)),
-        (pd.read_csv(c2_train_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c2_train_edges_csv)),
-    ]
-    test_dfs = [
-        (pd.read_csv(c0_test_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c0_test_edges_csv)),
-        (pd.read_csv(c1_test_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c1_test_edges_csv)),
-        (pd.read_csv(c2_test_nodes_csv).drop(columns=['account', 'bank']), pd.read_csv(c2_test_edges_csv)),
-    ]
-    
-    params = {
-        'lr_patience': 100,
-        'es_patience': 100,
-        'device': 'cuda:0',
-        'batch_size': 128,
-        'hidden_dim': 64,
-        'optimizer': 'Adam',
-        'optimizer_params': {
-            'lr': 0.01,
-            'weight_decay': 0.0,
-            'amsgrad': False,
+    client_names = ['c0', 'c1', 'c2']
+    client_params = [
+        {
+            'device': 'cuda:0',
+            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c0/data/preprocessed/nodes_train.csv', 
+            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c0/data/preprocessed/nodes_test.csv',
+            'valset_size': 0.2,
+            'batch_size': 2048,
+            'optimizer': 'Adam',
+            'optimizer_params': {
+                'lr': 0.01,
+                'weight_decay': 0.0,
+                'amsgrad': False,
+            },
+            'criterion': 'CrossEntropyLoss',
+            'criterion_params': {},
+            'rounds': 100,
+            'eval_every': 10,
+            'lr_patience': 100,
+            'es_patience': 100,
+            'hidden_dim': 64,
         },
-        'criterion': 'CrossEntropyLoss',
-        'criterion_params': {}
-    }
+        {
+            'device': 'cuda:0',
+            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c1/data/preprocessed/nodes_train.csv', 
+            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c1/data/preprocessed/nodes_test.csv',
+            'valset_size': 0.2,
+            'batch_size': 2048,
+            'optimizer': 'Adam',
+            'optimizer_params': {
+                'lr': 0.01,
+                'weight_decay': 0.0,
+                'amsgrad': False,
+            },
+            'criterion': 'CrossEntropyLoss',
+            'criterion_params': {},
+            'rounds': 100,
+            'eval_every': 10,
+            'lr_patience': 100,
+            'es_patience': 100,
+            'hidden_dim': 64,
+        },
+        {
+            'device': 'cuda:0',
+            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c2/data/preprocessed/nodes_train.csv', 
+            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c2/data/preprocessed/nodes_test.csv',
+            'valset_size': 0.2,
+            'batch_size': 2048,
+            'optimizer': 'Adam',
+            'optimizer_params': {
+                'lr': 0.01,
+                'weight_decay': 0.0,
+                'amsgrad': False,
+            },
+            'criterion': 'CrossEntropyLoss',
+            'criterion_params': {},
+            'rounds': 100,
+            'eval_every': 10,
+            'lr_patience': 100,
+            'es_patience': 100,
+            'hidden_dim': 64,
+        }
+    ]
     
     t = time.time()
-    results = federated(train_dfs=train_dfs, test_dfs=test_dfs, seed=42, n_workers=1, n_rounds=100, eval_every=10, client='GraphSAGEClient', **params)
+    results = federated(seed=42, n_workers=3, client_type=CLIENT, client_names=client_names, client_params=client_params)
     t = time.time() - t
     print('Done')
     print(f'Exec time: {t:.2f}s')
-    results_dir = f'/home/edvin/Desktop/flib/experiments/results/{DATASET}/federated/GraphSAGEClient'
+    results_dir = f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/results/federated/{CLIENT}'
     os.makedirs(results_dir, exist_ok=True)
     with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
         pickle.dump(results, f)
     print(f'Saved results to {results_dir}/results.pkl\n')
+    
