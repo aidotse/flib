@@ -144,7 +144,7 @@ class LogRegClient():
 
 
 class DecisionTreeClient():
-    def __init__(self, name:str, seed:int, nodes_train:str, nodes_test:str, valset_size:float, criterion='gini', splitter='best', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0, max_features=None, max_leaf_nodes=None, min_impurity_decrease=0, class_weight='balanced', random_state =42, **kwargs):
+    def __init__(self, name:str, seed:int, nodes_train:str, nodes_test:str, valset_size:float, criterion='gini', splitter='best', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0, max_features=None, max_leaf_nodes=None, min_impurity_decrease=0, class_weight='balanced', random_state=42, **kwargs):
         self.name = name
         
         train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
@@ -156,20 +156,12 @@ class DecisionTreeClient():
         self.y_train = train_df['is_sar'].to_numpy()
         scaler = StandardScaler()
         self.X_train = scaler.fit_transform(self.X_train)
-        if val_df is not None:
-            self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
-            self.X_val = scaler.transform(self.X_val)
-            self.y_val = val_df['is_sar'].to_numpy()
-        else:
-            self.X_val = None
-            self.y_val = None
-        if test_df is not None:
-            self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
-            self.X_test = scaler.transform(self.X_test)
-            self.y_test = test_df['is_sar'].to_numpy()
-        else:
-            self.X_test = None
-            self.y_test = None
+        self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
+        self.X_val = scaler.transform(self.X_val)
+        self.y_val = val_df['is_sar'].to_numpy()
+        self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
+        self.X_test = scaler.transform(self.X_test)
+        self.y_test = test_df['is_sar'].to_numpy()
         
         self.model = DecisionTreeClassifier(
             criterion=criterion,
@@ -229,27 +221,24 @@ class DecisionTreeClient():
 
 
 class RandomForestClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, n_estimators=100, criterion='gini', max_depth=None, class_weight='balanced', random_state=42, **kwargs):
+    def __init__(self, name:str, seed:str, nodes_train:str, nodes_test:str, valset_size:float, n_estimators=100, criterion='gini', max_depth=None, class_weight='balanced', random_state=42, **kwargs):
         self.name = name
+        
+        train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        val_df = train_df.sample(frac=valset_size, random_state=seed)
+        train_df = train_df.drop(val_df.index)
+        test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.X_train = train_df.drop(columns=['is_sar']).to_numpy()
         self.y_train = train_df['is_sar'].to_numpy()
         scaler = StandardScaler()
         self.X_train = scaler.fit_transform(self.X_train)
-        if val_df is not None:
-            self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
-            self.X_val = scaler.transform(self.X_val)
-            self.y_val = val_df['is_sar'].to_numpy()
-        else:
-            self.X_val = None
-            self.y_val = None
-        if test_df is not None:
-            self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
-            self.X_test = scaler.transform(self.X_test)
-            self.y_test = test_df['is_sar'].to_numpy()
-        else:
-            self.X_test = None
-            self.y_test = None
+        self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
+        self.X_val = scaler.transform(self.X_val)
+        self.y_val = val_df['is_sar'].to_numpy()
+        self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
+        self.X_test = scaler.transform(self.X_test)
+        self.y_test = test_df['is_sar'].to_numpy()
         
         self.model = RandomForestClassifier(
             n_estimators=n_estimators,
@@ -302,27 +291,24 @@ class RandomForestClient():
     
 
 class GradientBoostingClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, loss='log_loss', learning_rate=0.1, n_estimators=100, criterion='friedman_mse', max_depth=3, random_state=42, **kwargs):
+    def __init__(self, name:str, seed:int, nodes_train:str, nodes_test:str, valset_size:float, loss='log_loss', learning_rate=0.1, n_estimators=100, criterion='friedman_mse', max_depth=3, random_state=42, **kwargs):
         self.name = name
+        
+        train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        val_df = train_df.sample(frac=valset_size, random_state=seed)
+        train_df = train_df.drop(val_df.index)
+        test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.X_train = train_df.drop(columns=['is_sar']).to_numpy()
         self.y_train = train_df['is_sar'].to_numpy()
         scaler = StandardScaler()
         self.X_train = scaler.fit_transform(self.X_train)
-        if val_df is not None:
-            self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
-            self.X_val = scaler.transform(self.X_val)
-            self.y_val = val_df['is_sar'].to_numpy()
-        else:
-            self.X_val = None
-            self.y_val = None
-        if test_df is not None:
-            self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
-            self.X_test = scaler.transform(self.X_test)
-            self.y_test = test_df['is_sar'].to_numpy()
-        else:
-            self.X_test = None
-            self.y_test = None
+        self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
+        self.X_val = scaler.transform(self.X_val)
+        self.y_val = val_df['is_sar'].to_numpy()
+        self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
+        self.X_test = scaler.transform(self.X_test)
+        self.y_test = test_df['is_sar'].to_numpy()
         
         self.model = GradientBoostingClassifier(
             loss=loss,
@@ -376,27 +362,24 @@ class GradientBoostingClient():
 
 
 class SVMClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, C=1.0, kernel='rbf', degree=3, gamma='scale', coef0=0.0, shrinking=True, probability=False, class_weight='balanced', random_state=42, cache_size=200, max_iter=-1, **kwargs):
+    def __init__(self, name:str, seed:int, nodes_train:str, nodes_test:str, valset_size:float, C=1.0, kernel='rbf', degree=3, gamma='scale', coef0=0.0, shrinking=True, probability=False, class_weight='balanced', random_state=42, cache_size=200, max_iter=-1, **kwargs):
         self.name = name
+        
+        train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        val_df = train_df.sample(frac=valset_size, random_state=seed)
+        train_df = train_df.drop(val_df.index)
+        test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.X_train = train_df.drop(columns=['is_sar']).to_numpy()
         self.y_train = train_df['is_sar'].to_numpy()
         scaler = StandardScaler()
         self.X_train = scaler.fit_transform(self.X_train)
-        if val_df is not None:
-            self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
-            self.X_val = scaler.transform(self.X_val)
-            self.y_val = val_df['is_sar'].to_numpy()
-        else:
-            self.X_val = None
-            self.y_val = None
-        if test_df is not None:
-            self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
-            self.X_test = scaler.transform(self.X_test)
-            self.y_test = test_df['is_sar'].to_numpy()
-        else:
-            self.X_test = None
-            self.y_test = None
+        self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
+        self.X_val = scaler.transform(self.X_val)
+        self.y_val = val_df['is_sar'].to_numpy()
+        self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
+        self.X_test = scaler.transform(self.X_test)
+        self.y_test = test_df['is_sar'].to_numpy()
         
         self.model = SVC(
             C=C,
@@ -455,27 +438,24 @@ class SVMClient():
     
 
 class KNNClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, n_neighbors=5, weights='uniform', algorithm='auto', leaf_size=30, p=2, metric='minkowski', n_jobs=-1, **kwargs):
+    def __init__(self, name:str, seed:int, nodes_train:str, nodes_test:str, valset_size:float, n_neighbors=5, weights='uniform', algorithm='auto', leaf_size=30, p=2, metric='minkowski', n_jobs=-1, **kwargs):
         self.name = name
+        
+        train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        val_df = train_df.sample(frac=valset_size, random_state=seed)
+        train_df = train_df.drop(val_df.index)
+        test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.X_train = train_df.drop(columns=['is_sar']).to_numpy()
         self.y_train = train_df['is_sar'].to_numpy()
         scaler = StandardScaler()
         self.X_train = scaler.fit_transform(self.X_train)
-        if val_df is not None:
-            self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
-            self.X_val = scaler.transform(self.X_val)
-            self.y_val = val_df['is_sar'].to_numpy()
-        else:
-            self.X_val = None
-            self.y_val = None
-        if test_df is not None:
-            self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
-            self.X_test = scaler.transform(self.X_test)
-            self.y_test = test_df['is_sar'].to_numpy()
-        else:
-            self.X_test = None
-            self.y_test = None
+        self.X_val = val_df.drop(columns=['is_sar']).to_numpy()
+        self.X_val = scaler.transform(self.X_val)
+        self.y_val = val_df['is_sar'].to_numpy()
+        self.X_test = test_df.drop(columns=['is_sar']).to_numpy()
+        self.X_test = scaler.transform(self.X_test)
+        self.y_test = test_df['is_sar'].to_numpy()
         
         self.model = KNeighborsClassifier(
             n_neighbors=n_neighbors,
@@ -531,9 +511,14 @@ class KNNClient():
 
 
 class MLPClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.DataFrame=None, device:str='cpu', batch_size=64, optimizer='SGD', optimizer_params={}, criterion='ClassBalancedLoss', criterion_params={}, n_hidden_layers=2, hidden_dim=64, **kwargs):
+    def __init__(self, name:str, seed:int, device:str, nodes_train:str, nodes_test:str, valset_size:float, batch_size=64, optimizer='SGD', optimizer_params={}, criterion='ClassBalancedLoss', criterion_params={}, n_hidden_layers=2, hidden_dim=64, **kwargs):
         self.name = name
         self.device = device
+        
+        train_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        val_df = train_df.sample(frac=valset_size, random_state=seed)
+        train_df = train_df.drop(val_df.index)
+        test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.trainset, self.valset, self.testset = tensordatasets(train_df, val_df, test_df, normalize=True, device=self.device)
         self.trainloader, self.valloader, self.testloader = dataloaders(self.trainset, self.valset, self.testset, batch_size)
@@ -654,12 +639,15 @@ class MLPClient():
 
 
 class GraphSAGEClient():
-    def __init__(self, name:str, train_df:pd.DataFrame, test_df:pd.DataFrame=None, device='cpu', hidden_dim=64, optimizer='SGD', optimizer_params={}, criterion='ClassBalancedLoss', criterion_params={}, **kwargs):
+    def __init__(self, name:str, seed:int, nodes_train:str, edges_train:str, nodes_test:str, edges_test:str, device='cpu', hidden_dim=64, optimizer='SGD', optimizer_params={}, criterion='ClassBalancedLoss', criterion_params={}, **kwargs):
         self.name = name
         self.device = device
         
-        train_nodes_df, train_edges_df = train_df
-        test_nodes_df, test_edges_df = test_df if test_df is not None else (None, None)
+        train_nodes_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        train_edges_df = pd.read_csv(edges_train)
+        test_nodes_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
+        test_edges_df = pd.read_csv(edges_test)
+        
         self.trainset, self.testset = utils.graphdataset(train_nodes_df, train_edges_df, test_nodes_df, test_edges_df, device=device)
         self.trainset = torch_geometric.transforms.RandomNodeSplit(split='train_rest', num_val=0.2, num_test=0)(self.trainset)
         
