@@ -19,12 +19,7 @@ jobs:
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10.14
-
-      - name: Verify Directory Structure
-        run: |
-          pwd
-          ls -R          
+          python-version: 3.10.14        
 
       - name: Install dependencies from pyproject.toml
         run: |
@@ -37,5 +32,4 @@ jobs:
           cd flib/sim/AMLsim
           set -e
           pip install pytest pytest-cov coverage-badge
-          export PYTHONPATH=$(pwd)/flib/sim/AMLsim:$PYTHONPATH
           pytest --cov-report=term-missing:skip-covered --cov-report=xml --cov-report=html ./tests/ 
