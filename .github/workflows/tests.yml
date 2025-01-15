@@ -28,7 +28,7 @@ jobs:
 
       - name: Run tests with pytest
         shell: bash -l {0}
-        working-directory: flib/flib/sim/AMLsim
+        working-directory: /sim/AMLsim
         run: |
           set -e
           pip install pytest pytest-cov coverage-badge
