@@ -33,7 +33,7 @@ def edge_label_hist(df:pd.DataFrame, banks:list, file:str):
     plt.savefig(file)
     plt.close()
     df = pd.DataFrame(csv)
-    df.to_csv(file.replace('.png', '.csv'), index=False)    
+    df.to_csv(file.replace('.png', '.csv'), index=False)
     
 
 
@@ -395,6 +395,77 @@ def homophily(df:pd.DataFrame, banks, file:str):
     pass
 
 
+def sar_over_n_banks_hist(df:pd.DataFrame, file:str):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
+    df_sar = df[df['isSAR'] == 1]
+    gb = df_sar.groupby(by='alertID')
+    n_unique_banks_orig = gb['bankOrig'].nunique()
+    n_unique_banks_dest = gb['bankDest'].nunique()
+    n_unique_banks_orig_dest = pd.concat([n_unique_banks_orig, n_unique_banks_dest], axis=1)
+    n_unique_banks_counts = n_unique_banks_orig_dest.max(axis=1).value_counts()
+    n_banks = n_unique_banks_counts.idxmax()
+    n_unique_banks_counts = n_unique_banks_counts.reindex(range(1, n_banks+1), fill_value=0)
+    n_patterns = n_unique_banks_counts.values.sum()
+    fig, ax = plt.subplots()
+    width = 0.30
+    rects = ax.bar(np.arange(1, n_banks+1), n_unique_banks_counts.values / n_patterns, width, color='C0', zorder=3)
+    ax.bar_label(rects, n_unique_banks_counts.values, padding=1)
+    ax.set_xticks(np.arange(1, n_banks+1), np.arange(1, n_banks+1))
+    ax.grid(axis='y', zorder=0)
+    ax.set_xlabel('Number of banks')
+    ax.set_ylabel('Ratio of SAR patterns')
+    plt.tight_layout(pad=2.0)
+    plt.title('SAR patterns spread over banks')
+    plt.savefig(file)
+    plt.close()
+    csv = {'n_banks': np.arange(1, n_banks+1), 'sar_pattern_count': n_unique_banks_counts.values, 'sar_pattern_ratio': n_unique_banks_counts.values / n_patterns}
+    df = pd.DataFrame(csv)
+    df.to_csv(file.replace('.png', '.csv'), index=False)
+
+
+def sar_pattern_txs_hist(df:pd.DataFrame, file:str):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
+    df_sar = df[df['isSAR'] == 1]
+    gb = df_sar.groupby(by='alertID')
+    sar_pattern_txs_count = gb['alertID'].count()
+    sar_pattern_txs_vc = sar_pattern_txs_count.value_counts().reset_index().rename(columns={'alertID': 'sar_pattern_txs_size'})
+    fig, ax = plt.subplots()
+    width = 0.30
+    rects = ax.bar(sar_pattern_txs_vc['sar_pattern_txs_size'].values, sar_pattern_txs_vc['count'].values, width, color='C0', zorder=3)
+    ax.grid(axis='y', zorder=0)
+    ax.set_xlabel('Size')
+    ax.set_ylabel('Count')
+    plt.tight_layout(pad=2.0)
+    plt.title('SAR patterns txs size hist')
+    plt.savefig(file)
+    plt.close()    
+    sar_pattern_txs_vc.to_csv(file.replace('.png', '.csv'), index=False)
+
+
+def sar_pattern_account_hist(df:pd.DataFrame, file:str):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
+    df_sar = df[df['isSAR'] == 1]
+    #gb = df_sar.groupby(by='alertID')
+    #n_ = gb['accountOrig', 'accountDest'].apply(lambda x: pd.unique(x.values.ravel()).tolist())
+    df_sar_acct = df_sar.set_index('alertID')[['nameOrig', 'nameDest']].stack().reset_index(level=1, drop=True).reset_index(name='account').drop_duplicates()
+    df_sar_pattern_acct_count = df_sar_acct.groupby(by='alertID')['alertID'].count()
+    df_sar_pattern_acct_vc = df_sar_pattern_acct_count.value_counts().reset_index().rename(columns={'alertID': 'sar_pattern_account_size'})
+    fig, ax = plt.subplots()
+    width = 0.30
+    rects = ax.bar(df_sar_pattern_acct_vc['sar_pattern_account_size'].values, df_sar_pattern_acct_vc['count'].values, width, color='C0', zorder=3)
+    ax.grid(axis='y', zorder=0)
+    ax.set_xlabel('Size')
+    ax.set_ylabel('Count')
+    plt.tight_layout(pad=2.0)
+    plt.title('SAR patterns account size hist')
+    plt.savefig(file)
+    plt.close()    
+    df_sar_pattern_acct_vc.to_csv(file.replace('.png', '.csv'), index=False)
+
+
 def plot(df:pd.DataFrame, plot_dir:str):
     banks = pd.concat([df['bankOrig'], df['bankDest']]).unique().tolist()
     banks = sorted(banks)
@@ -402,20 +473,23 @@ def plot(df:pd.DataFrame, plot_dir:str):
         banks.remove('source')
     if 'sink' in banks:
         banks.remove('sink')
-    edge_label_hist(df, banks+['all'], os.path.join(plot_dir, 'edge_label_hist.png'))
-    node_label_hist(df, banks+['all'], os.path.join(plot_dir, 'node_label_hist.png'))
-    homophily(df, banks+['all'], os.path.join(plot_dir, 'homophily.png'))
-    for bank in banks:
-        os.makedirs(os.path.join(plot_dir, bank), exist_ok=True)
-        df_bank = df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
-        balance_curves(df_bank, os.path.join(plot_dir, bank, 'balance_curves.png'))
-        pattern_hist(df_bank, os.path.join(plot_dir, bank, 'pattern_hist.png'))
-        amount_hist(df_bank, os.path.join(plot_dir, bank, 'amount_hist.png'))
-        spending_hist(df_bank, os.path.join(plot_dir, bank, 'spending_hist.png'))
-        n_txs_hist(df_bank, os.path.join(plot_dir, bank, 'n_txs_hist.png'))
-        n_spending_hist(df_bank, os.path.join(plot_dir, bank, 'n_spending_hist.png'))
-        powerlaw_degree_dist(df_bank, os.path.join(plot_dir, bank, 'powerlaw_degree_dist.png'))
-        graph(df_bank, os.path.join(plot_dir, bank, 'graph.png'), n_alerts=10)
+    sar_pattern_account_hist(df, os.path.join(plot_dir, 'sar_pattern_account_hist.png'))
+    sar_pattern_txs_hist(df, os.path.join(plot_dir, 'sar_pattern_txs_hist.png'))
+    #sar_over_n_banks_hist(df, os.path.join(plot_dir, 'sar_over_n_banks_hist.png'))
+    #edge_label_hist(df, banks+['all'], os.path.join(plot_dir, 'edge_label_hist.png'))
+    #node_label_hist(df, banks+['all'], os.path.join(plot_dir, 'node_label_hist.png'))
+    #homophily(df, banks+['all'], os.path.join(plot_dir, 'homophily.png'))
+    #for bank in banks:
+    #    os.makedirs(os.path.join(plot_dir, bank), exist_ok=True)
+    #    df_bank = df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
+    #    balance_curves(df_bank, os.path.join(plot_dir, bank, 'balance_curves.png'))
+    #    pattern_hist(df_bank, os.path.join(plot_dir, bank, 'pattern_hist.png'))
+    #    amount_hist(df_bank, os.path.join(plot_dir, bank, 'amount_hist.png'))
+    #    spending_hist(df_bank, os.path.join(plot_dir, bank, 'spending_hist.png'))
+    #    n_txs_hist(df_bank, os.path.join(plot_dir, bank, 'n_txs_hist.png'))
+    #    n_spending_hist(df_bank, os.path.join(plot_dir, bank, 'n_spending_hist.png'))
+    #    powerlaw_degree_dist(df_bank, os.path.join(plot_dir, bank, 'powerlaw_degree_dist.png'))
+    #    graph(df_bank, os.path.join(plot_dir, bank, 'graph.png'), n_alerts=10)
 
 
 def main(tx_log:str, plot_dir:str):
@@ -426,9 +500,9 @@ def main(tx_log:str, plot_dir:str):
 
 
 if __name__ == '__main__':
-    DATASET = '3_banks_homo_mid' # '30K_accts', '3_banks_homo_mid'
+    EXPERIMENT = '3_banks_homo_mid' # '30K_accts', '3_banks_homo_mid'
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tx_log', type=str, help='Path to the transaction log', default=f'/home/edvin/Desktop/flib/experiments/data/{DATASET}/tx_log.csv')
-    parser.add_argument('--plot_dir', type=str, help='Path to the directory where the plots will be saved', default=f'/home/edvin/Desktop/flib/experiments/results/{DATASET}/data')
+    parser.add_argument('--tx_log', type=str, help='Path to the transaction log', default=f'/home/edvin/Desktop/flib/experiments/{EXPERIMENT}/data/raw/tx_log.csv')
+    parser.add_argument('--plot_dir', type=str, help='Path to the directory where the plots will be saved', default=f'/home/edvin/Desktop/flib/experiments/{EXPERIMENT}/results/data')
     args = parser.parse_args()
     main(args.tx_log, args.plot_dir)

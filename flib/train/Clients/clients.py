@@ -16,7 +16,7 @@ import torch_geometric
 import yaml
 
 class LogRegClient():
-    def __init__(self, name:str, seed:int, device:str, nodes_train:str, nodes_test:str, valset_size:float, batch_size:int, optimizer:str, optimizer_params:dict, criterion:str, criterion_params:dict, **kwargs):
+    def __init__(self, name:str, seed:int, device:str, nodes_train:str, nodes_test:str, valset_size:float, batch_size:int, optimizer:str, lr: float, weight_decay: float, criterion:str, gamma:float, **kwargs):
         self.name = name
         self.device = device
 
@@ -32,12 +32,12 @@ class LogRegClient():
         output_dim = self.trainset.tensors[1].unique().shape[0]
         self.model = LogisticRegressor(input_dim=input_dim, output_dim=output_dim).to(self.device)
         
-        self.optimizer = getattr(torch.optim, optimizer)(self.model.parameters(), **optimizer_params)
+        self.optimizer = getattr(torch.optim, optimizer)(self.model.parameters(), lr=lr, weight_decay=weight_decay)
         if criterion == 'ClassBalancedLoss':
             n_samples_per_classes = [sum(self.trainset.tensors[1] == 0).detach().cpu().numpy(), sum(self.trainset.tensors[1] == 1).detach().cpu().numpy()]
-            self.criterion = criterions.ClassBalancedLoss(n_samples_per_classes=n_samples_per_classes, **criterion_params)
+            self.criterion = criterions.ClassBalancedLoss(n_samples_per_classes=n_samples_per_classes, gamma=gamma)
         else:
-            self.criterion = getattr(torch.nn, criterion)(**criterion_params)
+            self.criterion = getattr(torch.nn, criterion)()
 
     def train(self, state_dict=None):
         if state_dict:

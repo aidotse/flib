@@ -21,13 +21,13 @@ def main():
         f'experiments/{EXPERIMENT}/clients/c1/config.yaml',
         f'experiments/{EXPERIMENT}/clients/c2/config.yaml'
     ])
-    parser.add_argument('--centralized_config_file', type=str, help='Path to centralised config file.', default=f'experiments/experiments/{EXPERIMENT}/data/config.yaml')
+    parser.add_argument('--centralized_config_file', type=str, help='Path to centralised config file.', default=f'experiments/{EXPERIMENT}/data/config.yaml')
     parser.add_argument('--clients', nargs='+', help='Client types to train.', default=['LogRegClient']) # LogRegClient, DecisionTreeClient, RandomForestClient, GradientBoostingClient, SVMClient, KNNClient, MLPClient, GraphSAGE
     parser.add_argument('--n_workers', type=int, help='Number of processes.', default=3)
-    parser.add_argument('--n_trials', type=int, help='Number of trials.', default=2)
-    parser.add_argument('--results_dir', type=str, default=f'experiments/experiments/{EXPERIMENT}/results')
+    parser.add_argument('--n_trials', type=int, help='Number of trials.', default=20)
+    parser.add_argument('--results_dir', type=str, default=f'experiments/{EXPERIMENT}/results')
     parser.add_argument('--seed', type=int, help='Seed.', default=42)
-    parser.add_argument('--settings', nargs='+', help='Types of settings to use. Can be "isolated", "centralized" or "federated".', default=['isolated']) # centralized, federated, isolated
+    parser.add_argument('--settings', nargs='+', help='Types of settings to use. Can be "isolated", "centralized" or "federated".', default=['centralized', 'federated', 'isolated']) # centralized, federated, isolated
     args = parser.parse_args()
     
     print('\nParsed arguments:')

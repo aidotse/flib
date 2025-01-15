@@ -33,16 +33,16 @@ class HyperparamTuner():
                 params[param] = trial.suggest_int(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'])
             elif self.client_params['search_space'][param]['type'] == 'float':
                 params[param] = trial.suggest_float(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'])
-            elif self.client_params['search_space'][param]['type'] == 'conditional':
-                params[param] = trial.suggest_categorical(param, list(self.client_params['search_space'][param]['values'].keys()))
-                params[param+'_params'] = {}
-                for subparam in self.client_params['search_space'][param]['values'][params[param]]:
-                    if self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'categorical':
-                        params[param+'_params'][subparam] = trial.suggest_categorical(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['values'])
-                    elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'int':
-                        params[param+'_params'][subparam] = trial.suggest_int(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
-                    elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'float':
-                        params[param+'_params'][subparam] = trial.suggest_float(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
+            #elif self.client_params['search_space'][param]['type'] == 'conditional':
+            #    params[param] = trial.suggest_categorical(param, list(self.client_params['search_space'][param]['values'].keys()))
+            #    params[param+'_params'] = {}
+            #    for subparam in self.client_params['search_space'][param]['values'][params[param]]:
+            #        if self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'categorical':
+            #            params[param+'_params'][subparam] = trial.suggest_categorical(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['values'])
+            #        elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'int':
+            #            params[param+'_params'][subparam] = trial.suggest_int(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
+            #        elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'float':
+            #            params[param+'_params'][subparam] = trial.suggest_float(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
             else:
                 params[param] = self.client_params['search_space'][param]    
         for param in self.client_params['default']:
@@ -54,7 +54,6 @@ class HyperparamTuner():
                         params[param+'_params'][subparam] = self.client_params['default'][param][params[param]][subparam]
                 else:
                     params[param] = self.client_params['default'][param]
-        
         client_names = []
         client_params = []
         for name, data in zip(self.client_names, self.client_data):
@@ -80,7 +79,7 @@ class HyperparamTuner():
         # seet seed
         set_random_seed(self.seed)
         
-        study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(seed=self.seed), study_name=self.study_name, direction='maximize', load_if_exists=True, pruner=optuna.pruners.HyperbandPruner())
+        study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(seed=self.seed, multivariate=True), study_name=self.study_name, direction='maximize', load_if_exists=True, pruner=optuna.pruners.HyperbandPruner())
         study.optimize(self.objective, n_trials=n_trials, show_progress_bar=True)
         return study.best_trials
         

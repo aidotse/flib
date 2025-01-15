@@ -4,13 +4,10 @@ __pycache__
 .venv
 *.egg-info
 .pytest_cache
-experiments/data
+experiments
 *.csv
 *.db
 *.pkl
-experiments/param_files
-experiments/results
-experiments/plots
 flib/sim/AMLsim/outputs
 flib/sim/AMLsim/tmp
 flib/sim/AMLsim/target

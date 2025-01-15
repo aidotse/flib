@@ -54,7 +54,7 @@ class Optimizer():
     def optimize(self, n_trials:int=10):
         parent_dir = '/'.join(self.conf_file.split('/')[:-1])
         storage = 'sqlite:///' + parent_dir + '/amlsim_study.db'
-        study = optuna.create_study(storage=storage, sampler=optuna.samplers.TPESampler(), study_name='amlsim_study', directions=['minimize', 'minimize'], load_if_exists=True)
+        study = optuna.create_study(storage=storage, sampler=optuna.samplers.TPESampler(multivariate=True), study_name='amlsim_study', directions=['minimize', 'minimize'], load_if_exists=True, pruner=optuna.pruners.HyperbandPruner())
         study.optimize(self.objective, n_trials=n_trials)
         optuna.visualization.matplotlib.plot_pareto_front(study, target_names=[self.utility+'_loss', 'importance_loss'])
         fig_path = parent_dir + '/pareto_front.png'

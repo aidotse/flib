@@ -48,56 +48,77 @@ hyperparameters:
             eval_every: 10
             batch_size: 512
             optimizer: 'SGD'
-            optimizer_params:
-                lr: 0.01
-                momentum: 0.0
-                weight_decay: 0.0
-                dampening: 0.0
+            #optimizer_params:
+            #    lr: 0.01
+            #    momentum: 0.0
+            #    weight_decay: 0.0
+            #    dampening: 0.0
+            lr: 0.01
+            weight_decay: 0.0
             criterion: 'ClassBalancedLoss'
-            criterion_params:
-                gamma: 0.9
+            #criterion_params:
+            #    gamma: 0.9
+            gamma: 0.9
         search_space:
             batch_size: 
                 type: 'categorical'
                 values: [128, 256, 512]
-            optimizer:
-                type: 'conditional'
-                values:
-                    SGD:
-                        lr: 
-                            type: 'float'
-                            low: 0.001
-                            high: 0.1
-                        momentum:
-                            type: 'float'
-                            low: 0.0
-                            high: 1.0
-                        weight_decay:
-                            type: 'float'
-                            low: 0.0
-                            high: 1.0
-                        dampening:
-                            type: 'float'
-                            low: 0.0
-                            high: 1.0
-                    Adam:
-                        lr:
-                            type: 'float'
-                            low: 0.001
-                            high: 0.1
-                        weight_decay:
-                            type: 'float'
-                            low: 0.0
-                            high: 1.0
-                        amsgrad:
-                            type: 'categorical'
-                            values: [true, false]
-            criterion:
-                type: 'conditional'
-                values:
-                    ClassBalancedLoss:
-                        gamma:
-                            type: 'float'
-                            low: 0.0
-                            high: 1.0
-                    CrossEntropyLoss: {}
+            #optimizer:
+            #    type: 'conditional'
+            #    values:
+            #        SGD:
+            #            lr: 
+            #                type: 'float'
+            #                low: 0.001
+            #                high: 0.1
+            #            momentum:
+            #                type: 'float'
+            #                low: 0.0
+            #                high: 1.0
+            #            weight_decay:
+            #                type: 'float'
+            #                low: 0.0
+            #                high: 1.0
+            #            dampening:
+            #                type: 'float'
+            #                low: 0.0
+            #                high: 1.0
+            #        Adam:
+            #            lr:
+            #                type: 'float'
+            #                low: 0.001
+            #                high: 0.1
+            #            weight_decay:
+            #                type: 'float'
+            #                low: 0.0
+            #                high: 1.0
+            #            amsgrad:
+            #                type: 'categorical'
+            #                values: [true, false]
+            optimizer: 
+                type: categorical
+                values: ['SGD', 'Adam']
+            lr:
+                type: float
+                low: 0.001
+                high: 1.0
+            weight_decay:
+                type: float
+                low: 0.0
+                high: 1.0
+            #criterion:
+            #    type: 'conditional'
+            #    values:
+            #        ClassBalancedLoss:
+            #            gamma:
+            #                type: 'float'
+            #                low: 0.0
+            #                high: 1.0
+            #        CrossEntropyLoss: {}
+            criterion: 
+                type: categorical
+                values: ['ClassBalancedLoss', 'CrossEntropyLoss']
+            gamma:
+                type: float
+                low: 0.0
+                high: 1.0
