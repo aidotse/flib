@@ -363,25 +363,35 @@ class TransactionGenerator:
             raise ValueError("The number of members must be more than 1")
 
         if bank_id in self.bank_to_accts:  # Choose members from the same bank as the main account
-            bank_accts = self.bank_to_accts[bank_id]
+            bank_accts = self.bank_to_accts[bank_id] # Get account set of the specified bank
             members = []
             for m in range(num):
                 bin = 0
                 while random.random() > stats.logser.cdf(bin+1, self.defult_prob_sar_participate):
-                    if bin+1 not in self.sar_participation:
+                    if bin+1 not in self.sar_participation: # if there are no accounts in the next bin, remain in the current
                         break
-                    elif all([candidate not in bank_accts for candidate in self.sar_participation[bin+1]]):
+                    elif all([candidate not in bank_accts for candidate in self.sar_participation[bin+1]]): # if all accounts in the next bin are not in the bank, remain in the current
                         break
-                    elif all([candidate in members for candidate in self.sar_participation[bin+1]]):
+                    elif all([candidate in members for candidate in self.sar_participation[bin+1]]): # if all accounts in the next bin are already participating, remain in the current
                         break
                     else:
                         bin += 1
-                candidates = [] #[candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
-                while candidates == []:
-                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in bank_accts]
-                    bin += 1
-                member = random.sample(candidates, 1)[0]
-                members.append(member)
+                
+                candidate = None 
+                while candidate is None:
+                    if bin == 0:
+                        available_set = set(bank_accts) - set(members) # get the set of accounts that are in the bank and not already participating
+                    else:
+                        available_set = set(self.sar_participation[bin]) - set(members) # get the set of accounts that are in the current bin and not already participating
+                    
+                    if available_set == set() and (bin+1) in self.sar_participation: # if there are no accounts in the current bin and there are accounts in the next bin
+                        bin += 1
+                    elif available_set == set() and (bin+1) not in self.sar_participation:
+                        bin = max(bin-1, 0) # if there are no accounts in the current bin and no accounts in next bin, move to the previous bin
+                    else:
+                        candidate = random.choice(list(available_set)) # choose a random account from the available set
+                members.append(candidate)
+                
             for member in members:
                 bins = list(self.sar_participation.keys())
                 for bin in bins:
@@ -396,23 +406,28 @@ class TransactionGenerator:
             return main_acct, members
 
         elif bank_id == "":  # Choose members from all accounts
-            accts = list(self.acct_to_bank.keys())
-            members = []
-            for m in range(num):
+            members = [] # initiate list of participating accounts in alert
+            for m in range(num): # for each account in the alert
                 bin = 0
                 while random.random() > stats.logser.cdf(bin+1, self.defult_prob_sar_participate):
-                    if bin+1 not in self.sar_participation:
+                    if bin+1 not in self.sar_participation: # if there are no accounts in the next bin, remain in the current
                         break
-                    elif all([candidate in members for candidate in self.sar_participation[bin+1]]):
+                    elif all([candidate in members for candidate in self.sar_participation[bin+1]]): # if all accounts in the next bin are already participating, remain in the current
                         break
                     else:
+                        bin += 1 # move to the next bin
+                
+                candidate = None 
+                while candidate is None:
+                    available_set = set(self.sar_participation[bin]) - set(members) # get the set of accounts that are in the current bin and not already participating
+                    if available_set == set() and (bin+1) in self.sar_participation: # if there are no accounts in the current bin and there are accounts in the next bin
                         bin += 1
-                candidates = [] 
-                while candidates == []:
-                    candidates = [candidate for candidate in self.sar_participation[bin] if candidate not in members and candidate in accts]
-                    bin += 1
-                member = random.sample(candidates, 1)[0]
-                members.append(member)
+                    elif available_set == set() and (bin+1) not in self.sar_participation:
+                        bin = max(bin-1, 0) # if there are no accounts in the current bin and no accounts in next bin, move to the previous bin
+                    else:
+                        candidate = random.choice(list(available_set)) # choose a random account from the available set
+                members.append(candidate)
+                
             for member in members:
                 bins = list(self.sar_participation.keys())
                 for bin in bins:
