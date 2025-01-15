@@ -37,16 +37,4 @@ jobs:
           set -e
           pip install pytest pytest-cov coverage-badge
           export PYTHONPATH=$(pwd)/flib/sim/AMLsim:$PYTHONPATH
-          pytest --cov=amlsim --cov-report=term-missing:skip-covered --cov-report=xml --cov-report=html ./flib/sim/AMLsim/tests/ 
-          cat ./flib/sim/AMLsim/coverage.xml
-          
-      - name: Create Coverage Badge
-        run: |
-          mkdir -p badges
-          coverage-badge -o badges/coverage.svg -f
-  
-      - name: Deploy Coverage Badge to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages
-          folder: badges
+          pytest --cov-report=term-missing:skip-covered --cov-report=xml --cov-report=html ./flib/sim/AMLsim/tests/ 
