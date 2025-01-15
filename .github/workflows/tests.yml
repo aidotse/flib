@@ -32,7 +32,7 @@ jobs:
           cd flib/AMLsim
           set -e
           pip install pytest pytest-cov coverage-badge
-          pytest --cov=leakpro --cov-report=term-missing:skip-covered --cov-report=xml --cov-report=html leakpro/tests/
+          pytest --cov=amlsim --cov-report=term-missing:skip-covered --cov-report=xml --cov-report=html ./tests/
           cat ./coverage.xml
           
       - name: Create Coverage Badge
