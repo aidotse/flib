@@ -21,19 +21,27 @@ jobs:
         with:
           python-version: 3.10.14
 
-      - name: Provision with Micromamba
-        uses: mamba-org/provision-with-micromamba@main
-        with:
-          environment-file: amlsim.yml
-          environment-name: amlsim
-          cache-downloads: true
+      - name: Install dependencies from pyproject.toml
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
 
       - name: Run tests with pytest
         shell: bash -l {0}
         run: |
           cd flib/AMLsim
           set -e
-          micromamba activate amlsim
-          micromamba install pytest pytest-cov
-          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=amlsim ./tests/ | tee pytest-coverage.txt
-          cat ./pytest-coverage.txt
+          pip install pytest pytest-cov coverage-badge
+          pytest --cov=leakpro --cov-report=term-missing:skip-covered --cov-report=xml --cov-report=html leakpro/tests/
+          cat ./coverage.xml
+          
+      - name: Create Coverage Badge
+        run: |
+          mkdir -p badges
+          coverage-badge -o badges/coverage.svg -f
+  
+      - name: Deploy Coverage Badge to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: badges
