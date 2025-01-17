@@ -14,6 +14,8 @@ class DataPreprocessor:
         self.test_end_step = config['test_end_step']
         self.include_edges = config['include_edges']
         self.bank = config['bank'] if 'bank' in config else None
+        if self.bank == 'cen':
+            self.bank = None
     
     
     def load_data(self, path:str) -> pd.DataFrame:

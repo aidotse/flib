@@ -37,7 +37,7 @@ if __name__ == "__main__":
     EXPERIMENT = '3_banks_homo_easy'
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_files', nargs='+', type=str, help='Path to the config files for preprocessing.', default=[
-        #f'experiments/{EXPERIMENT}/data/config.yaml',
+        f'experiments/{EXPERIMENT}/data/config.yaml',
         f'experiments/{EXPERIMENT}/clients/c0/config.yaml',
         f'experiments/{EXPERIMENT}/clients/c1/config.yaml',
         f'experiments/{EXPERIMENT}/clients/c2/config.yaml',
