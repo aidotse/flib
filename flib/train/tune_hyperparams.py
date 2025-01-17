@@ -32,17 +32,7 @@ class HyperparamTuner():
             elif self.client_params['search_space'][param]['type'] == 'integer':
                 params[param] = trial.suggest_int(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'])
             elif self.client_params['search_space'][param]['type'] == 'float':
-                params[param] = trial.suggest_float(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'])
-            #elif self.client_params['search_space'][param]['type'] == 'conditional':
-            #    params[param] = trial.suggest_categorical(param, list(self.client_params['search_space'][param]['values'].keys()))
-            #    params[param+'_params'] = {}
-            #    for subparam in self.client_params['search_space'][param]['values'][params[param]]:
-            #        if self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'categorical':
-            #            params[param+'_params'][subparam] = trial.suggest_categorical(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['values'])
-            #        elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'int':
-            #            params[param+'_params'][subparam] = trial.suggest_int(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
-            #        elif self.client_params['search_space'][param]['values'][params[param]][subparam]['type'] == 'float':
-            #            params[param+'_params'][subparam] = trial.suggest_float(params[param]+'_'+subparam, self.client_params['search_space'][param]['values'][params[param]][subparam]['low'], self.client_params['search_space'][param]['values'][params[param]][subparam]['high'])
+                params[param] = trial.suggest_float(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'], log=self.client_params['search_space'][param].get('log', False))
             else:
                 params[param] = self.client_params['search_space'][param]    
         for param in self.client_params['default']:
