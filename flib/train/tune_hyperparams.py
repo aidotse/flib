@@ -3,6 +3,7 @@ import inspect
 from flib.train import Clients
 import multiprocessing
 from flib.utils import set_random_seed 
+from flib.train.metrics import calculate_average_precision
 
 def balanced_accuracy(data):
     tp, fp, tn, fn = data['tp'], data['fp'], data['tn'], data['fn']
@@ -61,9 +62,9 @@ class HyperparamTuner():
                 tpfptnfn[threshold]['tn'] += results[client][round]['val']['tpfptnfn'][50]['tn']
                 tpfptnfn[threshold]['fn'] += results[client][round]['val']['tpfptnfn'][50]['fn']
         
-        bal_acc = balanced_accuracy(tpfptnfn[50])
+        avg_pre = calculate_average_precision(tpfptnfn, (0.6, 1.0))
         
-        return bal_acc
+        return avg_pre
     
     def optimize(self, n_trials=10):
         # seet seed

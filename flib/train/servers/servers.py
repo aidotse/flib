@@ -9,6 +9,7 @@ import time
 import os
 import pandas as pd
 from flib.utils import decrease_lr
+from flib.train.metrics import calculate_average_precision
 
 class Server():
     def __init__(self, clients, n_workers):
@@ -80,11 +81,11 @@ class Server():
                     previous_train_loss += loss / len(self.clients)
             if eval_every is not None:
                 results = p.starmap(self._evaluate_clients, [(client_split, 'valset') for client_split in client_splits])
-                previous_val_loss = 0.0
+                previous_val_average_precision = 0.0
                 for result in results:
                     for client, loss, tpfptnfn in zip(result[0], result[1], result[2]):
                         results_dict[client][0]['val'] = {'loss': loss, 'tpfptnfn': tpfptnfn}
-                        previous_val_loss += loss / len(self.clients) if loss else 0.0
+                        previous_val_average_precision += calculate_average_precision(tpfptnfn, (0.6, 1.0)) / len(self.clients)
             
             for round in tqdm(range(1, n_rounds+1), desc='progress', leave=False):
                 
@@ -104,6 +105,7 @@ class Server():
                     tqdm.write('Decreasing learning rate.')
                     for client in self.clients:
                         decrease_lr(client.optimizer, factor=0.5)
+                    lr_patience = lr_patience_reset
                 previous_train_loss = avg_loss
                 
                 if round > n_no_aggregation_rounds:
@@ -113,19 +115,19 @@ class Server():
                 
                 if eval_every is not None and round % eval_every == 0:
                     results = p.starmap(self._evaluate_clients, [(client_split, 'valset') for client_split in client_splits])
-                    avg_loss = 0.0
+                    val_average_precision = 0.0
                     for result in results:
                         for client, loss, tpfptnfn in zip(result[0], result[1], result[2]):
                             results_dict[client][round]['val'] = {'loss': loss, 'tpfptnfn': tpfptnfn}
-                            avg_loss = loss / len(self.clients) if loss else 0.0
-                    if avg_loss >= previous_val_loss - 0.0005:
+                            val_average_precision += calculate_average_precision(tpfptnfn, (0.6, 1.0)) / len(self.clients)
+                    if val_average_precision <= previous_val_average_precision + 0.0005:
                         es_patience -= eval_every
                     else:
                         es_patience = es_patience_reset
                     if es_patience <= 0:
                         tqdm.write('Early stopping.')
                         break
-                    previous_val_loss = avg_loss
+                    previous_val_average_precision = val_average_precision
             
             if eval_every is not None:
                 results = p.starmap(self._evaluate_clients, [(client_split, 'testset') for client_split in client_splits])

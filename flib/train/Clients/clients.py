@@ -4,6 +4,7 @@ from flib import utils
 from flib.utils import tensordatasets, dataloaders, decrease_lr
 from flib.train.models import LogisticRegressor, MLP, GraphSAGE
 from flib.train import criterions
+from flib.train.metrics import calculate_average_precision
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
@@ -97,7 +98,7 @@ class LogRegClient():
         if eval_every is not None and self.valset is not None:
             loss, tpfptnfn = self.evaluate(dataset='valset')
             results_dict[0]['val'] = {'loss': loss, 'tpfptnfn': tpfptnfn}
-            previous_val_loss = loss
+            previous_val_average_precision = calculate_average_precision(tpfptnfn, (0.6, 1.0))
 
         for epoch in tqdm(range(1, n_rounds+1), desc='progress', leave=False):
             
@@ -116,14 +117,15 @@ class LogRegClient():
             if eval_every is not None and epoch % eval_every == 0 and self.valset is not None:
                 loss, tpfptnfn = self.evaluate(dataset='valset')
                 results_dict[epoch]['val'] = {'loss': loss, 'tpfptnfn': tpfptnfn}
-                if loss >= previous_val_loss - 0.0005:
+                val_average_precision = calculate_average_precision(tpfptnfn, (0.6, 1.0))
+                if val_average_precision <= previous_val_average_precision + 0.0005:
                     es_patience -= eval_every
                 else:
                     es_patience = es_patience_reset
                 if es_patience <= 0:
                     tqdm.write('Early stopping.')
                     break
-                previous_val_loss = loss
+                previous_val_average_precision = val_average_precision
         
         if eval_every is not None and self.testset is not None:
             loss, tpfptnfn = self.evaluate(dataset='testset')

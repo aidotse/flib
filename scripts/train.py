@@ -8,7 +8,7 @@ import yaml
 
 def main():
     
-    EXPERIMENT = '3_banks_homo_easy' # '30K_accts', '3_banks_homo_mid'
+    EXPERIMENT = '3_banks_homo_mid' # '30K_accts', '3_banks_homo_mid'
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--client_config_files', nargs='+', help='Paths to client config files.', default=[
