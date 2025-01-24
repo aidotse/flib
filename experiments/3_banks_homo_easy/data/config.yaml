@@ -47,7 +47,7 @@ hyperparameters:
             n_rounds: 30
             eval_every: 10
             batch_size: 512
-            optimizer: 'SGD'
+            optimizer: 'Adam'
             lr: 0.01
             weight_decay: 0.0
             criterion: 'ClassBalancedLoss'
@@ -56,21 +56,23 @@ hyperparameters:
             batch_size: 
                 type: 'categorical'
                 values: [128, 256, 512]
-            optimizer: 
-                type: categorical
-                values: ['SGD', 'Adam']
+            #optimizer: 
+            #    type: categorical
+            #    values: ['Adam']
             lr:
                 type: float
-                low: 0.001
+                low: 0.0001
                 high: 1.0
+                log: true
             weight_decay:
                 type: float
                 low: 0.0
                 high: 1.0
-            criterion: 
-                type: categorical
-                values: ['ClassBalancedLoss', 'CrossEntropyLoss']
+            #criterion: 
+            #    type: categorical
+            #    values: ['ClassBalancedLoss']
             gamma:
                 type: float
-                low: 0.0
+                low: 0.9
                 high: 1.0
+                log: true

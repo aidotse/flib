@@ -3,11 +3,12 @@ import pickle
 from flib.vizualize import plot_metrics
 
 def main():
+    EXPERIMENT = '3_banks_homo_mid'
     parser = argparse.ArgumentParser() # LogRegClient, DecisionTreeClient, RandomForestClient, GradientBoostingClient, SVMClient, KNNClient
     parser.add_argument('--results_files', type=str, help='Path to results file.', default=[
-        'experiments/3_banks_homo_easy/results/centralized/LogRegClient/results.pkl',
-        'experiments/3_banks_homo_easy/results/federated/LogRegClient/results.pkl',
-        'experiments/3_banks_homo_easy/results/isolated/LogRegClient/results.pkl',
+        f'experiments/{EXPERIMENT}/results/centralized/LogRegClient/results.pkl',
+        #f'experiments/{EXPERIMENT}/results/federated/LogRegClient/results.pkl',
+        #f'experiments/{EXPERIMENT}/results/isolated/LogRegClient/results.pkl',
     ])
     parser.add_argument('--metrics', nargs='+', help='Metrics to plot. Can be "loss", "accuracy", "balanced_accuracy", "recall", "precision", "f1", "roc_curve", "precision_recall_curve".', default=['loss', 'accuracy', 'balanced_accuracy', 'recall', 'precision', 'f1', 'roc_curve', 'precision_recall_curve'])
     parser.add_argument('--clients', nargs='+', help='Clients to include. If omited all clients will be included.', default=None)

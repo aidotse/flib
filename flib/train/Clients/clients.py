@@ -84,7 +84,7 @@ class LogRegClient():
                 tpfptnfn[threshold]['fn'] = cm[1,0]
         return loss, tpfptnfn
     
-    def run(self, state_dict=None, n_rounds=100, eval_every=10, lr_patience=5, es_patience=15, **kwargs):
+    def run(self, state_dict=None, n_rounds=100, eval_every=10, lr_patience=5, es_patience=20, **kwargs):
         if state_dict:
             self.model.load_state_dict(state_dict)
         lr_patience_reset = lr_patience
@@ -639,7 +639,7 @@ class MLPClient():
 
 
 class GraphSAGEClient():
-    def __init__(self, name:str, seed:int, nodes_train:str, edges_train:str, nodes_test:str, edges_test:str, device='cpu', hidden_dim=64, optimizer='SGD', optimizer_params={}, criterion='ClassBalancedLoss', criterion_params={}, **kwargs):
+    def __init__(self, name:str, seed:int, device:str, nodes_train:str, edges_train:str, nodes_test:str, edges_test:str, valset_size:float, hidden_dim:int, optimizer:str, lr:float, weight_decay:float, criterion:str, gamma:float, **kwargs):
         self.name = name
         self.device = device
         
@@ -653,17 +653,17 @@ class GraphSAGEClient():
         
         input_dim = self.trainset.num_features
         output_dim = len(self.trainset.y.unique())
-        self.model = GraphSAGE(input_dim=input_dim, hidden_dim=hidden_dim, output_dim=output_dim).to(self.device)
+        self.model = GraphSAGE(input_dim=input_dim, hidden_dim=64, output_dim=output_dim).to(self.device)
         
-        self.optimizer = getattr(torch.optim, optimizer)(self.model.parameters(), **optimizer_params)
+        self.optimizer = getattr(torch.optim, optimizer)(self.model.parameters(), lr=lr, weight_decay=weight_decay)
         if criterion == 'ClassBalancedLoss':
             n_samples_per_classes = self.trainset.y.unique(return_counts=True)[1].tolist()
-            self.criterion = criterions.ClassBalancedLoss(n_samples_per_classes=n_samples_per_classes, **criterion_params)
-        elif criterion == 'NLLLoss':
-            weight = torch.tensor([1-criterion_params['weight'], criterion_params['weight']]).to(self.device)
-            self.criterion = getattr(torch.nn, criterion)(weight=weight)
+            self.criterion = criterions.ClassBalancedLoss(n_samples_per_classes=n_samples_per_classes, gamma=gamma)
+        #elif criterion == 'NLLLoss':
+        #    weight = torch.tensor([1-criterion_params['weight'], criterion_params['weight']]).to(self.device)
+        #    self.criterion = getattr(torch.nn, criterion)(weight=weight)
         else:
-            self.criterion = getattr(torch.nn, criterion)(**criterion_params)
+            self.criterion = getattr(torch.nn, criterion)()
     
     def train(self, state_dict=None):
         if state_dict:
