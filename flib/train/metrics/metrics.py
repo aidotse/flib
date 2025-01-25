@@ -27,3 +27,8 @@ def calculate_average_precision(tpfptnfn:Dict[int, Dict[str, int]], recall_span:
             n += 1
     avg_precision = avg_precision / n
     return avg_precision
+
+def calculate_balanced_accuracy(tpfptnfn:Dict[int, Dict[str, int]], threshold:int=50):
+    tp, fp, tn, fn = tpfptnfn[threshold]['tp'], tpfptnfn[threshold]['fp'], tpfptnfn[threshold]['tn'], tpfptnfn[threshold]['fn']
+    balanced_accuracy = 0.5*(tp/(tp+fn) + tn/(tn+fp))
+    return balanced_accuracy
