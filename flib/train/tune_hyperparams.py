@@ -5,13 +5,6 @@ import multiprocessing
 from flib.utils import set_random_seed 
 from flib.train.metrics import calculate_average_precision
 
-def balanced_accuracy(data):
-    tp, fp, tn, fn = data['tp'], data['fp'], data['tn'], data['fn']
-    return 0.5*(tp/(tp+fn) + tn/(tn+fp))
-
-def average_precision(data):
-    pass
-
 
 class HyperparamTuner():
     def __init__(self, study_name, obj_fn, seed=42, n_workers=1, storage=None, client_type=None, client_names=None, client_data=None, client_params=None): #(self, study_name, obj_fn, train_dfs, val_dfs, seed=42, device='cpu', n_workers=1, storage=None, client=None, params=None):
@@ -57,10 +50,10 @@ class HyperparamTuner():
         for client in results:
             round = max(results[client].keys())
             for threshold in range(0, 101):
-                tpfptnfn[threshold]['tp'] += results[client][round]['val']['tpfptnfn'][50]['tp']
-                tpfptnfn[threshold]['fp'] += results[client][round]['val']['tpfptnfn'][50]['fp']
-                tpfptnfn[threshold]['tn'] += results[client][round]['val']['tpfptnfn'][50]['tn']
-                tpfptnfn[threshold]['fn'] += results[client][round]['val']['tpfptnfn'][50]['fn']
+                tpfptnfn[threshold]['tp'] += results[client][round]['val']['tpfptnfn'][threshold]['tp']
+                tpfptnfn[threshold]['fp'] += results[client][round]['val']['tpfptnfn'][threshold]['fp']
+                tpfptnfn[threshold]['tn'] += results[client][round]['val']['tpfptnfn'][threshold]['tn']
+                tpfptnfn[threshold]['fn'] += results[client][round]['val']['tpfptnfn'][threshold]['fn']
         
         avg_pre = calculate_average_precision(tpfptnfn, (0.6, 1.0))
         
