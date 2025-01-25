@@ -104,7 +104,7 @@ class LogRegClient():
             
             loss, tpfptnfn = self.train()
             results_dict[epoch] = {'train': {'loss': loss, 'tpfptnfn': tpfptnfn}}
-            if loss >= previous_train_loss - 0.0005:
+            if loss >= previous_train_loss:
                 lr_patience -= 1
             else:
                 lr_patience = lr_patience_reset
@@ -118,7 +118,7 @@ class LogRegClient():
                 loss, tpfptnfn = self.evaluate(dataset='valset')
                 results_dict[epoch]['val'] = {'loss': loss, 'tpfptnfn': tpfptnfn}
                 val_average_precision = calculate_average_precision(tpfptnfn, (0.6, 1.0))
-                if val_average_precision <= previous_val_average_precision + 0.0005:
+                if val_average_precision <= previous_val_average_precision:
                     es_patience -= eval_every
                 else:
                     es_patience = es_patience_reset
