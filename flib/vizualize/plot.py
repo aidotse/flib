@@ -47,7 +47,20 @@ def precision_recall_curve(data):
     recalls, precisions = zip(*sorted(zip(recalls, precisions)))
     return recalls, precisions
 
-def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datasets=None, formats=['png', 'csv'], dir='', threshold=50):
+
+def average_precision(data, recall_span=(0.0, 1.0)):
+    avg_precision = 0.0
+    n = 0
+    for threshold in data:
+        rec = recall(data[threshold])
+        if rec >= recall_span[0] and rec <= recall_span[1]:
+            pre = precision(data[threshold])
+            avg_precision += pre
+            n += 1
+    avg_precision = avg_precision / n
+    return avg_precision
+
+def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datasets=None, formats=['png', 'csv'], dir='', threshold=50, recall_span=(0.6, 1.0)):
     
     if clients is None:
         clients = [client for client in data]
@@ -95,6 +108,8 @@ def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datase
                         y = recall(reduced_data[round][dataset]['tpfptnfn'][threshold])
                     elif metric == 'precision':
                         y = precision(reduced_data[round][dataset]['tpfptnfn'][threshold])
+                    elif metric == 'average_precision':
+                        y = average_precision(reduced_data[round][dataset]['tpfptnfn'], recall_span)
                     elif metric == 'f1':
                         y = f1(reduced_data[round][dataset]['tpfptnfn'][threshold])
                     metrics_dict[metric][dataset]['y'].append(y)
@@ -132,6 +147,8 @@ def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datase
                             y = recall(data[client][round][dataset]['tpfptnfn'][threshold])
                         elif metric == 'precision':
                             y = precision(data[client][round][dataset]['tpfptnfn'][threshold])
+                        elif metric == 'average_precision':
+                            y = average_precision(data[client][round][dataset]['tpfptnfn'], recall_span)
                         elif metric == 'f1':
                             y = f1(data[client][round][dataset]['tpfptnfn'][threshold])
                         metrics_dict[metric][dataset][client]['y'].append(y)
@@ -210,6 +227,7 @@ def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datase
                 plt.xlabel('recall')
                 plt.ylabel('precision')
                 plt.title('Precision-Recall curve')
+                plt.ylim(0, 0.075)
             else:
                 plt.xlabel('round')
                 plt.ylabel(metric)
