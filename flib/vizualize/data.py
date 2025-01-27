@@ -210,12 +210,13 @@ def spending_hist(df:pd.DataFrame, file:str):
     hist_df.to_csv(file.replace('.png', '.csv'), index=False)
 
 
-def n_txs_hist(df:pd.DataFrame, file:str):
+def n_txs_hist(df:pd.DataFrame, bank:str, file:str):
     df = df[df['bankOrig'] != 'source']
     df = df[df['bankDest'] != 'sink']
-    df_in = df[['amount', 'nameDest', 'isSAR']].rename(columns={'nameDest': 'name'})
-    df_out = df[['amount', 'nameOrig', 'isSAR']].rename(columns={'nameOrig': 'name'})
+    df_in = df[['amount', 'nameDest', 'bankDest', 'isSAR']].rename(columns={'nameDest': 'name', 'bankDest': 'bank'})
+    df_out = df[['amount', 'nameOrig', 'bankOrig', 'isSAR']].rename(columns={'nameOrig': 'name', 'bankOrig': 'bank'})
     df = pd.concat([df_in, df_out])
+    df = df[df['bank']==bank]
     d = {}
     gb = df.groupby('name')
     d['n_txs'] = gb['amount'].count()
