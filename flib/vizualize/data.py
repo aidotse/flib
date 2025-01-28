@@ -467,6 +467,30 @@ def sar_pattern_account_hist(df:pd.DataFrame, file:str):
     df_sar_pattern_acct_vc.to_csv(file.replace('.png', '.csv'), index=False)
 
 
+def n_sar_account_participation(df:pd.DataFrame, file:str):
+    df = df[df['bankOrig'] != 'source']
+    df = df[df['bankDest'] != 'sink']
+    df_sar = df[df['isSAR'] == 1]
+    df_in = df_sar[['nameDest', 'alertID']].rename(columns={'nameDest': 'name'})
+    df_out = df_sar[['nameOrig', 'alertID']].rename(columns={'nameOrig': 'name'})
+    df = pd.concat([df_in, df_out])
+    n_pattern_participation_per_account = df.groupby(by='name')['alertID'].nunique()
+    vc = n_pattern_participation_per_account.value_counts().reset_index().rename(columns={'alertID': 'n_patterns', 'count': 'n_accounts'})
+    vc['fraction'] = vc['n_accounts'] / vc['n_accounts'].sum()
+    fig, ax = plt.subplots()
+    width = 0.30
+    rects = ax.bar(vc['n_patterns'].values, vc['n_accounts'].values, width, color='C0', zorder=3)
+    ax.bar_label(rects, [f'{value:.4f}' for value in vc['fraction'].values], padding=1)
+    ax.grid(axis='y', zorder=0)
+    ax.set_xlabel('Number of patterns')
+    ax.set_ylabel('Number of accounts')
+    plt.tight_layout(pad=2.0)
+    plt.title('SAR accounts participation hist')
+    plt.savefig(file)
+    plt.close()
+    vc.to_csv(file.replace('.png', '.csv'), index=False)
+
+
 def plot(df:pd.DataFrame, plot_dir:str):
     banks = pd.concat([df['bankOrig'], df['bankDest']]).unique().tolist()
     banks = sorted(banks)
@@ -474,23 +498,24 @@ def plot(df:pd.DataFrame, plot_dir:str):
         banks.remove('source')
     if 'sink' in banks:
         banks.remove('sink')
-    #sar_pattern_account_hist(df, os.path.join(plot_dir, 'sar_pattern_account_hist.png'))
-    #sar_pattern_txs_hist(df, os.path.join(plot_dir, 'sar_pattern_txs_hist.png'))
-    #sar_over_n_banks_hist(df, os.path.join(plot_dir, 'sar_over_n_banks_hist.png'))
-    #edge_label_hist(df, banks+['all'], os.path.join(plot_dir, 'edge_label_hist.png'))
-    #node_label_hist(df, banks+['all'], os.path.join(plot_dir, 'node_label_hist.png'))
-    #homophily(df, banks+['all'], os.path.join(plot_dir, 'homophily.png'))
+    sar_pattern_account_hist(df, os.path.join(plot_dir, 'sar_pattern_account_hist.png'))
+    sar_pattern_txs_hist(df, os.path.join(plot_dir, 'sar_pattern_txs_hist.png'))
+    n_sar_account_participation(df, os.path.join(plot_dir, 'sar_account_participation_hist.png'))
+    sar_over_n_banks_hist(df, os.path.join(plot_dir, 'sar_over_n_banks_hist.png'))
+    edge_label_hist(df, banks+['all'], os.path.join(plot_dir, 'edge_label_hist.png'))
+    node_label_hist(df, banks+['all'], os.path.join(plot_dir, 'node_label_hist.png'))
+    homophily(df, banks+['all'], os.path.join(plot_dir, 'homophily.png'))
     for bank in banks:
         os.makedirs(os.path.join(plot_dir, bank), exist_ok=True)
         df_bank = df[(df['bankOrig'] == bank) | (df['bankDest'] == bank)]
-        #balance_curves(df_bank, os.path.join(plot_dir, bank, 'balance_curves.png'))
-        #pattern_hist(df_bank, os.path.join(plot_dir, bank, 'pattern_hist.png'))
-        #amount_hist(df_bank, os.path.join(plot_dir, bank, 'amount_hist.png'))
-        #spending_hist(df_bank, os.path.join(plot_dir, bank, 'spending_hist.png'))
-        n_txs_hist(df_bank, bank, os.path.join(plot_dir, bank, 'n_txs_hist.png'))
-        #n_spending_hist(df_bank, os.path.join(plot_dir, bank, 'n_spending_hist.png'))
-        #powerlaw_degree_dist(df_bank, os.path.join(plot_dir, bank, 'powerlaw_degree_dist.png'))
-        #graph(df_bank, os.path.join(plot_dir, bank, 'graph.png'), n_alerts=10)
+        balance_curves(df_bank, os.path.join(plot_dir, bank, 'balance_curves.png'))
+        pattern_hist(df_bank, os.path.join(plot_dir, bank, 'pattern_hist.png'))
+        amount_hist(df_bank, os.path.join(plot_dir, bank, 'amount_hist.png'))
+        spending_hist(df_bank, os.path.join(plot_dir, bank, 'spending_hist.png'))
+        n_txs_hist(df_bank, os.path.join(plot_dir, bank, 'n_txs_hist.png'))
+        n_spending_hist(df_bank, os.path.join(plot_dir, bank, 'n_spending_hist.png'))
+        powerlaw_degree_dist(df_bank, os.path.join(plot_dir, bank, 'powerlaw_degree_dist.png'))
+        graph(df_bank, os.path.join(plot_dir, bank, 'graph.png'), n_alerts=10)
 
 
 def main(tx_log:str, plot_dir:str):
