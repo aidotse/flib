@@ -54,9 +54,10 @@ def tensordatasets(train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.D
     
     return trainset, valset, testset
 
-def dataloaders(trainset, valset, testset, batch_size=64):
+def dataloaders(trainset, valset, testset, batch_size=64, sampler=None):
     if trainset is not None:
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
+        shuffle = False if sampler is not None else True
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=shuffle, sampler=sampler)
     else:
         trainloader = None
     
