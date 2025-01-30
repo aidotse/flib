@@ -57,7 +57,7 @@ def average_precision(data, recall_span=(0.0, 1.0)):
             pre = precision(data[threshold])
             avg_precision += pre
             n += 1
-    avg_precision = avg_precision / n
+    avg_precision = avg_precision / n if not n == 0 else 0.0
     return avg_precision
 
 def plot_metrics(data:dict, metrics=None, clients=None, reduction='mean', datasets=None, formats=['png', 'csv'], dir='', threshold=50, recall_span=(0.6, 1.0)):
