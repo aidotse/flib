@@ -645,9 +645,9 @@ class GraphSAGEClient():
         self.name = name
         self.device = device
         
-        train_nodes_df = pd.read_csv(nodes_train).drop(columns=['account', 'bank'])
+        train_nodes_df = pd.read_csv(nodes_train).drop(columns=['bank']).rename(columns={'account': 'node'})
         train_edges_df = pd.read_csv(edges_train)
-        test_nodes_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
+        test_nodes_df = pd.read_csv(nodes_test).drop(columns=['bank']).rename(columns={'account': 'node'})
         test_edges_df = pd.read_csv(edges_test)
         
         self.trainset, self.testset = utils.graphdataset(train_nodes_df, train_edges_df, test_nodes_df, test_edges_df, device=device)
