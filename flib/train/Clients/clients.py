@@ -13,8 +13,10 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from torch.utils.data import WeightedRandomSampler
 import torch_geometric
 import yaml
+
 
 class LogRegClient():
     def __init__(self, name:str, seed:int, device:str, nodes_train:str, nodes_test:str, valset_size:float, batch_size:int, optimizer:str, lr: float, weight_decay: float, criterion:str, gamma:float, **kwargs):
@@ -27,7 +29,15 @@ class LogRegClient():
         test_df = pd.read_csv(nodes_test).drop(columns=['account', 'bank'])
         
         self.trainset, self.valset, self.testset = tensordatasets(train_df, val_df, test_df, normalize=True, device=self.device)
-        self.trainloader, self.valloader, self.testloader = dataloaders(self.trainset, self.valset, self.testset, batch_size)
+        
+        # Calculate class weights
+        y=self.trainset.tensors[1].clone().detach().cpu()
+        class_counts = torch.bincount(y)  # y is the list of labels
+        class_weights = 1.0 / class_counts
+        weights = class_weights[y]
+        sampler = WeightedRandomSampler(weights, num_samples=len(y), replacement=True)
+        
+        self.trainloader, self.valloader, self.testloader = dataloaders(self.trainset, self.valset, self.testset, batch_size, sampler)
 
         input_dim = self.trainset.tensors[0].shape[1]
         output_dim = self.trainset.tensors[1].unique().shape[0]
