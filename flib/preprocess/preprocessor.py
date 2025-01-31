@@ -26,6 +26,8 @@ class DataPreprocessor:
 
     
     def cal_node_features(self, df:pd.DataFrame, start_step, end_step) -> pd.DataFrame:
+        df_bank = df[(df['bankOrig'] == self.bank) & (df['bankDest'] == self.bank)] if self.bank is not None else df
+        accounts = pd.unique(df_bank[['nameOrig', 'nameDest']].values.ravel('K'))
         if self.num_windows * self.window_len < end_step - start_step:
             raise ValueError(f'Number of windows {self.num_windows} and the windows length {self.window_len} do not allow coverage of the whole dataset. Inceasing number of windows or length of windows')
         window_overlap = (self.num_windows * self.window_len - (end_step - start_step + 1)) // (self.num_windows - 1)
@@ -83,7 +85,9 @@ class DataPreprocessor:
         df_nodes = df_nodes.join(node_features_df)
         # filter out nodes not belonging to the bank
         
-        df_nodes = df_nodes[df_nodes['bank'] == self.bank] if self.bank is not None else df_nodes # TODO: keep these nodes? see TODO below about get edges
+        df_nodes = df_nodes.reset_index()
+        df_nodes = df_nodes[df_nodes['account'].isin(accounts)]
+        #df_nodes = df_nodes[df_nodes['bank'] == self.bank] if self.bank is not None else df_nodes # TODO: keep these nodes? see TODO below about get edges
         # if any value is nan, there was no transaction in the window for that account and hence the feature should be 0
         df_nodes = df_nodes.fillna(0.0)
         # check if there is any missing values
@@ -155,20 +159,14 @@ class DataPreprocessor:
         df_test = df[(df['step'] >= self.test_start_step) & (df['step'] <= self.test_end_step)]
         df_nodes_train = self.cal_node_features(df_train, self.train_start_step, self.train_end_step)
         df_nodes_test = self.cal_node_features(df_test, self.test_start_step, self.test_end_step)
-        df_nodes_train.reset_index(inplace=True)
-        df_nodes_test.reset_index(inplace=True)
         
         if self.include_edges:
-            df_train = df_train[(df_train['bankOrig']==self.bank) | (df_train['bankDest']==self.bank)] if self.bank is not None else df_train
-            df_test = df_test[(df_test['bankOrig']==self.bank) | (df_test['bankDest']==self.bank)] if self.bank is not None else df_test
-            df_edges_train = self.cal_edge_features(df=df_train, start_step=self.train_start_step, end_step=self.train_end_step, directional=False) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
-            df_edges_test = self.cal_edge_features(df=df_test, start_step=self.test_start_step, end_step=self.test_end_step, directional=False)
-            node_to_index = pd.Series(df_nodes_train.index, index=df_nodes_train['account']).to_dict()
-            df_edges_train['src'] = df_edges_train['src'].map(node_to_index) # OBS: in the csv files it looks like the edge src refers to the node two rows above the acculat node, this is due to the column head and that it starts counting at 0
-            df_edges_train['dst'] = df_edges_train['dst'].map(node_to_index)
-            node_to_index = pd.Series(df_nodes_test.index, index=df_nodes_test['account']).to_dict()
-            df_edges_test['src'] = df_edges_test['src'].map(node_to_index)
-            df_edges_test['dst'] = df_edges_test['dst'].map(node_to_index)
+            df_train = df_train[(df_train['bankOrig'] != 'source') & (df_train['bankDest'] != 'sink')]
+            df_test = df_test[(df_test['bankOrig'] != 'source') & (df_test['bankDest'] != 'sink')]
+            df_train = df_train[(df_train['bankOrig']==self.bank) & (df_train['bankDest']==self.bank)] if self.bank is not None else df_train
+            df_test = df_test[(df_test['bankOrig']==self.bank) & (df_test['bankDest']==self.bank)] if self.bank is not None else df_test
+            df_edges_train = self.cal_edge_features(df=df_train, start_step=self.train_start_step, end_step=self.train_end_step, directional=True) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
+            df_edges_test = self.cal_edge_features(df=df_test, start_step=self.test_start_step, end_step=self.test_end_step, directional=True)
             return {'nodes_train': df_nodes_train, 'nodes_test': df_nodes_test, 'edges_train': df_edges_train, 'edges_test': df_edges_test}
         else:
             return {'nodes_train': df_nodes_train, 'nodes_test': df_nodes_test}

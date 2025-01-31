@@ -3,6 +3,7 @@ import pickle
 from flib.vizualize import plot_metrics
 
 def main():
+    EXPERIMENT = '3_banks_homo_mid'
     parser = argparse.ArgumentParser() # LogRegClient, DecisionTreeClient, RandomForestClient, GradientBoostingClient, SVMClient, KNNClient
     parser.add_argument('--results_files', type=str, help='Path to results file.', default=[
         'experiments/3_banks_homo_mid/results/centralized/LogRegClient/results.pkl',

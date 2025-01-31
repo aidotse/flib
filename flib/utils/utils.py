@@ -78,14 +78,18 @@ def decrease_lr(optimizer, factor=0.1):
         param_group['lr'] *= factor
 
 def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_nodes_df:pd.DataFrame, test_edges_df:pd.DataFrame, device='cpu', directed=False):
-    train_nodes_np = train_nodes_df.to_numpy()
+    node_to_index = {id: idx for idx, id in enumerate(train_nodes_df['node'])}
+    train_nodes_np = train_nodes_df.drop(columns='node').to_numpy()
     x_train_nodes = train_nodes_np[:, :-1]
     y_train_nodes = train_nodes_np[:, -1]
     scaler = StandardScaler().fit(x_train_nodes)
     x_train_nodes = scaler.transform(x_train_nodes)
     x_train_nodes = torch.tensor(x_train_nodes, dtype=torch.float32).to(device)
     y_train_nodes = torch.tensor(y_train_nodes, dtype=torch.int64).to(device)
-    train_edges_index = torch.tensor(train_edges_df[['src', 'dst']].values, dtype=torch.long).t().contiguous().to(device)
+    train_edges_df['src'] = train_edges_df['src'].map(node_to_index)
+    train_edges_df['dst'] = train_edges_df['dst'].map(node_to_index)
+    train_edges = train_edges_df[['src', 'dst']].to_numpy()
+    train_edges_index = torch.tensor(train_edges.T).to(device)
     trainset = torch_geometric.data.Data(x=x_train_nodes, edge_index=train_edges_index, y=y_train_nodes)
     if not directed:
         trainset = torch_geometric.transforms.ToUndirected()(trainset)
@@ -93,13 +97,17 @@ def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_
     if test_nodes_df is None:
         testset = None
     else:
-        test_nodes_np = test_nodes_df.to_numpy()
+        node_to_index = {id: idx for idx, id in enumerate(test_nodes_df['node'])}
+        test_nodes_np = test_nodes_df.drop(columns='node').to_numpy()
         x_test_nodes = test_nodes_np[:, :-1]
         y_test_nodes = test_nodes_np[:, -1]
         x_test_nodes = scaler.transform(x_test_nodes)
         x_test_nodes = torch.tensor(x_test_nodes, dtype=torch.float32).to(device)
         y_test_nodes = torch.tensor(y_test_nodes, dtype=torch.int64).to(device)
-        test_edge_index = torch.tensor(test_edges_df[['src', 'dst']].values, dtype=torch.long).t().contiguous().to(device)
+        test_edges_df['src'] = test_edges_df['src'].map(node_to_index)
+        test_edges_df['dst'] = test_edges_df['dst'].map(node_to_index)
+        test_edges = test_edges_df[['src', 'dst']].to_numpy()
+        test_edge_index = torch.tensor(test_edges.T).to(device)
         testset = torch_geometric.data.Data(x=x_test_nodes, edge_index=test_edge_index, y=y_test_nodes)
         if not directed:
             testset = torch_geometric.transforms.ToUndirected()(testset)
