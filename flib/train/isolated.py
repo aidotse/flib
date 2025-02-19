@@ -1,120 +1,73 @@
-from flib.train import Clients
-from flib.utils import set_random_seed
 import multiprocessing as mp
 import numpy as np
-import copy
-import pandas as pd
-import time
-import pickle
-import os
-from typing import List
+from typing import Any, Dict, List
 
-def train_clients(clients, kwargs):
-    client_names = []
+def run_clients(clients: List[Any], params: List[Dict]):
+    ids = []
     results = []
-    for client in clients:
-        client_names.append(client.name)
-        results.append(client.run(**kwargs))#['clients'][client.name]))
-    return client_names, results
+    for client, param in zip(clients, params):
+        ids.append(client.id)
+        results.append(client.run(**param))
+    return ids, results
 
-def isolated(seed:int, n_workers:int, client_type:str, client_names:List[str], client_params:List[dict]): #(train_dfs, val_dfs=[], test_dfs=[], seed=42, n_workers=3, client='LogRegClient', **kwargs):
-    set_random_seed(seed)
-    try:
-        mp.set_start_method('spawn', force=True)
-    except RuntimeError:
-        pass
-    Client = getattr(Clients, client_type)
+def isolated(seed: int, Client: Any, Model: Any, n_workers: int = None, **kwargs):
+    
+    client_configs = kwargs.pop('clients')
     clients = []
-    for name, params in zip(client_names, client_params):
-        client = Client(
-            name=name,
-            seed=seed,
-            **params
-        )
-        clients.append(client)
+    client_params = []
+    for id, config in client_configs.items():
+        client_params.append(kwargs | config)
+        clients.append(Client(id=id, seed=seed, Model=Model, **client_params[-1]))
+    
+    if n_workers is None:
+        n_workers = len(clients)
+
     with mp.Pool(n_workers) as p:
         client_splits = np.array_split(clients, n_workers)
-        results = p.starmap(train_clients, [(client_split, client_params[0]) for client_split in client_splits]) 
-    results = {client_name: result for client_names, results in results for client_name, result in zip(client_names, results)}
+        param_splits = np.array_split(client_params, n_workers)
+        results = p.starmap(run_clients, [(client_split, param_split) for client_split, param_split in zip(client_splits, param_splits)]) 
+    results = {id: res for result in results for id, res in zip(result[0], result[1])}
+    
     return results
 
 if __name__ == '__main__':
     
-    EXPERIMENT = '3_banks_homo_easy' # '30K_accts', '3_banks_homo_mid'
-    CLIENT = 'LogRegClient'
+    import argparse
+    from flib import clients, models
+    import os
+    import pickle
+    import time
+    import yaml
+
+    mp.set_start_method('spawn', force=True)
     
-    client_names = ['c0', 'c1', 'c2']
-    client_params = [
-        {
-            'device': 'cuda:0',
-            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c0/data/preprocessed/nodes_train.csv', 
-            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c0/data/preprocessed/nodes_test.csv',
-            'valset_size': 0.2,
-            'batch_size': 2048,
-            'optimizer': 'Adam',
-            'optimizer_params': {
-                'lr': 0.01,
-                'weight_decay': 0.0,
-                'amsgrad': False,
-            },
-            'criterion': 'CrossEntropyLoss',
-            'criterion_params': {},
-            'rounds': 100,
-            'eval_every': 10,
-            'lr_patience': 100,
-            'es_patience': 100,
-            'hidden_dim': 64,
-        },
-        {
-            'device': 'cuda:0',
-            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c1/data/preprocessed/nodes_train.csv', 
-            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c1/data/preprocessed/nodes_test.csv',
-            'valset_size': 0.2,
-            'batch_size': 2048,
-            'optimizer': 'Adam',
-            'optimizer_params': {
-                'lr': 0.01,
-                'weight_decay': 0.0,
-                'amsgrad': False,
-            },
-            'criterion': 'CrossEntropyLoss',
-            'criterion_params': {},
-            'rounds': 100,
-            'eval_every': 10,
-            'lr_patience': 100,
-            'es_patience': 100,
-            'hidden_dim': 64,
-        },
-        {
-            'device': 'cuda:0',
-            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c2/data/preprocessed/nodes_train.csv', 
-            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c2/data/preprocessed/nodes_test.csv',
-            'valset_size': 0.2,
-            'batch_size': 2048,
-            'optimizer': 'Adam',
-            'optimizer_params': {
-                'lr': 0.01,
-                'weight_decay': 0.0,
-                'amsgrad': False,
-            },
-            'criterion': 'CrossEntropyLoss',
-            'criterion_params': {},
-            'rounds': 100,
-            'eval_every': 10,
-            'lr_patience': 100,
-            'es_patience': 100,
-            'hidden_dim': 64,
-        }
-    ]
+    EXPERIMENT = '3_banks_homo_mid'
+    CLIENT_TYPE = 'TorchGeometricClient' # 'TorchClient', 'TorchGeometricClient'
+    MODEL_TYPE = 'GCN' # 'LogisticRegressor', 'MLP', 'GCN'
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, help='Path to config file.', default=f'experiments/{EXPERIMENT}/config.yaml')
+    parser.add_argument('--results', type=str, help='Path to results file.', default=f'experiments/{EXPERIMENT}/results/isolated/{MODEL_TYPE}/results.pkl')
+    parser.add_argument('--seed', type=int, help='Seed.', default=42)
+    parser.add_argument('--n_workers', type=int, help='Number of workers. Default is number of clients.', default=None)
+    parser.add_argument('--client_type', type=str, help='Client class.', default=CLIENT_TYPE)
+    parser.add_argument('--model_type', type=str, help='Model class.', default=MODEL_TYPE)
+    args = parser.parse_args()
     
     t = time.time()
-    results = isolated(seed=42, n_workers=3, client_type=CLIENT, client_names=client_names, client_params=client_params)
+    
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+    kwargs = config[args.model_type]['default'] | config[args.model_type]['isolated']
+    Client = getattr(clients, args.client_type)
+    Model = getattr(models, args.model_type)
+    results = isolated(seed=args.seed, Client=Client, Model=Model, n_workers=None, **kwargs)
+    
     t = time.time() - t
+    
     print('Done')
     print(f'Exec time: {t:.2f}s')
-    results_dir = f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/results/isolated/{CLIENT}'
-    os.makedirs(results_dir, exist_ok=True)
-    with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
+    os.makedirs(os.path.dirname(args.results), exist_ok=True)
+    with open(args.results, 'wb') as f:
         pickle.dump(results, f)
-    print(f'Saved results to {results_dir}/results.pkl\n')
-    
+    print(f'Saved results to {args.results}\n')

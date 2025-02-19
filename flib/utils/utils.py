@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import torch_geometric
 import torch_geometric.transforms
+import inspect
 
 def set_random_seed(seed:int=1):
     random.seed(seed)
@@ -51,13 +52,13 @@ def tensordatasets(train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.D
         testset = torch.utils.data.TensorDataset(x_test, y_test)
     elif test_df is None:
         testset = None
-    
+
     return trainset, valset, testset
 
-def dataloaders(trainset, valset, testset, batch_size=64, sampler=None):
+def dataloaders(trainset, valset, testset, batch_size=64, sampler=None, generator=None):
     if trainset is not None:
         shuffle = False if sampler is not None else True
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=shuffle, sampler=sampler)
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=shuffle, sampler=sampler, generator=generator)
     else:
         trainloader = None
     
@@ -113,4 +114,17 @@ def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_
             testset = torch_geometric.transforms.ToUndirected()(testset)
     
     return trainset, testset
-    
+
+def filter_args(class_type, args):
+    """
+    Filters kwargs to keep only valid arguments for a given class type.
+
+    Args:
+        class_type: The class (e.g., torch.optim.Adam, torch.nn.CrossEntropyLoss).
+        kwargs (dict): Dictionary of all potential arguments.
+
+    Returns:
+        dict: Filtered dictionary containing only relevant arguments.
+    """
+    valid_params = inspect.signature(class_type).parameters.keys()
+    return {k: v for k, v in args.items() if k in valid_params}

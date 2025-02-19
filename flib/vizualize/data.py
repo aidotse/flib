@@ -512,7 +512,7 @@ def plot(df:pd.DataFrame, plot_dir:str):
         pattern_hist(df_bank, os.path.join(plot_dir, bank, 'pattern_hist.png'))
         amount_hist(df_bank, os.path.join(plot_dir, bank, 'amount_hist.png'))
         spending_hist(df_bank, os.path.join(plot_dir, bank, 'spending_hist.png'))
-        n_txs_hist(df_bank, os.path.join(plot_dir, bank, 'n_txs_hist.png'))
+        n_txs_hist(df_bank, bank, os.path.join(plot_dir, bank, 'n_txs_hist.png'))
         n_spending_hist(df_bank, os.path.join(plot_dir, bank, 'n_spending_hist.png'))
         powerlaw_degree_dist(df_bank, os.path.join(plot_dir, bank, 'powerlaw_degree_dist.png'))
         graph(df_bank, os.path.join(plot_dir, bank, 'graph.png'), n_alerts=10)
