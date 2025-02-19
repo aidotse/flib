@@ -1,56 +1,47 @@
-import pandas as pd
-from flib.utils import set_random_seed
-from flib.train import Clients
-import pandas as pd
-import time
-import pickle
-import os
-import yaml
-from typing import Union, List
+from typing import Any, Dict
 
-def centralized(seed:int, n_workers:int, client_type:str, client_names:Union[str, List[str]], client_params:Union[str, List[dict]]):
-    set_random_seed(seed)
-    Client = getattr(Clients, client_type)
-    name = client_names[0] if isinstance(client_names, list) else client_names
-    params = client_params[0] if isinstance(client_params, list) else client_params
-    client = Client(name=name, seed=seed, **params)
-    results = {client.name:  client.run(**params)}
+def centralized(seed: int, Client: Any, Model: Any, **kwargs) -> Dict[str, Dict]:
+    
+    client = Client(id='cen', seed=seed, Model=Model, **kwargs)
+    results = {client.id:  client.run(**kwargs)}
+    
     return results
 
 if __name__ == '__main__':
     
-    EXPERIMENT = '3_banks_homo_easy' # '30K_accts', '3_banks_homo_mid'
-    CLIENT = 'LogRegClient'
+    import argparse
+    import os
+    import pickle
+    import time
+    import yaml
+    from flib import clients, models
     
-    params = {
-        'device': 'cuda:0',
-        'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/data/preprocessed/nodes_train.csv', 
-        'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/data/preprocessed/nodes_test.csv',
-        'valset_size': 0.2,
-        'batch_size': 2048,
-        'optimizer': 'Adam',
-        'optimizer_params': {
-            'lr': 0.01,
-            'weight_decay': 0.0,
-            'amsgrad': False,
-        },
-        'criterion': 'CrossEntropyLoss',
-        'criterion_params': {},
-        'rounds': 100,
-        'eval_every': 10,
-        'lr_patience': 100,
-        'es_patience': 100,
-        'hidden_dim': 64,
-    }
+    EXPERIMENT = '3_banks_homo_mid'
+    CLIENT_TYPE = 'TorchGeometricClient' # 'TorchClient', 'TorchGeometricClient'
+    MODEL_TYPE = 'GraphSAGE' # 'LogisticRegressor', 'MLP', 'GCN', 'GAT', 'GraphSAGE'
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, help='Path to config file.', default=f'experiments/{EXPERIMENT}/config.yaml')
+    parser.add_argument('--results', type=str, help='Path to results file.', default=f'experiments/{EXPERIMENT}/results/centralized/{MODEL_TYPE}/results.pkl')
+    parser.add_argument('--seed', type=int, help='Seed.', default=42)
+    parser.add_argument('--client_type', type=str, help='Client class.', default=CLIENT_TYPE)
+    parser.add_argument('--model_type', type=str, help='Model class.', default=MODEL_TYPE)
+    args = parser.parse_args()
     
     t = time.time()
-    results = centralized(seed=42, client=CLIENT, params=params)
+    
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+    kwargs = config[args.model_type]['default'] | config[args.model_type]['centralized']
+    Client = getattr(clients, args.client_type)
+    Model = getattr(models, args.model_type)
+    results = centralized(seed=args.seed, Client=Client, Model=Model, **kwargs)
+    
     t = time.time() - t
+    
     print('Done')
     print(f'Exec time: {t:.2f}s')
-    results_dir = f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/results/centralized/{CLIENT}'
-    os.makedirs(results_dir, exist_ok=True)
-    with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
+    os.makedirs(os.path.dirname(args.results), exist_ok=True)
+    with open(args.results, 'wb') as f:
         pickle.dump(results, f)
-    print(f'Saved results to {results_dir}/results.pkl\n')
-    
+    print(f'Saved results to {args.results}\n')
