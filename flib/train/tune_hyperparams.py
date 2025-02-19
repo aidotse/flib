@@ -1,92 +1,110 @@
 import optuna
-import inspect
-from flib.train import Clients
-import multiprocessing
 from flib.utils import set_random_seed 
-from flib.train.metrics import calculate_average_precision
-
+from typing import Any, Dict
 
 class HyperparamTuner():
-    def __init__(self, study_name, obj_fn, seed=42, n_workers=1, storage=None, client_type=None, client_names=None, client_data=None, client_params=None): #(self, study_name, obj_fn, train_dfs, val_dfs, seed=42, device='cpu', n_workers=1, storage=None, client=None, params=None):
+    def __init__(self, study_name: str, obj_fn: Any, params: Dict, search_space: Dict, Client: Any, Model: Any, Server: Any = None, seed: int = 42, n_workers: int = None, storage: str = None):
         self.study_name = study_name
         self.obj_fn = obj_fn
         self.seed = seed
         self.n_workers = n_workers
         self.storage = storage
-        self.client_type = client_type
-        self.client_names = client_names
-        self.client_data = client_data
-        self.client_params = client_params
-    
+        self.Server = Server 
+        self.Client = Client
+        self.Model = Model
+        self.params = params
+        self.search_space = search_space 
+
     def objective(self, trial: optuna.Trial):
-        params = {}
-        for param in self.client_params['search_space']:
-            if self.client_params['search_space'][param]['type'] == 'categorical':
-                params[param] = trial.suggest_categorical(param, self.client_params['search_space'][param]['values'])
-            elif self.client_params['search_space'][param]['type'] == 'integer':
-                params[param] = trial.suggest_int(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'])
-            elif self.client_params['search_space'][param]['type'] == 'float':
-                params[param] = trial.suggest_float(param, self.client_params['search_space'][param]['low'], self.client_params['search_space'][param]['high'], log=self.client_params['search_space'][param].get('log', False))
+        kwargs = {}
+        for param in self.search_space:
+            if self.search_space[param]['type'] == 'categorical':
+                kwargs[param] = trial.suggest_categorical(param, self.search_space[param]['values'])
+            elif self.search_space[param]['type'] == 'int':
+                kwargs[param] = trial.suggest_int(param, self.search_space[param]['low'], self.search_space[param]['high'])
+            elif self.search_space[param]['type'] == 'float':
+                kwargs[param] = trial.suggest_float(param, self.search_space[param]['low'], self.search_space[param]['high'], log=self.search_space[param].get('log', False))
             else:
-                params[param] = self.client_params['search_space'][param]    
-        for param in self.client_params['default']:
-            if param not in params:
-                if isinstance(self.client_params['default'][param], dict):
-                    params[param] = next(iter(self.client_params['default'][param]))
-                    params[param+'_params'] = {}
-                    for subparam in self.client_params['default'][param][params[param]]:
-                        params[param+'_params'][subparam] = self.client_params['default'][param][params[param]][subparam]
-                else:
-                    params[param] = self.client_params['default'][param]
-        client_names = []
-        client_params = []
-        for name, data in zip(self.client_names, self.client_data):
-            client_names.append(name)
-            client_params.append(data | params) 
-        
-        results = self.obj_fn(seed=self.seed, n_workers=self.n_workers, client_type=self.client_type, client_names=client_names, client_params=client_params)
-        
-        tpfptnfn = {threshold: {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0} for threshold in range(0, 101)}
+                kwargs[param] = self.search_space[param]
+        kwargs = self.params | kwargs
+        results = self.obj_fn(seed=self.seed, Server=self.Server, Client=self.Client, Model=self.Model, n_workers=self.n_workers, **kwargs)
+        average_precision = 0.0
         for client in results:
-            round = max(results[client].keys())
-            for threshold in range(0, 101):
-                tpfptnfn[threshold]['tp'] += results[client][round]['val']['tpfptnfn'][threshold]['tp']
-                tpfptnfn[threshold]['fp'] += results[client][round]['val']['tpfptnfn'][threshold]['fp']
-                tpfptnfn[threshold]['tn'] += results[client][round]['val']['tpfptnfn'][threshold]['tn']
-                tpfptnfn[threshold]['fn'] += results[client][round]['val']['tpfptnfn'][threshold]['fn']
-        
-        avg_pre = calculate_average_precision(tpfptnfn, (0.6, 1.0))
-        
-        return avg_pre
-    
+            average_precision += results[client]['valset']['average_precision'][-1] / len(results)        
+        return average_precision
+
     def optimize(self, n_trials=10):
-        # seet seed
         set_random_seed(self.seed)
-        
         study = optuna.create_study(storage=self.storage, sampler=optuna.samplers.TPESampler(seed=self.seed, multivariate=True), study_name=self.study_name, direction='maximize', load_if_exists=True, pruner=optuna.pruners.HyperbandPruner())
         study.optimize(self.objective, n_trials=n_trials, show_progress_bar=True)
         return study.best_trials
-        
-    #def optimize(self, n_trials=100, n_jobs=10):
-    #    # Create the study with RDB storage for parallel processing
-    #    study = optuna.create_study(storage=self.storage, 
-    #                                sampler=optuna.samplers.TPESampler(), 
-    #                                study_name=self.study_name, 
-    #                                direction='maximize', 
-    #                                load_if_exists=True,
-    #                                pruner = optuna.pruners.HyperbandPruner())
-    #    
-    #    
-    #    def run_study():
-    #        study.optimize(self.objective, n_trials=n_trials // n_jobs)
-    #
-    #    processes = []
-    #    for _ in range(n_jobs):
-    #        p = multiprocessing.Process(target=run_study)
-    #        p.start()
-    #        processes.append(p)
-    #
-    #    for p in processes:
-    #        p.join()
-    #
-    #    return study.best_trials
+
+if __name__ == '__main__':
+    
+    import argparse
+    import flib.train
+    import multiprocessing as mp
+    import os
+    import time
+    import yaml
+    from flib import servers, clients, models
+    
+    mp.set_start_method('spawn', force=True)
+    
+    EXPERIMENT = '3_banks_homo_easy'
+    SETTING = 'federated' # 'centralized', 'federated', 'isolated'
+    SERVER_TYPE = 'TorchServer'
+    CLIENT_TYPE = 'TorchGeometricClient' # 'TorchClient', 'TorchGeometricClient'
+    MODEL_TYPE = 'GCN' # 'LogisticRegressor', 'MLP', 'GCN'
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, help='Path to config file.', default=f'experiments/{EXPERIMENT}/config.yaml')
+    parser.add_argument('--study_name', type=str, help='Name of study.', default='hp_study')
+    parser.add_argument('--setting', type=str, help='Name of ojective function. Can be "centralized", "federated" or "isolated".', default=SETTING)
+    parser.add_argument('--client_type', type=str, help='Client class.', default=CLIENT_TYPE)
+    parser.add_argument('--model_type', type=str, help='Model class.', default=MODEL_TYPE)
+    parser.add_argument('--server_type', type=str, help='Server class.', default=SERVER_TYPE)
+    parser.add_argument('--seed', type=int, help='Seed.', default=42)
+    parser.add_argument('--n_workers', type=int, help='Number of workers. Defaults to number of clients.', default=None)
+    parser.add_argument('--n_trials', type=int, help='Number of trials.', default=2)
+    parser.add_argument('--results_dir', type=str, help='Path to directory for storage and result.', default=f'experiments/{EXPERIMENT}/results/{SETTING}/{MODEL_TYPE}')
+    args = parser.parse_args()
+    
+    t = time.time()
+    
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+    params = config[args.model_type]['default'] | config[args.model_type][args.setting]
+    search_space = config[args.model_type]['search_space']
+    os.makedirs(args.results_dir, exist_ok=True)
+    storage = 'sqlite:///' + os.path.join(args.results_dir, 'hp_study.db')
+    
+    hyperparamtuner = HyperparamTuner(
+        study_name = args.study_name,
+        obj_fn = getattr(flib.train, args.setting),
+        params = params,
+        search_space = search_space,
+        Client = getattr(clients, args.client_type),
+        Model = getattr(models, args.model_type),
+        Server = getattr(servers, args.server_type),
+        seed = args.seed,
+        n_workers = args.n_workers,
+        storage = storage
+    )
+    best_trials = hyperparamtuner.optimize(n_trials=args.n_trials)
+    
+    t = time.time() - t
+    
+    print('Done')
+    print(f'Exec time: {t:.2f}s')
+    best_trials_file = os.path.join(args.results_dir, 'best_trials.txt')
+    with open(best_trials_file, 'w') as f:
+        for trial in best_trials:
+            print(f'\ntrial: {trial.number}')
+            f.write(f'\ntrial: {trial.number}\n')
+            print(f'values: {trial.values}')
+            f.write(f'values: {trial.values}\n')
+            for param in trial.params:
+                f.write(f'{param}: {trial.params[param]}\n')
+                print(f'{param}: {trial.params[param]}')
+    print(f'Saved results to {best_trials_file}\n')

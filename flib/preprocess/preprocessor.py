@@ -13,9 +13,7 @@ class DataPreprocessor:
         self.test_start_step = config['test_start_step']
         self.test_end_step = config['test_end_step']
         self.include_edges = config['include_edges']
-        self.bank = config['bank'] if 'bank' in config else None
-        if self.bank == 'cen':
-            self.bank = None
+        self.bank = None
     
     
     def load_data(self, path:str) -> pd.DataFrame:
@@ -167,20 +165,14 @@ class DataPreprocessor:
             df_test = df_test[(df_test['bankOrig']==self.bank) & (df_test['bankDest']==self.bank)] if self.bank is not None else df_test
             df_edges_train = self.cal_edge_features(df=df_train, start_step=self.train_start_step, end_step=self.train_end_step, directional=True) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
             df_edges_test = self.cal_edge_features(df=df_test, start_step=self.test_start_step, end_step=self.test_end_step, directional=True)
-            return {'nodes_train': df_nodes_train, 'nodes_test': df_nodes_test, 'edges_train': df_edges_train, 'edges_test': df_edges_test}
+            return {'trainset_nodes': df_nodes_train, 'trainset_edges': df_edges_train, 'testset_nodes': df_nodes_test, 'testset_edges': df_edges_test}
         else:
-            return {'nodes_train': df_nodes_train, 'nodes_test': df_nodes_test}
+            return {'trainset_nodes': df_nodes_train, 'testset_nodes': df_nodes_test}
     
     
     def __call__(self, raw_data_file):
         print('\nPreprocessing data...', end='')
         raw_df = self.load_data(raw_data_file)
-        if self.bank is not None:
-            preprocessed_df = self.preprocess(raw_df)
-            print(' done\n')
-            return preprocessed_df
-        else:
-            preprocessed_df = self.preprocess(raw_df)
-            print(' done\n')
-            return preprocessed_df
-        
+        preprocessed_df = self.preprocess(raw_df)
+        print(' done\n')
+        return preprocessed_df

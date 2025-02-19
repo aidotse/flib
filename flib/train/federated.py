@@ -1,108 +1,63 @@
-from flib.train import Clients
-from flib.train.servers import Server
-from flib.utils import set_random_seed
-import multiprocessing as mp
-import torch
-import os
-import pickle
-import optuna
-import time
-import pandas as pd
-from typing import List
+from typing import Any, Dict
 
-def federated(seed:int, n_workers:int, client_type:str, client_names:List[str], client_params:List[dict]):
-    set_random_seed(seed)
-    try:
-        mp.set_start_method('spawn', force=True)
-    except RuntimeError:
-        print(f'Start method already set to {mp.get_start_method()}')
-        pass
-    Client = getattr(Clients, client_type)
+def federated(seed:int, Server: Any, Client: Any, Model: Any, n_workers: int = None, **kwargs) -> Dict:
+    
+    client_configs = kwargs.pop('clients')
     clients = []
-    for name, params in zip(client_names, client_params):
-        client = Client(name=name, seed=seed, **params)
-        clients.append(client)
-    server = Server(clients=clients, n_workers=n_workers)
-    results = server.run(**client_params[0])
+    for id, config in client_configs.items():
+        params = kwargs | config
+        clients.append(Client(id=id, seed=seed, Model=Model, **params))
+    
+    if n_workers is None:
+        n_workers = len(clients)
+
+    server = Server(seed=seed, Model=Model, clients=clients, n_workers=n_workers, **kwargs)
+    results = server.run(**kwargs)
+    
     return results
 
 if __name__ == '__main__':
     
-    EXPERIMENT = '3_banks_homo_easy' # '30K_accts', '3_banks_homo_mid'
-    CLIENT = 'LogRegClient'
+    import argparse
+    import multiprocessing as mp
+    import os
+    import pickle
+    import time
+    import yaml
+    from flib import servers, clients, models
     
-    client_names = ['c0', 'c1', 'c2']
-    client_params = [
-        {
-            'device': 'cuda:0',
-            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c0/data/preprocessed/nodes_train.csv', 
-            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c0/data/preprocessed/nodes_test.csv',
-            'valset_size': 0.2,
-            'batch_size': 2048,
-            'optimizer': 'Adam',
-            'optimizer_params': {
-                'lr': 0.01,
-                'weight_decay': 0.0,
-                'amsgrad': False,
-            },
-            'criterion': 'CrossEntropyLoss',
-            'criterion_params': {},
-            'rounds': 100,
-            'eval_every': 10,
-            'lr_patience': 100,
-            'es_patience': 100,
-            'hidden_dim': 64,
-        },
-        {
-            'device': 'cuda:0',
-            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c1/data/preprocessed/nodes_train.csv', 
-            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c1/data/preprocessed/nodes_test.csv',
-            'valset_size': 0.2,
-            'batch_size': 2048,
-            'optimizer': 'Adam',
-            'optimizer_params': {
-                'lr': 0.01,
-                'weight_decay': 0.0,
-                'amsgrad': False,
-            },
-            'criterion': 'CrossEntropyLoss',
-            'criterion_params': {},
-            'rounds': 100,
-            'eval_every': 10,
-            'lr_patience': 100,
-            'es_patience': 100,
-            'hidden_dim': 64,
-        },
-        {
-            'device': 'cuda:0',
-            'nodes_train': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c2/data/preprocessed/nodes_train.csv', 
-            'nodes_test': f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/clients/c2/data/preprocessed/nodes_test.csv',
-            'valset_size': 0.2,
-            'batch_size': 2048,
-            'optimizer': 'Adam',
-            'optimizer_params': {
-                'lr': 0.01,
-                'weight_decay': 0.0,
-                'amsgrad': False,
-            },
-            'criterion': 'CrossEntropyLoss',
-            'criterion_params': {},
-            'rounds': 100,
-            'eval_every': 10,
-            'lr_patience': 100,
-            'es_patience': 100,
-            'hidden_dim': 64,
-        }
-    ]
+    mp.set_start_method('spawn', force=True)
+    
+    EXPERIMENT = '3_banks_homo_mid'
+    SERVER_TYPE = 'TorchServer'
+    CLIENT_TYPE = 'TorchGeometricClient' # 'TorchClient', 'TorchGeometricClient'
+    MODEL_TYPE = 'GCN' # 'LogisticRegressor', 'MLP', 'GCN'
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, help='Path to config file.', default=f'experiments/{EXPERIMENT}/config.yaml')
+    parser.add_argument('--results', type=str, help='Path to results file.', default=f'experiments/{EXPERIMENT}/results/federated/{MODEL_TYPE}/results.pkl')
+    parser.add_argument('--seed', type=int, help='Seed.', default=42)
+    parser.add_argument('--n_workers', type=int, help='Number of workers. Default is number of clients.', default=None)
+    parser.add_argument('--server_type', type=str, help='Server class.', default=SERVER_TYPE)
+    parser.add_argument('--client_type', type=str, help='Client class.', default=CLIENT_TYPE)
+    parser.add_argument('--model_type', type=str, help='Model class.', default=MODEL_TYPE)
+    args = parser.parse_args()
     
     t = time.time()
-    results = federated(seed=42, n_workers=3, client_type=CLIENT, client_names=client_names, client_params=client_params)
+    
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+    kwargs = config[args.model_type]['default'] | config[args.model_type]['federated']
+    Server = getattr(servers, args.server_type)
+    Client = getattr(clients, args.client_type)
+    Model = getattr(models, args.model_type)
+    results = federated(seed=args.seed, Server=Server, Client=Client, Model=Model, n_workers=args.n_workers, **kwargs)
+    
     t = time.time() - t
+    
     print('Done')
     print(f'Exec time: {t:.2f}s')
-    results_dir = f'/home/edvin/Desktop/flib/experiments/experiments/{EXPERIMENT}/results/federated/{CLIENT}'
-    os.makedirs(results_dir, exist_ok=True)
-    with open(os.path.join(results_dir, 'results.pkl'), 'wb') as f:
+    os.makedirs(os.path.dirname(args.results), exist_ok=True)
+    with open(args.results, 'wb') as f:
         pickle.dump(results, f)
-    print(f'Saved results to {results_dir}/results.pkl\n')
-    
+    print(f'Saved results to {args.results}\n')
