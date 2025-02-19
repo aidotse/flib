@@ -11,7 +11,7 @@ def main():
     
     mp.set_start_method('spawn', force=True)
     
-    EXPERIMENT = '3_banks_homo_easy'
+    EXPERIMENT = '3_banks_homo_mid'
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, help='Path to config file.', default=f'experiments/{EXPERIMENT}/config.yaml')

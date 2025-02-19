@@ -7,7 +7,7 @@ from time import time
 
 def main():
     
-    DATASET = '1_bank_homo_mid' # '10K_accts', '1_bank_homo_mid'
+    DATASET = '1_bank_homo_mid'
     
     # Parse arguments
     parser = argparse.ArgumentParser()
@@ -21,10 +21,6 @@ def main():
     generator = DataGenerator(args.conf_file)
     preprocessor = DataPreprocessor(args.conf_file, args.bank)
     tuner = DataTuner(conf_file=args.conf_file, generator=generator, preprocessor=preprocessor, target=0.01, utility=args.utility, model='DecisionTreeClassifier')
-    
-    # print minimal possible target
-    #min = tuner.calc_min()
-    #print(f'\nminimla achivable {args.utility}: {min}\n')
     
     # Tune the temporal sar parameters
     t = time()

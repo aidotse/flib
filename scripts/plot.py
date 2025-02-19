@@ -4,7 +4,7 @@ from flib.vizualize import plot_metrics
 
 def main():
     
-    EXPERIMENT = '3_banks_homo_easy'
+    EXPERIMENT = '3_banks_homo_mid'
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--clients', nargs='+', help='Clients to include. If omited all clients will be included.', default=None)
