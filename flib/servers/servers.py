@@ -50,6 +50,17 @@ class TorchServer():
             gradients.append(client.compute_gradients())
         return ids, gradients
     
+    def train_clients(self, clients: List, seed: int):
+        """Train clients.
+
+        Args:
+            clients (List): Clients to train.
+            seed (int): Seed.
+        """
+        for client in clients:
+            set_random_seed(seed)
+            client.train()
+    
     def evaluate_clients(self, clients: List, dataset: str) -> Tuple[List, List, List, List]:
         """Evaluates clients.
 

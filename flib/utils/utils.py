@@ -78,7 +78,7 @@ def decrease_lr(optimizer, factor=0.1):
     for param_group in optimizer.param_groups:
         param_group['lr'] *= factor
 
-def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_nodes_df:pd.DataFrame, test_edges_df:pd.DataFrame, device='cpu', directed=False):
+def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, val_nodes_df:pd.DataFrame, val_edges_df:pd.DataFrame, test_nodes_df:pd.DataFrame, test_edges_df:pd.DataFrame, device='cpu', directed=False):
     node_to_index = {id: idx for idx, id in enumerate(train_nodes_df['node'])}
     train_nodes_np = train_nodes_df.drop(columns='node').to_numpy()
     x_train_nodes = train_nodes_np[:, :-1]
@@ -94,6 +94,24 @@ def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_
     trainset = torch_geometric.data.Data(x=x_train_nodes, edge_index=train_edges_index, y=y_train_nodes)
     if not directed:
         trainset = torch_geometric.transforms.ToUndirected()(trainset)
+    
+    if val_nodes_df is None:
+        valset = None
+    else:
+        node_to_index = {id: idx for idx, id in enumerate(val_nodes_df['node'])}
+        val_nodes_np = val_nodes_df.drop(columns='node').to_numpy()
+        x_val_nodes = val_nodes_np[:, :-1]
+        y_val_nodes = val_nodes_np[:, -1]
+        x_val_nodes = scaler.transform(x_val_nodes)
+        x_val_nodes = torch.tensor(x_val_nodes, dtype=torch.float32).to(device)
+        y_val_nodes = torch.tensor(y_val_nodes, dtype=torch.int64).to(device)
+        val_edges_df['src'] = val_edges_df['src'].map(node_to_index)
+        val_edges_df['dst'] = val_edges_df['dst'].map(node_to_index)
+        val_edges = val_edges_df[['src', 'dst']].to_numpy()
+        val_edge_index = torch.tensor(val_edges.T).to(device)
+        valset = torch_geometric.data.Data(x=x_val_nodes, edge_index=val_edge_index, y=y_val_nodes)
+        if not directed:
+            valset = torch_geometric.transforms.ToUndirected()(valset)
     
     if test_nodes_df is None:
         testset = None
@@ -113,7 +131,7 @@ def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, test_
         if not directed:
             testset = torch_geometric.transforms.ToUndirected()(testset)
     
-    return trainset, testset
+    return trainset, valset, testset
 
 def filter_args(class_type, args):
     """

@@ -211,7 +211,7 @@ class TorchGeometricClient():
     PyTorchGeometric-specific client for training and evaluation. 
     Can run in isolation and federation.
     """
-    def __init__(self, id: str, seed: int, device: str, trainset_nodes: str, testset_nodes: str, trainset_edges: str, testset_edges: str, valset_size: float, Model: Any, optimizer: str, criterion: str, **kwargs):
+    def __init__(self, id: str, seed: int, device: str, trainset_nodes: str, trainset_edges: str, Model: Any, optimizer: str, criterion: str, valset_nodes: str = None, valset_edges: str = None, valset_size: float = 0.0, testset_nodes: str = None, testset_edges: str = None, testset_size: float = 0.0, **kwargs):
         self.id = id
         self.seed = seed
         self.device = device
@@ -221,12 +221,14 @@ class TorchGeometricClient():
         
         train_nodes_df = pd.read_csv(trainset_nodes).drop(columns=['bank']).rename(columns={'account': 'node'})
         train_edges_df = pd.read_csv(trainset_edges)
-        test_nodes_df = pd.read_csv(testset_nodes).drop(columns=['bank']).rename(columns={'account': 'node'})
-        test_edges_df = pd.read_csv(testset_edges)
+        val_nodes_df = pd.read_csv(valset_nodes).drop(columns=['bank']).rename(columns={'account': 'node'}) if valset_nodes is not None else None
+        val_edges_df = pd.read_csv(valset_edges) if valset_edges is not None else None
+        test_nodes_df = pd.read_csv(testset_nodes).drop(columns=['bank']).rename(columns={'account': 'node'}) if testset_nodes is not None else None
+        test_edges_df = pd.read_csv(testset_edges) if testset_edges is not None else None
         
-        self.trainset, self.testset = graphdataset(train_nodes_df, train_edges_df, test_nodes_df, test_edges_df, device=device)
-        self.trainset = torch_geometric.transforms.RandomNodeSplit(split='train_rest', num_val=valset_size, num_test=0)(self.trainset)
-        
+        self.trainset, self.valset, self.testset = graphdataset(train_nodes_df, train_edges_df, val_nodes_df, val_edges_df, test_nodes_df, test_edges_df, device=device)
+        self.trainset = torch_geometric.transforms.RandomNodeSplit(split='train_rest', num_val=valset_size, num_test=testset_size)(self.trainset)
+            
         self.model = Model(**filter_args(Model, kwargs)).to(self.device)
         Optimizer = getattr(torch.optim, optimizer)
         self.optimizer = Optimizer(self.model.parameters(), **filter_args(Optimizer, kwargs))
@@ -258,11 +260,19 @@ class TorchGeometricClient():
             dataset = self.trainset
             mask = dataset.train_mask
         elif dataset == 'valset':
-            dataset = self.trainset
-            mask = dataset.val_mask
+            if self.valset is not None:
+                dataset = self.valset
+                mask = torch.tensor([True] * len(dataset.y))
+            else:
+                dataset = self.trainset
+                mask = dataset.val_mask
         elif dataset == 'testset':
-            dataset = self.testset
-            mask = torch.tensor([True] * len(dataset.y))
+            if self.testset is not None:
+                dataset = self.testset
+                mask = torch.tensor([True] * len(dataset.y))
+            else:
+                dataset = self.trainset
+                mask = dataset.test_mask
         self.model.eval()
         with torch.no_grad():
             y_pred = self.model(dataset)
@@ -351,13 +361,12 @@ class TorchGeometricClient():
 
     def compute_gradients(self) -> Dict[str, torch.Tensor]:
         """Train and retrive gradients"""
-        params_before = self.get_parameters()
-        self.train()
-        params_after = self.get_parameters()
-        gradients = {}
-        with torch.no_grad():
-            for name in params_before:
-                gradients[name] = params_before[name] - params_after[name]
+        self.model.train()
+        self.model.zero_grad()
+        y_pred = self.model(self.trainset)
+        loss = self.criterion(y_pred[self.trainset.train_mask], self.trainset.y[self.trainset.train_mask])
+        loss.backward()
+        gradients = self.get_gradients()
         return gradients
     
     def log(self, dataset: str, y_pred: np.ndarray, y_true: np.ndarray, round: int = None, loss: float = None, metrics: List[str] = None):
