@@ -10,6 +10,8 @@ class DataPreprocessor:
         self.window_len = config['window_len']
         self.train_start_step = config['train_start_step']
         self.train_end_step = config['train_end_step']
+        self.val_start_step = config['val_start_step']
+        self.val_end_step = config['val_end_step']
         self.test_start_step = config['test_start_step']
         self.test_end_step = config['test_end_step']
         self.include_edges = config['include_edges']
@@ -154,20 +156,29 @@ class DataPreprocessor:
 
     def preprocess(self, df:pd.DataFrame):
         df_train = df[(df['step'] >= self.train_start_step) & (df['step'] <= self.train_end_step)]
+        df_val = df[(df['step'] >= self.val_start_step) & (df['step'] <= self.val_end_step)]
         df_test = df[(df['step'] >= self.test_start_step) & (df['step'] <= self.test_end_step)]
         df_nodes_train = self.cal_node_features(df_train, self.train_start_step, self.train_end_step)
+        df_nodes_val = self.cal_node_features(df_val, self.val_start_step, self.val_end_step)
         df_nodes_test = self.cal_node_features(df_test, self.test_start_step, self.test_end_step)
         
         if self.include_edges:
             df_train = df_train[(df_train['bankOrig'] != 'source') & (df_train['bankDest'] != 'sink')]
+            df_val = df_val[(df_val['bankOrig'] != 'source') & (df_val['bankDest'] != 'sink')]
             df_test = df_test[(df_test['bankOrig'] != 'source') & (df_test['bankDest'] != 'sink')]
+            
             df_train = df_train[(df_train['bankOrig']==self.bank) & (df_train['bankDest']==self.bank)] if self.bank is not None else df_train
+            df_val = df_val[(df_val['bankOrig']==self.bank) & (df_val['bankDest']==self.bank)] if self.bank is not None else df_val
             df_test = df_test[(df_test['bankOrig']==self.bank) & (df_test['bankDest']==self.bank)] if self.bank is not None else df_test
+            
             df_edges_train = self.cal_edge_features(df=df_train, start_step=self.train_start_step, end_step=self.train_end_step, directional=True) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
+            df_edges_val = self.cal_edge_features(df=df_val, start_step=self.val_start_step, end_step=self.val_end_step, directional=True) # TODO: enable edges to/from the bank? the node features use these txs but unclear how to ceate a edge in this case, the edge can't be connected to a node with node features (could create node features based on edge txs, then the node features and edge features will look the same and some node features will be missing)
             df_edges_test = self.cal_edge_features(df=df_test, start_step=self.test_start_step, end_step=self.test_end_step, directional=True)
-            return {'trainset_nodes': df_nodes_train, 'trainset_edges': df_edges_train, 'testset_nodes': df_nodes_test, 'testset_edges': df_edges_test}
+            return {'trainset_nodes': df_nodes_train, 'trainset_edges': df_edges_train, 
+                    'valset_nodes': df_nodes_val, 'valset_edges': df_edges_val,
+                    'testset_nodes': df_nodes_test, 'testset_edges': df_edges_test}
         else:
-            return {'trainset_nodes': df_nodes_train, 'testset_nodes': df_nodes_test}
+            return {'trainset_nodes': df_nodes_train, 'valset_nodes': df_nodes_val, 'testset_nodes': df_nodes_test}
     
     
     def __call__(self, raw_data_file):

@@ -27,6 +27,12 @@ def main(config: Dict):
         df_edges = datasets['trainset_edges']
         df_edges[(df_edges['src'].isin(unique_nodes)) & (df_edges['dst'].isin(unique_nodes))].to_csv(os.path.join(config['preprocess']['preprocessed_data_dir'], 'clients', bank, 'trainset_edges.csv'), index=False)
         
+        df_nodes = datasets['valset_nodes']
+        df_nodes[df_nodes['bank'] == bank].to_csv(os.path.join(config['preprocess']['preprocessed_data_dir'], 'clients', bank, 'valset_nodes.csv'), index=False)
+        unique_nodes = df_nodes[df_nodes['bank'] == bank]['account'].unique()
+        df_edges = datasets['valset_edges']
+        df_edges[(df_edges['src'].isin(unique_nodes)) & (df_edges['dst'].isin(unique_nodes))].to_csv(os.path.join(config['preprocess']['preprocessed_data_dir'], 'clients', bank, 'valset_edges.csv'), index=False)
+        
         df_nodes = datasets['testset_nodes']
         df_nodes[df_nodes['bank'] == bank].to_csv(os.path.join(config['preprocess']['preprocessed_data_dir'], 'clients', bank, 'testset_nodes.csv'), index=False)
         unique_nodes = df_nodes[df_nodes['bank'] == bank]['account'].unique()
