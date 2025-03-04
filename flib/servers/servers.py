@@ -91,7 +91,7 @@ class TorchServer():
                 avg_gradients[name] = torch.mean(torch.stack([grads[name] for grads in gradients]), dim=0)
         return avg_gradients
     
-    def run(self, n_rounds: int = 100, eval_every: int = 5, lr_patience: int = 10, es_patience: int = 20, **kwargs) -> Dict:
+    def run(self, n_rounds: int = 100, eval_every: int = 5, lr_patience: int = 10, es_patience: int = 20, n_warmup_rounds: int = 50, **kwargs) -> Dict:
         """
         Run training and evaluation loop.
         
@@ -124,11 +124,11 @@ class TorchServer():
                     self.log(id=id, dataset='trainset', round=0, loss=loss, y_pred=y_pred, y_true=y_true)
                     previous_train_loss += loss / len(self.clients)
             results = p.starmap(self.evaluate_clients, [(client_split, 'valset') for client_split in client_splits])
-            previous_val_average_precision = 0.0
+            previous_es_value = 0.0
             for result in results:
                 for id, loss, y_pred, y_true in zip(result[0], result[1], result[2], result[3]):
                     self.log(id=id, dataset='valset', round=0, loss=loss, y_pred=y_pred, y_true=y_true)
-                    previous_val_average_precision += average_precision_score(y_true, y_pred[:,1], recall_span=(0.6, 1.0)) / len(self.clients)
+                    previous_es_value += average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0)) / len(self.clients)
             
             for round in tqdm(range(1, n_rounds+1), desc='progress', leave=False):
                 
@@ -166,19 +166,19 @@ class TorchServer():
                 
                 if round % eval_every == 0:
                     results = p.starmap(self.evaluate_clients, [(client_split, 'valset') for client_split in client_splits])
-                    val_average_precision = 0.0
+                    es_value = 0.0
                     for result in results:
                         for id, loss, y_pred, y_true in zip(result[0], result[1], result[2], result[3]):
                             self.log(id=id, dataset='valset', round=round, loss=loss, y_pred=y_pred, y_true=y_true)
-                            val_average_precision += average_precision_score(y_true, y_pred[:,1], recall_span=(0.6, 1.0)) / len(self.clients)
-                    if val_average_precision <= previous_val_average_precision:
+                            es_value += average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0)) / len(self.clients)
+                    if es_value <= previous_es_value and round > n_warmup_rounds:
                         es_patience -= eval_every
-                    else:
-                        es_patience = es_patience_reset
+                    # else:
+                    #     es_patience = es_patience_reset
                     if es_patience <= 0:
                         tqdm.write(f'Early stopping, round: {round}')
                         break
-                    previous_val_average_precision = val_average_precision
+                    previous_es_value = es_value
             
             results = p.starmap(self.evaluate_clients, [(client_split, 'trainset') for client_split in client_splits])
             for result in results:
@@ -226,18 +226,18 @@ class TorchServer():
 
         for metric in metrics:
             if metric == 'accuracy':
-                self.results[id][dataset]['accuracy'].append(accuracy_score(y_true, (y_pred[:, 1] > 0.5)))
+                self.results[id][dataset]['accuracy'].append(accuracy_score(y_true, (y_pred > 0.5)))
             elif metric == 'average_precision':
-                self.results[id][dataset]['average_precision'].append(average_precision_score(y_true, y_pred[:, 1], recall_span=(0.6, 1.0)))
+                self.results[id][dataset]['average_precision'].append(average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0)))
             elif metric == 'balanced_accuracy':
-                self.results[id][dataset]['balanced_accuracy'].append(balanced_accuracy_score(y_true, (y_pred[:, 1] > 0.5)))
+                self.results[id][dataset]['balanced_accuracy'].append(balanced_accuracy_score(y_true, (y_pred > 0.5)))
             elif metric == 'f1':
-                self.results[id][dataset]['f1'].append(f1_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[id][dataset]['f1'].append(f1_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'precision':
-                self.results[id][dataset]['precision'].append(precision_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[id][dataset]['precision'].append(precision_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'recall':
-                self.results[id][dataset]['recall'].append(recall_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[id][dataset]['recall'].append(recall_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'precision_recall_curve':
-                self.results[id][dataset]['precision_recall_curve'] = precision_recall_curve(y_true, y_pred[:, 1])
+                self.results[id][dataset]['precision_recall_curve'] = precision_recall_curve(y_true, y_pred)
             elif metric == 'roc_curve':
-                self.results[id][dataset]['roc_curve'] = roc_curve(y_true, y_pred[:, 1])
+                self.results[id][dataset]['roc_curve'] = roc_curve(y_true, y_pred)
