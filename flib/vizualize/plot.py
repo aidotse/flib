@@ -134,7 +134,12 @@ def plot_metrics(data: dict, dir: str, metrics: List[str], clients: List[str], d
                         plt.plot(reduced_data[dataset]["round"], reduced_data[dataset][metric], "-o", label=dataset)
                         plt.xlabel("round")
                         plt.ylabel(metric)
-                plt.legend()
+                if metric not in ['precision_recall_curve', 'roc_curve']:
+                    plt.legend()
+                if metric in ['average_precision', 'f1', 'precision', 'precision_recall_curve']:
+                    plt.yscale('log')
+                elif metric == 'loss':
+                    plt.ylim(0.0, 8.0)
                 plt.grid()
                 plt.tight_layout()
                 plt.savefig(os.path.join(dir, "png", f"{metric}.png"))
@@ -177,7 +182,11 @@ def plot_metrics(data: dict, dir: str, metrics: List[str], clients: List[str], d
                             plt.plot(x, y, '-o', label=f'{client}: {dataset}')
                             plt.xlabel("round")
                             plt.ylabel(metric)
-                plt.legend()
+                # plt.legend()
+                if metric in ['average_precision', 'f1', 'precision']:
+                    plt.yscale('log')
+                elif metric == 'loss':
+                    plt.ylim(0.0, 6.0)
                 plt.grid()
                 plt.tight_layout()
                 plt.savefig(os.path.join(dir, "png", f"{metric}.png"))

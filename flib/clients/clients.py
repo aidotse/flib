@@ -14,7 +14,7 @@ class TorchClient():
     PyTorch-specific client for training and evaluation. 
     Can run in isolation and federation.
     """
-    def __init__(self, id: str, seed: int, device: str, trainset: str, testset: str, valset_size: float, batch_size: int, Model: Any, optimizer: str, criterion: str, **kwargs):
+    def __init__(self, id: str, seed: int, device: str, trainset: str, batch_size: int, Model: Any, optimizer: str, criterion: str, trainset_size: float = None, valset_size: float = None, testset_size: float  = None, valset: str = None, testset: str = None, **kwargs):
         self.id = id
         self.seed = seed
         self.device = device
@@ -23,9 +23,20 @@ class TorchClient():
         set_random_seed(self.seed)
         
         train_df = pd.read_csv(trainset).drop(columns=['account', 'bank'])
-        val_df = train_df.sample(frac=valset_size, random_state=seed)
-        train_df = train_df.drop(val_df.index)
-        test_df = pd.read_csv(testset).drop(columns=['account', 'bank'])
+        n = len(train_df)
+        if valset is not None:
+            val_df = pd.read_csv(valset).drop(columns=['account', 'bank'])
+        else:
+            val_df = train_df.sample(n = n * valset_size, random_state=seed)
+            train_df = train_df.drop(val_df.index)
+        if testset is not None:
+            test_df = pd.read_csv(testset).drop(columns=['account', 'bank'])
+        else:
+            test_df = train_df.sample(n = n * testset_size, random_state=seed)
+            train_df = train_df.drop(test_df.index)
+        if trainset_size is not None:
+            train_df = train_df.sample(n = n * trainset_size, random_state=seed)
+            
         self.trainset, self.valset, self.testset = tensordatasets(train_df, val_df, test_df, normalize=True, device=self.device)
         y=self.trainset.tensors[1].clone().detach().cpu()
         class_counts = torch.bincount(y)
@@ -70,9 +81,9 @@ class TorchClient():
         with torch.no_grad():
             y_pred = self.model(dataset.tensors[0])
             loss = self.criterion(y_pred, dataset.tensors[1]).item()
-        return loss, y_pred.cpu().numpy(), dataset.tensors[1].cpu().numpy()
+        return loss, torch.sigmoid(y_pred).cpu().numpy(), dataset.tensors[1].cpu().numpy()
     
-    def run(self, n_rounds: int = 100, eval_every: int = 5, lr_patience: int = 10, es_patience: int = 20, **kwargs) -> Dict:
+    def run(self, n_rounds: int = 100, eval_every: int = 5, lr_patience: int = 10, es_patience: int = 20, n_warmup_rounds: int = 30, **kwargs) -> Dict:
         """
         Run training and evaluation loop.
         
@@ -118,10 +129,10 @@ class TorchClient():
                 loss, y_pred, y_true = self.evaluate(dataset='valset')
                 self.log(dataset='valset', round=round, loss=loss, y_pred=y_pred, y_true=y_true)
                 val_average_precision = average_precision_score(y_true, y_pred[:,1], recall_span=(0.6, 1.0))
-                if val_average_precision <= previous_val_average_precision:
+                if val_average_precision <= previous_val_average_precision and round > n_warmup_rounds:
                     es_patience -= eval_every
-                else:
-                    es_patience = es_patience_reset
+                # else:
+                #     es_patience = es_patience_reset
                 if es_patience <= 0:
                     tqdm.write(f"Early stopping, round: {round}")
                     break
@@ -211,7 +222,7 @@ class TorchGeometricClient():
     PyTorchGeometric-specific client for training and evaluation. 
     Can run in isolation and federation.
     """
-    def __init__(self, id: str, seed: int, device: str, trainset_nodes: str, trainset_edges: str, Model: Any, optimizer: str, criterion: str, valset_nodes: str = None, valset_edges: str = None, valset_size: float = 0.0, testset_nodes: str = None, testset_edges: str = None, testset_size: float = 0.0, **kwargs):
+    def __init__(self, id: str, seed: int, device: str, trainset_nodes: str, trainset_edges: str, Model: Any, optimizer: str, criterion: str, trainset_size: float = None, valset_nodes: str = None, valset_edges: str = None, valset_size: float = 0.0, testset_nodes: str = None, testset_edges: str = None, testset_size: float = 0.0, **kwargs):
         self.id = id
         self.seed = seed
         self.device = device
@@ -227,22 +238,26 @@ class TorchGeometricClient():
         test_edges_df = pd.read_csv(testset_edges) if testset_edges is not None else None
         
         self.trainset, self.valset, self.testset = graphdataset(train_nodes_df, train_edges_df, val_nodes_df, val_edges_df, test_nodes_df, test_edges_df, device=device)
-        self.trainset = torch_geometric.transforms.RandomNodeSplit(split='train_rest', num_val=valset_size, num_test=testset_size)(self.trainset)
-            
+        if trainset_size is not None:
+            class_counts = torch.bincount(self.trainset.y)
+            self.trainset = torch_geometric.transforms.RandomNodeSplit(split='train_rest', num_val=valset_size, num_test=testset_size)(self.trainset)
+        else:
+            self.trainset = torch_geometric.transforms.RandomNodeSplit(split='random', num_val=valset_size, num_test=testset_size)(self.trainset)
+        
         self.model = Model(**filter_args(Model, kwargs)).to(self.device)
         Optimizer = getattr(torch.optim, optimizer)
         self.optimizer = Optimizer(self.model.parameters(), **filter_args(Optimizer, kwargs))
         Criterion = getattr(torch.nn, criterion)
         class_counts = torch.bincount(self.trainset.y)
         weight = class_counts.max() / class_counts
-        self.criterion = Criterion(weight = weight, **filter_args(Criterion, kwargs))
+        self.criterion = Criterion(pos_weight = weight[1], **filter_args(Criterion, kwargs))
     
     def train(self):
         """Train the model on local dataset."""
         self.model.train()
         self.optimizer.zero_grad()
         y_pred = self.model(self.trainset)
-        loss = self.criterion(y_pred[self.trainset.train_mask], self.trainset.y[self.trainset.train_mask])
+        loss = self.criterion(y_pred[self.trainset.train_mask], self.trainset.y[self.trainset.train_mask].to(torch.float32))
         loss.backward()
         self.optimizer.step()
     
@@ -276,10 +291,10 @@ class TorchGeometricClient():
         self.model.eval()
         with torch.no_grad():
             y_pred = self.model(dataset)
-            loss = self.criterion(y_pred[mask], dataset.y[mask]).item()
-        return loss, y_pred.cpu().numpy(), dataset.y.cpu().numpy()
+            loss = self.criterion(y_pred[mask], dataset.y[mask].to(torch.float32)).item()
+        return loss, torch.sigmoid(y_pred[mask]).cpu().numpy(), dataset.y[mask].cpu().numpy()
     
-    def run(self, n_rounds: int = 100, eval_every: int = 5, lr_patience: int = 10, es_patience: int = 20, **kwargs) -> Dict:
+    def run(self, n_rounds: int = 100, eval_every: int = 5, lr_patience: int = 10, es_patience: int = 20, n_warmup_rounds: int = 30, **kwargs) -> Dict:
         """
         Run training and evaluation loop.
         
@@ -301,7 +316,7 @@ class TorchGeometricClient():
         
         loss, y_pred, y_true = self.evaluate(dataset='valset')
         self.log(dataset='valset', round=0, loss=loss, y_pred=y_pred, y_true=y_true)
-        previous_val_average_precision = average_precision_score(y_true, y_pred[:,1], recall_span=(0.6, 1.0))
+        previous_es_value = average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0))
         
         for round in tqdm(range(1, n_rounds+1), desc='progress', leave=False):
             
@@ -324,15 +339,15 @@ class TorchGeometricClient():
             if round % eval_every == 0:
                 loss, y_pred, y_true = self.evaluate(dataset='valset')
                 self.log(dataset='valset', round=round, loss=loss, y_pred=y_pred, y_true=y_true)
-                val_average_precision = average_precision_score(y_true, y_pred[:,1], recall_span=(0.6, 1.0))
-                if val_average_precision <= previous_val_average_precision:
+                es_value = average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0))
+                if es_value <= previous_es_value and round > n_warmup_rounds:
                     es_patience -= eval_every
-                else:
-                    es_patience = es_patience_reset
+                # else:
+                #     es_patience = es_patience_reset
                 if es_patience <= 0:
                     tqdm.write(f"Early stopping, round: {round}")
                     break
-                previous_val_average_precision = val_average_precision
+                previous_es_value = es_value
         
         loss, y_pred, y_true = self.evaluate(dataset='trainset')
         self.log(dataset='trainset', y_pred=y_pred, y_true=y_true, metrics=['precision_recall_curve', 'roc_curve'])
@@ -364,7 +379,7 @@ class TorchGeometricClient():
         self.model.train()
         self.model.zero_grad()
         y_pred = self.model(self.trainset)
-        loss = self.criterion(y_pred[self.trainset.train_mask], self.trainset.y[self.trainset.train_mask])
+        loss = self.criterion(y_pred[self.trainset.train_mask], self.trainset.y[self.trainset.train_mask].to(torch.float32))
         loss.backward()
         gradients = self.get_gradients()
         return gradients
@@ -396,18 +411,18 @@ class TorchGeometricClient():
 
         for metric in metrics:
             if metric == 'accuracy':
-                self.results[dataset]['accuracy'].append(accuracy_score(y_true, (y_pred[:, 1] > 0.5)))
+                self.results[dataset]['accuracy'].append(accuracy_score(y_true, (y_pred > 0.5)))
             elif metric == 'average_precision':
-                self.results[dataset]['average_precision'].append(average_precision_score(y_true, y_pred[:, 1], recall_span=(0.6, 1.0)))
+                self.results[dataset]['average_precision'].append(average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0)))
             elif metric == 'balanced_accuracy':
-                self.results[dataset]['balanced_accuracy'].append(balanced_accuracy_score(y_true, (y_pred[:, 1] > 0.5)))
+                self.results[dataset]['balanced_accuracy'].append(balanced_accuracy_score(y_true, (y_pred > 0.5)))
             elif metric == 'f1':
-                self.results[dataset]['f1'].append(f1_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[dataset]['f1'].append(f1_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'precision':
-                self.results[dataset]['precision'].append(precision_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[dataset]['precision'].append(precision_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'recall':
-                self.results[dataset]['recall'].append(recall_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[dataset]['recall'].append(recall_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'precision_recall_curve':
-                self.results[dataset]['precision_recall_curve'] = precision_recall_curve(y_true, y_pred[:, 1])
+                self.results[dataset]['precision_recall_curve'] = precision_recall_curve(y_true, y_pred)
             elif metric == 'roc_curve':
-                self.results[dataset]['roc_curve'] = roc_curve(y_true, y_pred[:, 1])
+                self.results[dataset]['roc_curve'] = roc_curve(y_true, y_pred)

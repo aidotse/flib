@@ -41,7 +41,7 @@ def main(config: Dict):
         
 if __name__ == "__main__":
     
-    EXPERIMENT = '3_banks_homo_mid'
+    EXPERIMENT = '12_banks_homo_mid'
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, help='Path to the config file.', default=f'experiments/{EXPERIMENT}/config.yaml')

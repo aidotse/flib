@@ -11,9 +11,7 @@ class LogisticRegressor(TorchBaseModel):
         
     def forward(self, x):
         x = self.linear(x)
-        x = torch.sigmoid(x)
-        outputs = torch.cat((1.0 - x, x), dim=1)
-        return outputs
+        return x.squeeze()
 
 class MLP(TorchBaseModel):
     def __init__(self, input_dim: int, n_hidden_layers: int, hidden_dim: int, output_dim: int):
@@ -25,12 +23,13 @@ class MLP(TorchBaseModel):
     def forward(self, x):
         x = F.relu(self.input_layer(x))
         for layer in self.hidden_layers:
-            x = F.relu(layer(x))
+            x = layer(x)
+            x = F.relu(x)
         x = self.output_layer(x)
-        return torch.softmax(x, dim=-1)
+        return x.squeeze()
 
 class GCN(TorchBaseModel):
-    def __init__(self, input_dim:int, n_conv_layers:int, hidden_dim:int, output_dim:int, dropout:float=0.2):
+    def __init__(self, input_dim:int, n_conv_layers:int, hidden_dim:int, output_dim:int, dropout:float=0.8):
         super().__init__()
         self.dropout = dropout
         self.input_layer = torch_geometric.nn.Linear(input_dim, hidden_dim)
@@ -47,7 +46,7 @@ class GCN(TorchBaseModel):
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout)
         x = self.output_layer(x)
-        return torch.softmax(x, dim=-1)
+        return x.squeeze()
     
     # Overriding method
     def get_gradients(self) -> Dict[str, torch.Tensor]:
@@ -97,7 +96,7 @@ class GAT(TorchBaseModel):
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout)
         x = self.output_layer(x)
-        return torch.softmax(x, dim=-1)
+        return x.squeeze()
     
     # Overriding method
     def get_gradients(self) -> Dict[str, torch.Tensor]:
@@ -147,7 +146,7 @@ class GraphSAGE(TorchBaseModel):
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout)
         x = self.output_layer(x)
-        return torch.softmax(x, dim=-1)
+        return x.squeeze()
     
     # Overriding method
     def get_gradients(self) -> Dict[str, torch.Tensor]:

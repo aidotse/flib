@@ -30,9 +30,12 @@ class DataPreprocessor:
         accounts = pd.unique(df_bank[['nameOrig', 'nameDest']].values.ravel('K'))
         if self.num_windows * self.window_len < end_step - start_step:
             raise ValueError(f'Number of windows {self.num_windows} and the windows length {self.window_len} do not allow coverage of the whole dataset. Inceasing number of windows or length of windows')
-        window_overlap = (self.num_windows * self.window_len - (end_step - start_step + 1)) // (self.num_windows - 1)
-        windows = [(start_step + i*(self.window_len-window_overlap), start_step + i*(self.window_len-window_overlap) + self.window_len-1) for i in range(self.num_windows)]
-        windows[-1] = (end_step - self.window_len + 1, end_step)
+        if self.num_windows > 1:
+            window_overlap = (self.num_windows * self.window_len - (end_step - start_step + 1)) // (self.num_windows - 1)
+            windows = [(start_step + i*(self.window_len-window_overlap), start_step + i*(self.window_len-window_overlap) + self.window_len-1) for i in range(self.num_windows)]
+            windows[-1] = (end_step - self.window_len + 1, end_step)
+        else:
+            windows = [(start_step, end_step)]
         # filter out transactions to the sink
         df_spending = df[df['bankDest'] == 'sink'].rename(columns={'nameOrig': 'account'})
         # filter out and reform transactions within the network 
@@ -103,10 +106,13 @@ class DataPreprocessor:
             raise ValueError(f'Number of windows {self.num_windows} and the windows length {self.window_len} do not allow coverage of the whole dataset. '
                              f'Increase number of windows or length of windows')
 
-        window_overlap = (self.num_windows * self.window_len - (end_step - start_step + 1)) // (self.num_windows - 1)
-        windows = [(start_step + i * (self.window_len - window_overlap), 
-                    start_step + i * (self.window_len - window_overlap) + self.window_len - 1) for i in range(self.num_windows)]
-        windows[-1] = (end_step - self.window_len + 1, end_step)
+        if self.num_windows > 1:
+            window_overlap = (self.num_windows * self.window_len - (end_step - start_step + 1)) // (self.num_windows - 1)
+            windows = [(start_step + i * (self.window_len - window_overlap), 
+                        start_step + i * (self.window_len - window_overlap) + self.window_len - 1) for i in range(self.num_windows)]
+            windows[-1] = (end_step - self.window_len + 1, end_step)
+        else:
+            windows = [(start_step, end_step)]
 
         # Rename columns
         df = df[['step', 'nameOrig', 'nameDest', 'amount', 'isSAR']].rename(columns={'nameOrig': 'src', 'nameDest': 'dst', 'isSAR': 'is_sar'})
