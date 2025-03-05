@@ -27,15 +27,15 @@ class TorchClient():
         if valset is not None:
             val_df = pd.read_csv(valset).drop(columns=['account', 'bank'])
         else:
-            val_df = train_df.sample(n = n * valset_size, random_state=seed)
+            val_df = train_df.sample(n = int(n * valset_size), random_state=seed)
             train_df = train_df.drop(val_df.index)
         if testset is not None:
             test_df = pd.read_csv(testset).drop(columns=['account', 'bank'])
         else:
-            test_df = train_df.sample(n = n * testset_size, random_state=seed)
+            test_df = train_df.sample(n = int(n * testset_size), random_state=seed)
             train_df = train_df.drop(test_df.index)
         if trainset_size is not None:
-            train_df = train_df.sample(n = n * trainset_size, random_state=seed)
+            train_df = train_df.sample(n = int(n * trainset_size), random_state=seed)
             
         self.trainset, self.valset, self.testset = tensordatasets(train_df, val_df, test_df, normalize=True, device=self.device)
         y=self.trainset.tensors[1].clone().detach().cpu()
@@ -57,7 +57,7 @@ class TorchClient():
         for x_batch, y_batch in self.trainloader:
             self.optimizer.zero_grad()
             y_pred = self.model(x_batch)
-            loss = self.criterion(y_pred, y_batch)
+            loss = self.criterion(y_pred, y_batch.to(torch.float32))
             loss.backward()
             self.optimizer.step()
     
@@ -80,7 +80,7 @@ class TorchClient():
         self.model.eval()
         with torch.no_grad():
             y_pred = self.model(dataset.tensors[0])
-            loss = self.criterion(y_pred, dataset.tensors[1]).item()
+            loss = self.criterion(y_pred, dataset.tensors[1].to(torch.float32)).item()
         return loss, torch.sigmoid(y_pred).cpu().numpy(), dataset.tensors[1].cpu().numpy()
     
     def run(self, n_rounds: int = 100, eval_every: int = 5, lr_patience: int = 10, es_patience: int = 20, n_warmup_rounds: int = 30, **kwargs) -> Dict:
@@ -105,7 +105,7 @@ class TorchClient():
         
         loss, y_pred, y_true = self.evaluate(dataset='valset')
         self.log(dataset='valset', round=0, loss=loss, y_pred=y_pred, y_true=y_true)
-        previous_val_average_precision = average_precision_score(y_true, y_pred[:,1], recall_span=(0.6, 1.0))
+        previous_val_average_precision = average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0))
         
         for round in tqdm(range(1, n_rounds+1), desc='progress', leave=False):
             
@@ -128,7 +128,7 @@ class TorchClient():
             if round % eval_every == 0:
                 loss, y_pred, y_true = self.evaluate(dataset='valset')
                 self.log(dataset='valset', round=round, loss=loss, y_pred=y_pred, y_true=y_true)
-                val_average_precision = average_precision_score(y_true, y_pred[:,1], recall_span=(0.6, 1.0))
+                val_average_precision = average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0))
                 if val_average_precision <= previous_val_average_precision and round > n_warmup_rounds:
                     es_patience -= eval_every
                 # else:
@@ -201,21 +201,21 @@ class TorchClient():
 
         for metric in metrics:
             if metric == 'accuracy':
-                self.results[dataset]['accuracy'].append(accuracy_score(y_true, (y_pred[:, 1] > 0.5)))
+                self.results[dataset]['accuracy'].append(accuracy_score(y_true, (y_pred > 0.5)))
             elif metric == 'average_precision':
-                self.results[dataset]['average_precision'].append(average_precision_score(y_true, y_pred[:, 1], recall_span=(0.6, 1.0)))
+                self.results[dataset]['average_precision'].append(average_precision_score(y_true, y_pred, recall_span=(0.6, 1.0)))
             elif metric == 'balanced_accuracy':
-                self.results[dataset]['balanced_accuracy'].append(balanced_accuracy_score(y_true, (y_pred[:, 1] > 0.5)))
+                self.results[dataset]['balanced_accuracy'].append(balanced_accuracy_score(y_true, (y_pred > 0.5)))
             elif metric == 'f1':
-                self.results[dataset]['f1'].append(f1_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[dataset]['f1'].append(f1_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'precision':
-                self.results[dataset]['precision'].append(precision_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[dataset]['precision'].append(precision_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'recall':
-                self.results[dataset]['recall'].append(recall_score(y_true, (y_pred[:, 1] > 0.5), pos_label=1, zero_division=0.0))
+                self.results[dataset]['recall'].append(recall_score(y_true, (y_pred > 0.5), pos_label=1, zero_division=0.0))
             elif metric == 'precision_recall_curve':
-                self.results[dataset]['precision_recall_curve'] = precision_recall_curve(y_true, y_pred[:, 1])
+                self.results[dataset]['precision_recall_curve'] = precision_recall_curve(y_true, y_pred)
             elif metric == 'roc_curve':
-                self.results[dataset]['roc_curve'] = roc_curve(y_true, y_pred[:, 1])
+                self.results[dataset]['roc_curve'] = roc_curve(y_true, y_pred)
 
 class TorchGeometricClient():
     """
