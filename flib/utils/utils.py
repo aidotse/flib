@@ -146,3 +146,38 @@ def filter_args(class_type, args):
     """
     valid_params = inspect.signature(class_type).parameters.keys()
     return {k: v for k, v in args.items() if k in valid_params}
+
+def get_optimal_params(config:dict, params_path:str) -> dict:
+    """
+    Reads the optimal hyperparameters from a file.
+
+    Args:
+        config (dict): Dictionary containing the default hyperparameters.
+        params_path (str): Path to the file containing the optimal hyperparameters.
+
+    Returns:
+        dict: Dictionary containing the optimal hyperparameters.
+    """
+    with open(f"{params_path}/best_trials.txt", 'r') as f:
+        lines = f.readlines()
+    optimal_params = {}
+    for line in lines:
+        if 'values' in line:
+            values = line.split(': ')[1].strip()[1:-1].split(', ')
+            values = [float(val) if '.' in val else int(val) for val in values]
+            optimal_params['values'] = values
+        elif ':' in line:
+            key, val = line.split(': ')
+            key = key.strip()
+            val = val.strip()
+            if val.isdigit():
+                val = int(val)
+            elif val.replace('.', '', 1).isdigit():
+                val = float(val)
+            optimal_params[key] = val
+    
+    # add only the parameters that are in the config
+    optimal_params = {k: v for k, v in optimal_params.items() if k in config}
+            
+    return config | optimal_params
+    
