@@ -6,19 +6,21 @@ import time
 import yaml
 from flib import servers, clients, models
 from flib.train import centralized, federated, isolated
+from flib.utils import get_optimal_params
 
 def main():
     
     mp.set_start_method('spawn', force=True)
     
-    EXPERIMENT = '12_banks_homo_mid'
+    EXPERIMENT = '12_banks_homo_easy'
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, help='Path to config file.', default=f'experiments/{EXPERIMENT}/config.yaml')
-    parser.add_argument('--model_types', nargs='+', help='Types of models to train.', default=['LogisticRegressor', 'MLP', 'GCN', 'GAT', 'GraphSAGE']) # 'LogisticRegressor', 'MLP', 'GCN', 'GAT', 'GraphSAGE'
+    parser.add_argument('--model_types', nargs='+', help='Types of models to train.', default=['GCN', 'GAT', 'GraphSAGE']) # 'LogisticRegressor', 'MLP', 'GCN', 'GAT', 'GraphSAGE'
     parser.add_argument('--n_workers', type=int, help='Number of workers. Defaults to number of clients.', default=4)
     parser.add_argument('--results_dir', type=str, default=f'experiments/{EXPERIMENT}/results')
     parser.add_argument('--seed', type=int, help='Seed.', default=42)
+    parser.add_argument('--use_optimal_params', type=bool, help='Read the parameters from Optuna.', default=True)
     parser.add_argument('--settings', nargs='+', help='Types of settings to use. Can be "isolated", "centralized" or "federated".', default=['centralized', 'federated', 'isolated']) # 'centralized', 'federated', 'isolated'
     args = parser.parse_args()
     
@@ -34,6 +36,8 @@ def main():
             print(f'\nTraining {model_type} in centralized setting.')
             t = time.time()
             kwargs = config[model_type]['default'] | config[model_type]['centralized']
+            kwargs = get_optimal_params(kwargs, f"{args.results_dir}/centralized/{model_type}") if args.use_optimal_params else kwargs
+            
             results = centralized(
                 seed = args.seed, 
                 Client = getattr(clients, config[model_type]['default']['client_type']),
@@ -52,6 +56,8 @@ def main():
             print(f'Training {model_type} in federated setting.')
             t = time.time()
             kwargs = config[model_type]['default'] | config[model_type]['federated']
+            kwargs = get_optimal_params(kwargs, f"{args.results_dir}/centralized/{model_type}") if args.use_optimal_params else kwargs
+
             results = federated(
                 seed = args.seed, 
                 Server = getattr(servers, config[model_type]['default']['server_type']),
@@ -72,6 +78,8 @@ def main():
             print(f'Training {model_type} in isolated setting')
             t = time.time()
             kwargs = config[model_type]['default'] | config[model_type]['isolated']
+            kwargs = get_optimal_params(kwargs, f"{args.results_dir}/centralized/{model_type}") if args.use_optimal_params else kwargs
+
             results = isolated(
                 seed = args.seed, 
                 Client = getattr(clients, config[model_type]['default']['client_type']),
