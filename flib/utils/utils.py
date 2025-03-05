@@ -158,8 +158,12 @@ def get_optimal_params(config:dict, params_path:str) -> dict:
     Returns:
         dict: Dictionary containing the optimal hyperparameters.
     """
-    with open(f"{params_path}/best_trials.txt", 'r') as f:
-        lines = f.readlines()
+    try:
+        with open(f"{params_path}/best_trials.txt", 'r') as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File {params_path}/best_trials.txt not found.")
+
     optimal_params = {}
     for line in lines:
         if 'values' in line:
