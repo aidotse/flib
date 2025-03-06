@@ -29,3 +29,14 @@ class ClassBalancedLoss(torch.nn.Module):
         else:
             raise ValueError("loss_type must be sigmoid or softmax")
         return loss
+
+class DAMLoss(torch.nn.Module):
+    def __init__(self, class_counts, scale=1.0):
+        super().__init__()
+        self.margins = scale / torch.sqrt(class_counts.clone().detach().float())
+
+    def forward(self, logits, targets):
+        targets = targets.to(torch.long)  # Ensure labels are integer indices
+        margins = self.margins.to(logits.device)
+        adjusted_logits = logits - margins[targets]
+        return F.cross_entropy(adjusted_logits, targets.to(torch.float) )
