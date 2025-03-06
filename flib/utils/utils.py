@@ -2,7 +2,7 @@ import numpy as np
 import random
 import torch
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 import torch_geometric
 import torch_geometric.transforms
 import inspect
@@ -23,7 +23,7 @@ def tensordatasets(train_df:pd.DataFrame, val_df:pd.DataFrame=None, test_df:pd.D
     x_train = train_np[:, :-1]
     y_train = train_np[:, -1]
     if normalize:
-        scaler = StandardScaler().fit(x_train)
+        scaler = MinMaxScaler().fit(x_train)
         x_train = scaler.transform(x_train)
     x_train = torch.tensor(x_train, dtype=torch.float32).to(device)
     y_train = torch.tensor(y_train, dtype=torch.int64).to(device)
@@ -83,7 +83,7 @@ def graphdataset(train_nodes_df:pd.DataFrame, train_edges_df:pd.DataFrame, val_n
     train_nodes_np = train_nodes_df.drop(columns='node').to_numpy()
     x_train_nodes = train_nodes_np[:, :-1]
     y_train_nodes = train_nodes_np[:, -1]
-    scaler = StandardScaler().fit(x_train_nodes)
+    scaler = MinMaxScaler().fit(x_train_nodes)
     x_train_nodes = scaler.transform(x_train_nodes)
     x_train_nodes = torch.tensor(x_train_nodes, dtype=torch.float32).to(device)
     y_train_nodes = torch.tensor(y_train_nodes, dtype=torch.int64).to(device)

@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch_geometric.transforms
+from flib.train import criterions
 from flib.metrics import average_precision_score
 from flib.utils import dataloaders, decrease_lr, filter_args, graphdataset, set_random_seed, tensordatasets
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, precision_recall_curve, precision_score, recall_score, roc_curve
@@ -247,10 +248,21 @@ class TorchGeometricClient():
         self.model = Model(**filter_args(Model, kwargs)).to(self.device)
         Optimizer = getattr(torch.optim, optimizer)
         self.optimizer = Optimizer(self.model.parameters(), **filter_args(Optimizer, kwargs))
-        Criterion = getattr(torch.nn, criterion)
-        class_counts = torch.bincount(self.trainset.y)
-        weight = class_counts.max() / class_counts
-        self.criterion = Criterion(pos_weight = weight[1], **filter_args(Criterion, kwargs))
+        
+        if criterion == 'ClassBalancedLoss':
+            n_samples_per_classes = torch.bincount(self.trainset.y).tolist()
+            self.criterion = criterions.ClassBalancedLoss(n_samples_per_classes=n_samples_per_classes, gamma=kwargs.get('gamma', 0.9999))
+        elif criterion == 'DAMLoss':
+            self.criterion = criterions.DAMLoss(class_counts=torch.bincount(self.trainset.y))
+        elif criterion == 'BCEWithLogitsLoss':
+            Criterion = getattr(torch.nn, criterion)
+            class_counts = torch.bincount(self.trainset.y)
+            weight = class_counts.max() / class_counts
+            self.criterion = Criterion(pos_weight = weight[1], **filter_args(Criterion, kwargs))
+        else:
+            class_counts = torch.bincount(self.trainset.y)
+            self.criterion = getattr(torch.nn, criterion)(weight = class_counts.max() / class_counts)
+        
     
     def train(self):
         """Train the model on local dataset."""
