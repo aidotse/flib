@@ -56,7 +56,7 @@ def main():
             print(f'Training {model_type} in federated setting.')
             t = time.time()
             kwargs = config[model_type]['default'] | config[model_type]['federated']
-            kwargs = get_optimal_params(kwargs, f"{args.results_dir}/centralized/{model_type}") if args.use_optimal_params else kwargs
+            kwargs = get_optimal_params(kwargs, f"{args.results_dir}/federated/{model_type}") if args.use_optimal_params else kwargs
 
             results = federated(
                 seed = args.seed, 
@@ -78,7 +78,7 @@ def main():
             print(f'Training {model_type} in isolated setting')
             t = time.time()
             kwargs = config[model_type]['default'] | config[model_type]['isolated']
-            kwargs = get_optimal_params(kwargs, f"{args.results_dir}/centralized/{model_type}") if args.use_optimal_params else kwargs
+            kwargs = get_optimal_params(kwargs, f"{args.results_dir}/isolated/{model_type}") if args.use_optimal_params else kwargs
 
             results = isolated(
                 seed = args.seed, 
